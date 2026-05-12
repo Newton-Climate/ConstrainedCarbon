@@ -269,3 +269,117 @@ def test_jax_tree_leaves_count(harvard_config, harvard_state, harvard_params):
     param_leaves = jax.tree.leaves(harvard_params)
     assert len(state_leaves) == len(EcosystemState._fields)
     assert len(param_leaves) == len(ModelParams._fields)
+
+
+# ---------------------------------------------------------------------------
+# Integration: make_default_params shapes match PoolIndex counts (both sites)
+# ---------------------------------------------------------------------------
+#
+# These tests cross-check config.py (PoolIndex) against state.py
+# (make_default_params), verifying that the parameter arrays are sized
+# consistently with the pool structure declared in each YAML.
+#
+# Pool counts (microbial_pool_per_layer=False in both configs):
+#   Harvard Forest: 4 AG + 3 layers × 2 SOM = 10 pools
+#   Barrow Alaska:  2 AG + 3 layers × 2 SOM = 8 pools
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def barrow_params(barrow_config):
+    return make_default_params(barrow_config)
+
+
+def test_harvard_log_tau_shape_explicit(harvard_params) -> None:
+    """
+    log_tau for Harvard Forest has the explicit expected shape (10,).
+
+    This cross-module test confirms that make_default_params allocates
+    one turnover-time parameter per pool as counted from the YAML structure.
+    """
+    assert harvard_params.log_tau.shape == (10,), (
+        f"Expected log_tau shape (10,), got {harvard_params.log_tau.shape}"
+    )
+
+
+def test_barrow_log_tau_shape_explicit(barrow_params) -> None:
+    """
+    log_tau for Barrow Alaska has the explicit expected shape (8,).
+
+    This cross-module test confirms that make_default_params allocates
+    one turnover-time parameter per pool as counted from the YAML structure.
+    """
+    assert barrow_params.log_tau.shape == (8,), (
+        f"Expected log_tau shape (8,), got {barrow_params.log_tau.shape}"
+    )
+
+
+def test_log_tau_finite_and_positive(harvard_params) -> None:
+    """
+    All log_tau values must be finite and positive.
+
+    Sign convention: log_tau = log(τ_days).  All τ_prior_days in the
+    Harvard config are ≥ 180 days, so log(τ) > log(1) = 0 → log_tau > 0.
+    """
+    assert jnp.all(jnp.isfinite(harvard_params.log_tau)), (
+        "log_tau contains NaN or inf"
+    )
+    assert jnp.all(harvard_params.log_tau > 0.0), (
+        f"Expected all log_tau > 0 (τ > 1 day), "
+        f"got min={float(harvard_params.log_tau.min()):.4f}"
+    )
+
+
+def test_barrow_log_tau_finite_and_positive(barrow_params) -> None:
+    """All Barrow log_tau values are finite and positive (τ_prior_days ≥ 730)."""
+    assert jnp.all(jnp.isfinite(barrow_params.log_tau))
+    assert jnp.all(barrow_params.log_tau > 0.0), (
+        f"Expected all log_tau > 0, "
+        f"got min={float(barrow_params.log_tau.min()):.4f}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Integration: make_initial_state — permafrost layer specifics (Barrow)
+# ---------------------------------------------------------------------------
+
+
+def test_barrow_permafrost_layer_thawed_frac_zero(
+    barrow_config, barrow_state
+) -> None:
+    """
+    The 'permafrost' soil layer (permafrost_eligible=True) starts fully
+    frozen: thawed_frac == 0.0 at initialisation.
+
+    This test identifies the permafrost layer by name, making it explicit
+    which layer is being checked (complementing the loop-based test in
+    test_thawed_frac_permafrost_layers above).
+    """
+    layer_names = [layer.name for layer in barrow_config.soil_layers]
+    pf_idx = layer_names.index("permafrost")
+    assert float(barrow_state.thawed_frac[pf_idx]) == 0.0, (
+        f"permafrost layer thawed_frac expected 0.0, "
+        f"got {float(barrow_state.thawed_frac[pf_idx])}"
+    )
+
+
+def test_barrow_active_layer_depth_value(barrow_config, barrow_state) -> None:
+    """
+    Barrow's active_layer_depth equals the depth_top_m of the first
+    permafrost-eligible layer ('active' at 0.10 m).
+
+    This is the initial permafrost table depth — a finite, positive value
+    (not jnp.inf, which would indicate a non-permafrost site).
+    """
+    first_pf = next(
+        (lay for lay in barrow_config.soil_layers if lay.permafrost_eligible),
+        None,
+    )
+    assert first_pf is not None, "Barrow config has no permafrost-eligible layer"
+    expected_ald = first_pf.depth_top_m   # 0.10 m (top of 'active' layer)
+    assert float(barrow_state.active_layer_depth) == pytest.approx(
+        expected_ald, abs=1e-6
+    ), (
+        f"active_layer_depth expected {expected_ald} m, "
+        f"got {float(barrow_state.active_layer_depth)} m"
+    )
