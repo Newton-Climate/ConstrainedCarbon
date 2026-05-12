@@ -43,8 +43,9 @@ select = ["E", "W", "F", "I", "C", "N", "T"]
 ignore = [
     "E203",
     # Scientific naming conventions conflict with PEP-8 lowercase rules.
-    # Variables like C12, C14, log_Q10, lambda_14C, enable_14C are domain
-    # standard and defined in TECHSPEC — renaming them would reduce clarity.
+    # Variables like C12, C14, log_Q10, lambda_14C, GPP, CUE, Ra, T_ref are
+    # domain-standard and defined in TECHSPEC — renaming them would reduce clarity.
+    "N803",   # Argument name should be lowercase
     "N806",   # Variable in function should be lowercase
     "N815",   # Variable in class scope should not be mixedCase
 ]
