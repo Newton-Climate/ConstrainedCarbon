@@ -113,8 +113,12 @@ def test_bad_transfer_sum_raises(tmp_path: pathlib.Path) -> None:
     """Fractions from one source summing to > 1.0 raises ConfigValidationError."""
     yaml_text = _VALID_BASE.replace(
         "transfer_rules:\n    - [leaf, org_litter, 0.90]",
-        # leaf → org_litter: 0.70 + leaf → org_litter again: 0.50  → sum = 1.20
-        "transfer_rules:\n    - [leaf, org_litter, 0.70]\n    - [leaf, org_litter, 0.50]",
+        # leaf → org_litter: 0.70 + 0.50 = 1.20 → exceeds 1.0
+        (
+            "transfer_rules:\n"
+            "    - [leaf, org_litter, 0.70]\n"
+            "    - [leaf, org_litter, 0.50]"
+        ),
     )
     with pytest.raises(ConfigValidationError, match="sum"):
         load_config(_write_yaml(tmp_path, yaml_text))

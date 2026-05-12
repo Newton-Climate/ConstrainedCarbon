@@ -32,7 +32,6 @@ from typing import Any
 
 import yaml
 
-
 # ---------------------------------------------------------------------------
 # Errors
 # ---------------------------------------------------------------------------
@@ -280,19 +279,10 @@ def _all_valid_pool_names(config: ModelConfig) -> set[str]:
     return names
 
 
-def _validate(config: ModelConfig) -> None:
-    """
-    Raise ``ConfigValidationError`` if any semantic constraint is violated.
-
-    Checks (in order):
-    1. transfer_rules reference only known pool names.
-    2. Outflow fractions from any single source pool sum to ≤ 1.0.
-    3. Soil layer depths are strictly monotonic and contiguous.
-    4. NPP alloc fractions exist for every aboveground pool.
-    """
-    valid_names = _all_valid_pool_names(config)
-
-    # ── 1. Unknown pool names in transfer_rules ───────────────────────────
+def _check_transfer_pool_names(
+    config: ModelConfig, valid_names: set[str]
+) -> None:
+    """Raise if any transfer rule references an unknown pool name."""
     for source, dest, _ in config.transfer_rules:
         if source not in valid_names:
             raise ConfigValidationError(
@@ -305,7 +295,9 @@ def _validate(config: ModelConfig) -> None:
                 f"Known pools: {sorted(valid_names)}"
             )
 
-    # ── 2. Transfer row sums > 1.0 ────────────────────────────────────────
+
+def _check_transfer_sums(config: ModelConfig) -> None:
+    """Raise if any source pool's outflow fractions sum to > 1.0."""
     outflow: dict[str, float] = {}
     for source, _, fraction in config.transfer_rules:
         outflow[source] = outflow.get(source, 0.0) + fraction
@@ -317,7 +309,9 @@ def _validate(config: ModelConfig) -> None:
                 f"treated as heterotrophic respiration and must be ≥ 0."
             )
 
-    # ── 3. Overlapping or non-monotonic layer depths ──────────────────────
+
+def _check_layer_depths(config: ModelConfig) -> None:
+    """Raise if layer depths are non-positive, overlapping, or non-contiguous."""
     layers = config.soil_layers
     for i, layer in enumerate(layers):
         if layer.depth_bot_m <= layer.depth_top_m:
@@ -339,7 +333,9 @@ def _validate(config: ModelConfig) -> None:
                     f"equal depth_bot of previous layer."
                 )
 
-    # ── 4. Alloc fractions must cover every AG pool ───────────────────────
+
+def _check_alloc_coverage(config: ModelConfig) -> None:
+    """Raise if any aboveground pool is missing an alloc fraction."""
     ag_names = {p.name for p in config.aboveground_pools}
     missing = ag_names - set(config.alloc.keys())
     if missing:
@@ -348,6 +344,23 @@ def _validate(config: ModelConfig) -> None:
             f"{sorted(missing)}.  Every aboveground pool must have an entry "
             f"under parameters.alloc in the YAML."
         )
+
+
+def _validate(config: ModelConfig) -> None:
+    """
+    Raise ``ConfigValidationError`` if any semantic constraint is violated.
+
+    Checks (in order):
+    1. transfer_rules reference only known pool names.
+    2. Outflow fractions from any single source pool sum to ≤ 1.0.
+    3. Soil layer depths are strictly monotonic and contiguous.
+    4. NPP alloc fractions exist for every aboveground pool.
+    """
+    valid_names = _all_valid_pool_names(config)
+    _check_transfer_pool_names(config, valid_names)
+    _check_transfer_sums(config)
+    _check_layer_depths(config)
+    _check_alloc_coverage(config)
 
 
 # ---------------------------------------------------------------------------

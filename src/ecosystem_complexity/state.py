@@ -113,7 +113,10 @@ class ModelParams(NamedTuple):
 # ---------------------------------------------------------------------------
 
 
-def make_initial_state(config: ModelConfig, site_config: dict[str, Any]) -> EcosystemState:
+def make_initial_state(
+    config: ModelConfig,
+    site_config: dict[str, Any],
+) -> EcosystemState:
     """
     Build a zeroed initial ``EcosystemState`` from a validated config and
     the raw YAML ``site`` section.
@@ -196,6 +199,67 @@ _DEFAULT_TAU_MIC_DAYS: float = 30.0   # default microbial turnover time
 _EPS: float = 1e-6                    # floor for transfer fractions
 
 
+# ---------------------------------------------------------------------------
+# Private helpers for make_default_params
+# ---------------------------------------------------------------------------
+
+
+def _build_log_tau(config: ModelConfig) -> jnp.ndarray:
+    """Build log-space turnover-time vector from YAML priors and overrides."""
+    tau_overrides: dict[str, float] = {
+        k: float(v)
+        for k, v in config.parameters_raw.get("tau_overrides", {}).items()
+    }
+    tau_vals: list[float] = []
+    for pool in config.aboveground_pools:
+        tau_vals.append(tau_overrides.get(pool.name, _DEFAULT_TAU_AG_DAYS))
+    for layer in config.soil_layers:
+        for som_pool in layer.som_pools:
+            compound = f"{layer.name}_{som_pool.name}"
+            tau_vals.append(tau_overrides.get(compound, som_pool.tau_prior_days))
+        if config.microbial_pool_per_layer:
+            tau_vals.append(_DEFAULT_TAU_MIC_DAYS)
+    return jnp.log(jnp.array(tau_vals, dtype=jnp.float32))
+
+
+def _build_log_f_transfer(
+    config: ModelConfig, idx: PoolIndex, n_pools: int
+) -> jnp.ndarray:
+    """
+    Build transfer-matrix logits so that softmax reproduces the YAML fractions.
+
+    Non-specified destinations receive a tiny floor (_EPS); rows are normalised
+    to sum to 1 before taking log, giving the exact softmax inverse.
+    """
+    explicit: dict[tuple[int, int], float] = {}
+    for source_name, dest_name, fraction in config.transfer_rules:
+        key = (idx[source_name], idx[dest_name])
+        explicit[key] = explicit.get(key, 0.0) + fraction
+
+    f_rows: list[list[float]] = []
+    for i in range(n_pools):
+        row = [_EPS] * (n_pools + 1)
+        total_explicit = 0.0
+        for (si, dj), frac in explicit.items():
+            if si == i:
+                row[dj] = frac
+                total_explicit += frac
+        row[-1] = max(1.0 - total_explicit, _EPS)
+        f_rows.append(row)
+
+    f_arr = jnp.array(f_rows, dtype=jnp.float32)
+    f_norm = f_arr / f_arr.sum(axis=-1, keepdims=True)
+    return jnp.log(f_norm)
+
+
+def _yaml_prior(params_raw: dict, key: str, default: float) -> float:
+    """Extract a scalar prior value from the YAML parameters dict."""
+    entry = params_raw.get(key, {})
+    if isinstance(entry, dict):
+        return float(entry.get("value", default))
+    return float(entry) if entry is not None else default
+
+
 def make_default_params(config: ModelConfig) -> ModelParams:
     """
     Build ``ModelParams`` initialised from the YAML prior values.
@@ -233,81 +297,29 @@ def make_default_params(config: ModelConfig) -> ModelParams:
     n_mic = n_layers if config.microbial_pool_per_layer else 0
     params_raw = config.parameters_raw
 
-    # ── log_tau ───────────────────────────────────────────────────────────
-    tau_overrides: dict[str, float] = {
-        k: float(v)
-        for k, v in params_raw.get("tau_overrides", {}).items()
-    }
-
-    tau_vals: list[float] = []
-    # Aboveground pools: use tau_override if provided, else default 1 year
-    for pool in config.aboveground_pools:
-        tau_vals.append(tau_overrides.get(pool.name, _DEFAULT_TAU_AG_DAYS))
-    # Soil SOM pools: use tau_override or tau_prior_days from SOMPoolDef
-    for layer in config.soil_layers:
-        for som_pool in layer.som_pools:
-            compound_name = f"{layer.name}_{som_pool.name}"
-            tau_vals.append(
-                tau_overrides.get(compound_name, som_pool.tau_prior_days)
-            )
-        if config.microbial_pool_per_layer:
-            tau_vals.append(_DEFAULT_TAU_MIC_DAYS)
-
-    log_tau = jnp.log(jnp.array(tau_vals, dtype=jnp.float32))
-
-    # ── log_f_transfer ────────────────────────────────────────────────────
-    # Build a (n_pools, n_pools+1) target fraction matrix.
-    # Column j (0 ≤ j < n_pools): fraction of source i routed to pool j.
-    # Column n_pools (last):       fraction respired.
-    # Non-specified destinations receive a tiny floor (_EPS) so that
-    # log(fraction) is always finite; rows are then normalised to sum to 1
-    # before taking log, giving the exact softmax inverse.
-
-    # Use a dict to track which (row, col) pairs have explicit fractions.
-    explicit: dict[tuple[int, int], float] = {}
-    for source_name, dest_name, fraction in config.transfer_rules:
-        src_i = idx[source_name]
-        dst_j = idx[dest_name]
-        # Accumulate in case the same pair appears more than once.
-        explicit[(src_i, dst_j)] = explicit.get((src_i, dst_j), 0.0) + fraction
-
-    # Build the raw (unnormalised) fraction table.
-    f_rows: list[list[float]] = []
-    for i in range(n_pools):
-        row = [_EPS] * (n_pools + 1)
-        total_explicit = 0.0
-        for (si, dj), frac in explicit.items():
-            if si == i:
-                row[dj] = frac
-                total_explicit += frac
-        # Respiration gets whatever fraction is not transferred.
-        row[-1] = max(1.0 - total_explicit, _EPS)
-        f_rows.append(row)
-
-    # Normalise rows to sum exactly to 1, then take log → softmax⁻¹.
-    f_arr = jnp.array(f_rows, dtype=jnp.float32)
-    f_norm = f_arr / f_arr.sum(axis=-1, keepdims=True)
-    log_f_transfer = jnp.log(f_norm)
+    log_tau = _build_log_tau(config)
+    log_f_transfer = _build_log_f_transfer(config, idx, n_pools)
 
     # ── log_alloc ──────────────────────────────────────────────────────────
     ag_names = [p.name for p in config.aboveground_pools]
     alloc_vals = jnp.array(
         [config.alloc[name] for name in ag_names], dtype=jnp.float32
     )
-    # Normalise (fractions should already sum to 1, but be defensive).
     alloc_norm = alloc_vals / alloc_vals.sum()
     log_alloc = jnp.log(alloc_norm)
 
     # ── Environmental parameters ───────────────────────────────────────────
-    def _prior(key: str, default: float) -> float:
-        entry = params_raw.get(key, {})
-        if isinstance(entry, dict):
-            return float(entry.get("value", default))
-        return float(entry) if entry is not None else default
-
-    log_Q10         = jnp.full(n_layers, math.log(_prior("Q10", 2.0)),           dtype=jnp.float32)
-    log_theta_opt   = jnp.full(n_layers, math.log(_prior("theta_opt", 0.3)),     dtype=jnp.float32)
-    log_gamma_moist = jnp.full(n_layers, math.log(_prior("gamma_moisture", 5.0)), dtype=jnp.float32)
+    log_Q10 = jnp.full(
+        n_layers, math.log(_yaml_prior(params_raw, "Q10", 2.0)), dtype=jnp.float32
+    )
+    log_theta_opt = jnp.full(
+        n_layers, math.log(_yaml_prior(params_raw, "theta_opt", 0.3)), dtype=jnp.float32
+    )
+    log_gamma_moist = jnp.full(
+        n_layers,
+        math.log(_yaml_prior(params_raw, "gamma_moisture", 5.0)),
+        dtype=jnp.float32,
+    )
 
     # ── alpha_priming ─────────────────────────────────────────────────────
     alpha_priming = jnp.zeros(n_mic, dtype=jnp.float32)

@@ -32,9 +32,9 @@ import pytest
 
 from ecosystem_complexity.config import PoolIndex, load_config
 from ecosystem_complexity.state import (
+    _LAMBDA_14C,
     EcosystemState,
     ModelParams,
-    _LAMBDA_14C,
     make_default_params,
     make_initial_state,
 )
@@ -89,14 +89,14 @@ def harvard_params(harvard_config):
 # ---------------------------------------------------------------------------
 
 
-def test_initial_state_C12_shape(harvard_config, harvard_state):
+def test_initial_state_c12_shape(harvard_config, harvard_state):
     n_pools = len(PoolIndex(harvard_config))
     assert harvard_state.C12.shape == (n_pools,), (
         f"Expected C12 shape ({n_pools},), got {harvard_state.C12.shape}"
     )
 
 
-def test_initial_state_C14_shape(harvard_config, harvard_state):
+def test_initial_state_c14_shape(harvard_config, harvard_state):
     n_pools = len(PoolIndex(harvard_config))
     assert harvard_state.C14.shape == (n_pools,)
 
@@ -116,11 +116,11 @@ def test_initial_state_thawed_frac_shape(harvard_config, harvard_state):
     assert harvard_state.thawed_frac.shape == (n_layers,)
 
 
-def test_initial_state_C12_zeros(harvard_state):
+def test_initial_state_c12_zeros(harvard_state):
     assert jnp.all(harvard_state.C12 == 0.0)
 
 
-def test_initial_state_C14_zeros(harvard_state):
+def test_initial_state_c14_zeros(harvard_state):
     assert jnp.all(harvard_state.C14 == 0.0)
 
 
@@ -209,7 +209,7 @@ def test_log_alloc_length_equals_n_ag(harvard_config, harvard_params):
     assert harvard_params.log_alloc.shape == (n_ag,)
 
 
-def test_log_Q10_shape(harvard_config, harvard_params):
+def test_log_q10_shape(harvard_config, harvard_params):
     n_layers = len(harvard_config.soil_layers)
     assert harvard_params.log_Q10.shape == (n_layers,)
 
@@ -225,7 +225,7 @@ def test_alpha_priming_empty_when_no_microbial(harvard_config, harvard_params):
 # ---------------------------------------------------------------------------
 
 
-def test_lambda_14C_value(harvard_params):
+def test_lambda14c_value(harvard_params):
     """
     lambda_14C ≈ ln(2) / (5730 yr * 365.25 d/yr) ≈ 3.312e-7 day⁻¹.
 
@@ -235,7 +235,7 @@ def test_lambda_14C_value(harvard_params):
     assert float(harvard_params.lambda_14C) == pytest.approx(expected, rel=1e-4)
 
 
-def test_lambda_14C_constant_matches_module():
+def test_lambda14c_constant_matches_module():
     """The module-level _LAMBDA_14C constant is the exact value used."""
     assert _LAMBDA_14C == pytest.approx(math.log(2.0) / (5730.0 * 365.25), rel=1e-12)
 
