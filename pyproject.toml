@@ -50,6 +50,7 @@ ignore = [
     "N803",   # Argument name should be lowercase
     "N806",   # Variable in function should be lowercase
     "N815",   # Variable in class scope should not be mixedCase
+    "N999",   # Module name contains numerals (tracer_14C, parsers_14C, test_14C)
 ]
 
 [tool.ruff.lint.per-file-ignores]

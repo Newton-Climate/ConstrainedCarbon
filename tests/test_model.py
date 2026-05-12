@@ -214,12 +214,18 @@ def test_step_12C_grad_params_finite(
 # ---------------------------------------------------------------------------
 
 
-def test_step_14C_raises(
+def test_step_14C_no_longer_raises(
     harvard_model, initial_state, harvard_params, dummy_forcing
 ):
-    """step_14C raises NotImplementedError (stub until Issue #8)."""
-    with pytest.raises(NotImplementedError):
-        harvard_model.step_14C(initial_state, harvard_params, dummy_forcing)
+    """
+    step_14C is now implemented (Issue #8) — must not raise NotImplementedError.
+
+    Full correctness tests for the ¹⁴C step live in tests/test_14C.py;
+    this test confirms that the stub has been replaced.
+    """
+    new_state = harvard_model.step_14C(initial_state, harvard_params, dummy_forcing)
+    assert new_state.C14.shape == initial_state.C14.shape
+    assert jnp.all(jnp.isfinite(new_state.C14))
 
 
 # ---------------------------------------------------------------------------
