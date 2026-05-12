@@ -471,11 +471,11 @@ def test_mass_balance_barrow():
         f"max |ΔC_total − (NPP−Rh)·dt| = {max_res:.3e} gC m⁻² day⁻¹"
     )
 
-    # ── Frozen-state suppresses decomposition ─────────────────────────────
-    # Fill all pools with 50 gC m⁻² then freeze all layers.
+    # ── thawed_frac = 0 suppresses decomposition ─────────────────────────────
+    # Fill all pools with 50 gC m⁻² then set thawed_frac = 0 for all layers.
     # With thawed_frac = 0 everywhere, f_decomp = 0 for every pool → Rh = 0.
     filled_state = init_state._replace(C12=jnp.ones(n_pools) * 50.0)
-    frozen_state = filled_state._replace(thawed_frac=jnp.zeros(n_layers))
+    zero_thaw_state = filled_state._replace(thawed_frac=jnp.zeros(n_layers))
 
     winter_forcing = {
         "air_temp": jnp.array(-20.0),
@@ -484,10 +484,10 @@ def test_mass_balance_barrow():
         "soil_moisture": jnp.full(n_layers, 0.3),
         "delta14C_atm": jnp.array(0.0),
     }
-    diag_frozen = model.diagnose(frozen_state, params, winter_forcing)
-    assert float(diag_frozen["Rh"]) == pytest.approx(0.0, abs=1e-6), (
+    diag_zero_thaw = model.diagnose(zero_thaw_state, params, winter_forcing)
+    assert float(diag_zero_thaw["Rh"]) == pytest.approx(0.0, abs=1e-6), (
         f"Expected Rh = 0 with thawed_frac = 0, "
-        f"got Rh = {float(diag_frozen['Rh']):.3e} gC m⁻² day⁻¹"
+        f"got Rh = {float(diag_zero_thaw['Rh']):.3e} gC m⁻² day⁻¹"
     )
 
     # Sanity: fully thawed state gives Rh > 0 (decomposition is active)
