@@ -1,0 +1,21 @@
+name: ecosystem-complexity
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  # Scientific stack
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - pyyaml
+  # Dev tools
+  - pytest
+  - pytest-cov
+  - black
+  - ruff
+  - mypy
+  - pip:
+      - -r requirements.txt
