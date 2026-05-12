@@ -39,6 +39,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+import ecosystem_complexity.tracer_14C as tracer_14C
 from ecosystem_complexity.config import ModelConfig, PoolIndex
 from ecosystem_complexity.fluxes import (
     f_moisture,
@@ -341,19 +342,29 @@ class EcosystemModel:
         """
         One Euler timestep of ¹⁴C tracer dynamics.
 
-        .. note::
+        Delegates to :func:`tracer_14C.step_14C` and returns a new state
+        with ``C14`` updated; all other fields pass through unchanged.
 
-            Not yet implemented — see Issue #8.
+        Parameters
+        ----------
+        state :
+            Current ecosystem state.
+        params :
+            Model parameters (traced by ``jax.grad``).
+        forcing_t :
+            Per-timestep forcing dict.  Required keys: ``'sw_radiation'``,
+            ``'soil_temp'``, ``'soil_moisture'``, ``'delta14C_atm'``.
 
-        Raises
-        ------
-        NotImplementedError
-            Always.
+        Returns
+        -------
+        EcosystemState
+            Updated state with new ``C14``; ``C12`` and all other fields
+            are unchanged.
         """
-        raise NotImplementedError(
-            "step_14C is not implemented in this release. "
-            "See Issue #8 for the ¹⁴C tracer step."
+        new_C14 = tracer_14C.step_14C(
+            state, params, forcing_t, self.config, self.pool_index
         )
+        return state._replace(C14=new_C14)
 
     # ------------------------------------------------------------------
     # Diagnostics
