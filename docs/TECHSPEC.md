@@ -332,9 +332,9 @@ class EcosystemState(NamedTuple):
 
     # Differentiable freeze/thaw fraction — shape (n_layers,)
     # 1.0 = fully thawed, 0.0 = frozen
-    # frozen_frac = sigmoid(k * soil_temp), k=10 → ~0.1°C transition width
+    # thawed_frac = sigmoid(k * soil_temp), k=10 → ~0.1°C transition width
     # Always 1.0 for non-permafrost layers
-    frozen_frac: jnp.ndarray
+    thawed_frac: jnp.ndarray
 
     # Active layer depth — scalar, meters
     # jnp.inf for non-permafrost sites
@@ -380,7 +380,7 @@ All flux functions are pure JAX — no Python control flow, no side effects.
 
 ```
 # Decomposition flux from pool i (gC m⁻² day⁻¹)
-F_decomp_i = C12_i / tau_i * f_temp(T_layer) * f_moisture(θ_layer) * frozen_frac_layer
+F_decomp_i = C12_i / tau_i * f_temp(T_layer) * f_moisture(θ_layer) * thawed_frac_layer
 
 # Temperature scalar (Lloyd-Taylor Q10 form)
 f_temp(T) = Q10 ^ ((T - T_ref) / 10)         T_ref = 15°C
@@ -408,7 +408,7 @@ The ¹⁴C pools are driven by the same transfer structure as ¹²C, with two ad
 R_i = C14_i / max(C12_i, ε)
 
 # ¹⁴C outflux from pool i (same tau, same transfer rules)
-F14_out_i = C14_i / tau_i * f_temp * f_moist * frozen_frac
+F14_out_i = C14_i / tau_i * f_temp * f_moist * thawed_frac
 
 # ¹⁴C transfer to downstream pools j
 F14_in_j = Σ_i f_ij * F14_out_i
@@ -850,13 +850,13 @@ F_mat = jax.nn.softmax(params.log_f_transfer, axis=-1)[:, :-1]  # rows ≤ 1
 ### 9.2 Permafrost Differentiable Mask
 
 ```python
-def frozen_frac(soil_temp: jnp.ndarray, steepness: float = 10.0) -> jnp.ndarray:
+def thawed_frac(soil_temp: jnp.ndarray, steepness: float = 10.0) -> jnp.ndarray:
     """Smooth [0,1] thaw fraction. Differentiable at freeze/thaw front."""
     return jax.nn.sigmoid(steepness * soil_temp)
 
-def effective_decomp(C12, tau, f_temp, f_moist, frozen_frac):
+def effective_decomp(C12, tau, f_temp, f_moist, thawed_frac):
     """Decomposition gated by thaw state — differentiable."""
-    return C12 / tau * f_temp * f_moist * frozen_frac
+    return C12 / tau * f_temp * f_moist * thawed_frac
 ```
 
 ---
@@ -884,7 +884,7 @@ tests/
 │     ¹²C mass balance (Harvard 10yr)      → |ΔC_total - net_input| < 1e-4
 │     ¹²C mass balance (Barrow 10yr)       → same
 │     ¹⁴C mass balance                    → ΣC14 + cumul_decay = ΣC14_init + ΣF14_npp
-│     frozen_frac at T=0°C                → ≈ 0.5; at T=-5°C → < 0.1
+│     thawed_frac at T=0°C                → ≈ 0.5; at T=-5°C → < 0.1
 │     no NaN (Harvard full run)            → jnp.isfinite(output.C12).all()
 │     no NaN (Barrow full run)             → same
 │
