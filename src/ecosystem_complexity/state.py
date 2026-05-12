@@ -24,9 +24,6 @@ import jax.numpy as jnp
 
 from ecosystem_complexity.config import ModelConfig, PoolIndex
 
-# ¹⁴C radioactive decay constant: λ = ln(2) / t½
-# t½ = 5730 yr * 365.25 day/yr  →  λ ≈ 3.312e-7 day⁻¹
-# (The spec quotes 3.317e-7 due to rounding; this is the exact computation.)
 _LAMBDA_14C: float = math.log(2.0) / (5730.0 * 365.25)
 
 
