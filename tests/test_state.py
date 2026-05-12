@@ -5,7 +5,7 @@ Coverage
 --------
 * make_initial_state
     - All array shapes match pool/layer counts derived from ModelConfig.
-    - frozen_frac is 1.0 for non-permafrost layers, 0.0 for permafrost layers.
+    - thawed_frac is 1.0 for non-permafrost layers, 0.0 for permafrost layers.
     - active_layer_depth is jnp.inf for a non-permafrost site.
     - active_layer_depth is finite (and matches permafrost table) for a
       permafrost site.
@@ -111,9 +111,9 @@ def test_initial_state_soil_moisture_shape(harvard_config, harvard_state):
     assert harvard_state.soil_moisture.shape == (n_layers,)
 
 
-def test_initial_state_frozen_frac_shape(harvard_config, harvard_state):
+def test_initial_state_thawed_frac_shape(harvard_config, harvard_state):
     n_layers = len(harvard_config.soil_layers)
-    assert harvard_state.frozen_frac.shape == (n_layers,)
+    assert harvard_state.thawed_frac.shape == (n_layers,)
 
 
 def test_initial_state_C12_zeros(harvard_state):
@@ -134,27 +134,27 @@ def test_initial_state_soil_moisture_default(harvard_state):
 
 
 # ---------------------------------------------------------------------------
-# make_initial_state — frozen_frac and active_layer_depth
+# make_initial_state — thawed_frac and active_layer_depth
 # ---------------------------------------------------------------------------
 
 
-def test_frozen_frac_non_permafrost_layers(harvard_config, harvard_state):
-    """All Harvard layers are non-permafrost → frozen_frac should be 1.0."""
+def test_thawed_frac_non_permafrost_layers(harvard_config, harvard_state):
+    """All Harvard layers are non-permafrost → thawed_frac should be 1.0."""
     for i, layer in enumerate(harvard_config.soil_layers):
         expected = 0.0 if layer.permafrost_eligible else 1.0
-        assert float(harvard_state.frozen_frac[i]) == expected, (
-            f"Layer {layer.name!r}: expected frozen_frac={expected}, "
-            f"got {float(harvard_state.frozen_frac[i])}"
+        assert float(harvard_state.thawed_frac[i]) == expected, (
+            f"Layer {layer.name!r}: expected thawed_frac={expected}, "
+            f"got {float(harvard_state.thawed_frac[i])}"
         )
 
 
-def test_frozen_frac_permafrost_layers(barrow_config, barrow_state):
+def test_thawed_frac_permafrost_layers(barrow_config, barrow_state):
     """Barrow has permafrost-eligible layers → those should start frozen (0.0)."""
     for i, layer in enumerate(barrow_config.soil_layers):
         expected = 0.0 if layer.permafrost_eligible else 1.0
-        assert float(barrow_state.frozen_frac[i]) == expected, (
-            f"Layer {layer.name!r}: expected frozen_frac={expected}, "
-            f"got {float(barrow_state.frozen_frac[i])}"
+        assert float(barrow_state.thawed_frac[i]) == expected, (
+            f"Layer {layer.name!r}: expected thawed_frac={expected}, "
+            f"got {float(barrow_state.thawed_frac[i])}"
         )
 
 

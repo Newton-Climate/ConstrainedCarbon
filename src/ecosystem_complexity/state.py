@@ -51,7 +51,7 @@ class EcosystemState(NamedTuple):
         Per-layer soil temperature.
     soil_moisture : (n_layers,) m³ m⁻³
         Per-layer volumetric soil moisture.
-    frozen_frac : (n_layers,) dimensionless [0, 1]
+    thawed_frac : (n_layers,) dimensionless [0, 1]
         Thaw fraction: 1.0 = fully thawed, 0.0 = fully frozen.
         Non-permafrost layers are always 1.0.
     active_layer_depth : scalar, metres
@@ -63,7 +63,7 @@ class EcosystemState(NamedTuple):
     C14: jnp.ndarray
     soil_temp: jnp.ndarray
     soil_moisture: jnp.ndarray
-    frozen_frac: jnp.ndarray
+    thawed_frac: jnp.ndarray
     active_layer_depth: jnp.ndarray
     time: jnp.ndarray
 
@@ -157,7 +157,7 @@ def make_initial_state(config: ModelConfig, site_config: dict[str, Any]) -> Ecos
     # ── Frozen fraction ───────────────────────────────────────────────────
     # Non-permafrost layers → fully thawed (1.0)
     # Permafrost-eligible layers → fully frozen (0.0) at initialisation
-    frozen_frac = jnp.array(
+    thawed_frac = jnp.array(
         [0.0 if layer.permafrost_eligible else 1.0 for layer in config.soil_layers]
     )
 
@@ -181,7 +181,7 @@ def make_initial_state(config: ModelConfig, site_config: dict[str, Any]) -> Ecos
         C14=C14,
         soil_temp=soil_temp,
         soil_moisture=soil_moisture,
-        frozen_frac=frozen_frac,
+        thawed_frac=thawed_frac,
         active_layer_depth=active_layer_depth,
         time=time,
     )
