@@ -231,3 +231,101 @@ def test_pool_index_layer_slices_cover_all_soil_pools(
 
     expected_soil_names = all_names[n_ag:]
     assert soil_names_via_slices == expected_soil_names
+
+
+# ---------------------------------------------------------------------------
+# Integration: n_total_pools matches known pool structure (both sites)
+# ---------------------------------------------------------------------------
+#
+# Counts derived from the YAML structure (microbial_pool_per_layer: false):
+#
+#   Harvard Forest  — 4 AG (leaf, wood, branch, root)
+#                   + organic(litter, fast)     = 2
+#                   + mineral_A(fast, slow)      = 2
+#                   + mineral_B(slow, passive)   = 2
+#                   ──────────────────────────────
+#                   = 10 total pools
+#
+#   Barrow Alaska   — 2 AG (leaf, root)
+#                   + organic(litter, fast)      = 2
+#                   + active(fast, slow)         = 2
+#                   + permafrost(slow, passive)  = 2
+#                   ──────────────────────────────
+#                   = 8 total pools
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def barrow_config() -> ModelConfig:
+    return load_config(str(CONFIGS_DIR / "barrow_alaska.yaml"))
+
+
+@pytest.fixture(scope="module")
+def barrow_index(barrow_config: ModelConfig) -> PoolIndex:
+    return PoolIndex(barrow_config)
+
+
+def test_harvard_n_total_pools(harvard_config: ModelConfig) -> None:
+    """
+    Harvard Forest pool count matches hand-counted YAML structure.
+
+    4 AG + 3 layers × 2 SOM pools (microbial_pool_per_layer=False) = 10.
+    """
+    idx = PoolIndex(harvard_config)
+    assert len(idx) == 10, (
+        f"Expected 10 pools for Harvard Forest, got {len(idx)}. "
+        f"Pool names: {idx.pool_names}"
+    )
+
+
+def test_barrow_n_total_pools(barrow_config: ModelConfig) -> None:
+    """
+    Barrow Alaska pool count matches hand-counted YAML structure.
+
+    2 AG + 3 layers × 2 SOM pools (microbial_pool_per_layer=False) = 8.
+    """
+    idx = PoolIndex(barrow_config)
+    assert len(idx) == 8, (
+        f"Expected 8 pools for Barrow Alaska, got {len(idx)}. "
+        f"Pool names: {idx.pool_names}"
+    )
+
+
+def test_pool_names_no_duplicates_harvard(harvard_index: PoolIndex) -> None:
+    """pool_names must not contain duplicate strings (Harvard Forest)."""
+    names = harvard_index.pool_names
+    assert len(names) == len(set(names)), (
+        f"Duplicate pool names detected: "
+        f"{[n for n in names if names.count(n) > 1]}"
+    )
+
+
+def test_pool_names_no_duplicates_barrow(barrow_index: PoolIndex) -> None:
+    """pool_names must not contain duplicate strings (Barrow Alaska)."""
+    names = barrow_index.pool_names
+    assert len(names) == len(set(names)), (
+        f"Duplicate pool names detected: "
+        f"{[n for n in names if names.count(n) > 1]}"
+    )
+
+
+def test_layer_slices_keys_match_yaml_harvard(
+    harvard_config: ModelConfig, harvard_index: PoolIndex
+) -> None:
+    """layer_slices keys match the YAML soil layer names in definition order."""
+    yaml_layer_names = [layer.name for layer in harvard_config.soil_layers]
+    slice_keys = list(harvard_index.layer_slices.keys())
+    assert slice_keys == yaml_layer_names, (
+        f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
+    )
+
+
+def test_layer_slices_keys_match_yaml_barrow(
+    barrow_config: ModelConfig, barrow_index: PoolIndex
+) -> None:
+    """layer_slices keys match the YAML soil layer names in definition order."""
+    yaml_layer_names = [layer.name for layer in barrow_config.soil_layers]
+    slice_keys = list(barrow_index.layer_slices.keys())
+    assert slice_keys == yaml_layer_names, (
+        f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
+    )
