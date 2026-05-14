@@ -346,12 +346,18 @@ def make_prior_covariance(
     """
     pool_names = model.pool_index.pool_names
 
-    # Build per-pool tau prior σ from YAML
+    # Build per-pool tau prior σ from YAML, converted to log-space.
+    # tau_prior_std is in days; convert via delta method: σ_log ≈ σ_days / τ_days.
+    # This gives the fractional (coefficient-of-variation) uncertainty in log-space,
+    # e.g. organic_litter: 60 days / 180 days ≈ 0.33 log-units.
     tau_sigma: dict[str, float] = {}
     for layer in model.config.soil_layers:
         for sp in layer.som_pools:
             compound = f"{layer.name}_{sp.name}"
-            tau_sigma[compound] = float(sp.tau_prior_std) if sp.tau_prior_std > 0 else default_sigma
+            if sp.tau_prior_std > 0 and sp.tau_prior_days > 0:
+                tau_sigma[compound] = float(sp.tau_prior_std) / float(sp.tau_prior_days)
+            else:
+                tau_sigma[compound] = default_sigma
     # AG pools: use default
     for ag in model.config.aboveground_pools:
         tau_sigma[ag.name] = default_sigma

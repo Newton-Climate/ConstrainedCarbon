@@ -52,9 +52,22 @@ import pandas as pd
 import yaml
 
 # ── Make src importable when run as a script ─────────────────────────────────
-_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, os.path.join(_REPO_ROOT, "src"))
+# _SCRIPT_ROOT: the repo containing this script (worktree or main checkout).
+# _REPO_ROOT:   the repo that contains data/ — may differ when running from a
+#               worktree while data lives in the main checkout.
+#
+# Import path always uses _SCRIPT_ROOT/src so that the worktree's unreleased
+# code is picked up.  Data paths use _REPO_ROOT.
+_SCRIPT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_REPO_ROOT = (
+    os.environ.get("ECOSYSTEM_REPO_ROOT")
+    or (os.getcwd() if os.path.isdir(os.path.join(os.getcwd(), "data")) else None)
+    or (_SCRIPT_ROOT if os.path.isdir(os.path.join(_SCRIPT_ROOT, "data")) else None)
+    or _SCRIPT_ROOT
+)
+_SRC_ROOT = os.path.join(_SCRIPT_ROOT, "src")
+if _SRC_ROOT not in sys.path:
+    sys.path.insert(0, _SRC_ROOT)
 
 from ecosystem_complexity.api import build_model, run_model, optimize
 from ecosystem_complexity.config import load_config, PoolIndex
@@ -490,7 +503,7 @@ def make_analysis_figure(data: dict, analysis: dict, out_path: str) -> None:
         OBS_POOL_D14C:  "tab:green",
         OBS_RESP_D14C:  "tab:red",
     }
-    scenario_labels = [t["scenario"] for t in ablation_table.values()]
+    scenario_labels = [res.scenario for res in ablation.values()]
 
     # Shorten labels for readability
     def _short_label(s):
