@@ -42,6 +42,7 @@ def load_harvard_forest(
     hr_path: str,
     config: ModelConfig,
     qc_threshold: float = 0.5,
+    include_gpp_forcing: bool = False,
 ) -> tuple[ForcingData, ObservationData]:
     """
     Load Harvard Forest from the single half-hourly FULLSET CSV.
@@ -55,6 +56,10 @@ def load_harvard_forest(
     qc_threshold :
         Maximum allowed gap-fill fraction (0–1).  Half-hours with
         NEE_VUT_REF_QC > qc_threshold are set to NaN before aggregation.
+    include_gpp_forcing :
+        When True, populate ``ForcingData.GPP_obs`` with the QC-filtered
+        daily GPP series (``GPP_NT_VUT_REF``) so it can be used as an
+        external forcing input.  When False (default), ``GPP_obs`` is NaN.
     """
     df = pd.read_csv(hr_path, na_values=[-9999], low_memory=False)
 
@@ -165,6 +170,8 @@ def load_harvard_forest(
             return daily[name].values.astype(np.float64)
         return np.full(T, np.nan)
 
+    GPP_obs_arr = _col("GPP") if include_gpp_forcing else np.full(T, np.nan)
+
     forcing = ForcingData(
         time=jnp.array(time_arr, dtype=jnp.float32),
         air_temp=jnp.array(_col("air_temp"), dtype=jnp.float32),
@@ -176,6 +183,8 @@ def load_harvard_forest(
         snow_depth=jnp.full(T, jnp.nan, dtype=jnp.float32),
         active_layer=jnp.full(T, jnp.inf, dtype=jnp.float32),
         delta14C_atm=jnp.full(T, jnp.nan, dtype=jnp.float32),
+        GPP_obs=jnp.array(GPP_obs_arr, dtype=jnp.float32),
+        NPP_obs=jnp.full(T, jnp.nan, dtype=jnp.float32),
     )
 
     nee_unc = _col("NEE_unc_hh")
@@ -204,11 +213,19 @@ def load_barrow_alaska(
     fluxmet_path: str,
     config: ModelConfig,
     qc_threshold: float = 0.5,
+    include_gpp_forcing: bool = False,
 ) -> tuple[ForcingData, ObservationData]:
     """
     Load Barrow, Alaska from ERA5_DD (met backbone) + FLUXMET_DD (fluxes + soil).
 
     Merges on date; flux/soil columns are NaN outside the FLUXMET range.
+
+    Parameters
+    ----------
+    include_gpp_forcing :
+        When True, populate ``ForcingData.GPP_obs`` with the QC-filtered
+        daily GPP series (``GPP_NT_VUT_REF``) so it can be used as an
+        external forcing input.  When False (default), ``GPP_obs`` is NaN.
     """
     # ── ERA5 DD (met backbone, 1981–2025) ────────────────────────────────────
     era5 = pd.read_csv(era5_path, na_values=[-9999], low_memory=False)
@@ -293,8 +310,8 @@ def load_barrow_alaska(
             )
             soil_temp_arr[t] = np.array(layer_vals, dtype=np.float64)
 
-        # Soil moisture
-        swc_row = swc_data[t]
+        # Soil moisture (AmeriFlux SWC is in volumetric %; convert to m³ m⁻³)
+        swc_row = swc_data[t] / 100.0
         valid_swc = np.isfinite(swc_row)
         if valid_swc.any():
             layer_vals_m, _ = align_to_layers(
@@ -324,6 +341,8 @@ def load_barrow_alaska(
             return merged[alt].values.astype(np.float64)
         return np.full(T, np.nan)
 
+    GPP_obs_arr = _get_col("GPP_NT_VUT_REF") if include_gpp_forcing else np.full(T, np.nan)
+
     forcing = ForcingData(
         time=jnp.array(time_arr, dtype=jnp.float32),
         air_temp=jnp.array(_get_col("TA_ERA"), dtype=jnp.float32),
@@ -335,6 +354,8 @@ def load_barrow_alaska(
         snow_depth=jnp.full(T, jnp.nan, dtype=jnp.float32),
         active_layer=jnp.array(active_layer_arr, dtype=jnp.float32),
         delta14C_atm=jnp.full(T, jnp.nan, dtype=jnp.float32),
+        GPP_obs=jnp.array(GPP_obs_arr, dtype=jnp.float32),
+        NPP_obs=jnp.full(T, jnp.nan, dtype=jnp.float32),
     )
 
     # Uncertainty: scale from RANDUNC if available (daily file, already daily units)

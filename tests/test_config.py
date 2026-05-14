@@ -329,3 +329,136 @@ def test_layer_slices_keys_match_yaml_barrow(
     assert slice_keys == yaml_layer_names, (
         f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
     )
+
+
+# ---------------------------------------------------------------------------
+# external_inputs — validation and soil-only mode
+# ---------------------------------------------------------------------------
+
+_SOIL_ONLY_PATH = str(CONFIGS_DIR / "harvard_forest_soil_only.yaml")
+
+
+def test_soil_only_model_builds_without_aboveground_pools() -> None:
+    """
+    configs/harvard_forest_soil_only.yaml (aboveground_pools=[]) loads and
+    validates without error; external_inputs config is set.
+    """
+    cfg = load_config(_SOIL_ONLY_PATH)
+    assert isinstance(cfg, ModelConfig)
+    assert len(cfg.aboveground_pools) == 0, "Soil-only config should have no AG pools"
+    assert cfg.external_inputs is not None, "external_inputs block should be parsed"
+    assert cfg.external_inputs.enabled is True
+
+
+def test_external_inputs_config_fields_correct() -> None:
+    """ExternalInputsConfig values match what the YAML specifies."""
+    cfg = load_config(_SOIL_ONLY_PATH)
+    ext = cfg.external_inputs
+    assert ext.source == "GPP_obs"
+    assert ext.CUE == pytest.approx(0.47, rel=1e-5)
+    assert ext.soil_input_fraction == pytest.approx(1.0, rel=1e-5)
+    assert ext.optimize_partition is True
+    assert "organic_litter" in ext.target_pool_names
+    assert "mineral_B_passive" not in ext.target_pool_names  # not in partition
+
+
+def test_external_inputs_config_validation_bad_pool_name(tmp_path: pathlib.Path) -> None:
+    """A partition entry referencing a non-existent pool raises ConfigValidationError."""
+    yaml_text = """\
+site:
+  id: "TEST"
+  name: "Test"
+  lat: 0.0
+  lon: 0.0
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 10
+  enable_14C: false
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+
+  soil_layers:
+    - name: org
+      depth_top_m: 0.00
+      depth_bot_m: 0.10
+      permafrost_eligible: false
+      som_pools:
+        - name: litter
+          tau_prior_days: 365
+          tau_prior_std: 100
+
+  transfer_rules: []
+
+parameters:
+  alloc: {}
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.5
+  optimize_CUE: false
+  soil_input_fraction: 0.8
+  optimize_soil_input_fraction: false
+  partition:
+    DOES_NOT_EXIST: 1.0
+  optimize_partition: false
+"""
+    with pytest.raises(ConfigValidationError, match="[Uu]nknown|[Ii]nvalid|not found|not a soil"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_external_inputs_partition_sums_check(tmp_path: pathlib.Path) -> None:
+    """A partition with all-zero fractions raises ConfigValidationError."""
+    yaml_text = """\
+site:
+  id: "TEST"
+  name: "Test"
+  lat: 0.0
+  lon: 0.0
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 10
+  enable_14C: false
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+
+  soil_layers:
+    - name: org
+      depth_top_m: 0.00
+      depth_bot_m: 0.10
+      permafrost_eligible: false
+      som_pools:
+        - name: litter
+          tau_prior_days: 365
+          tau_prior_std: 100
+
+  transfer_rules: []
+
+parameters:
+  alloc: {}
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.5
+  optimize_CUE: false
+  soil_input_fraction: 0.8
+  optimize_soil_input_fraction: false
+  partition:
+    org_litter: 0.0
+  optimize_partition: false
+"""
+    with pytest.raises(ConfigValidationError, match="[Pp]artition|[Ss]um|zero"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_external_inputs_absent_has_no_effect() -> None:
+    """When external_inputs block is absent, ModelConfig.external_inputs is None."""
+    cfg = load_config(str(CONFIGS_DIR / "harvard_forest.yaml"))
+    assert cfg.external_inputs is None, (
+        "harvard_forest.yaml has no external_inputs block — field should be None"
+    )

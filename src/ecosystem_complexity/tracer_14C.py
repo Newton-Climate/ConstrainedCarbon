@@ -28,7 +28,12 @@ import jax.numpy as jnp
 import numpy as np
 
 from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.fluxes import f_moisture, f_temp, npp_allocation
+from ecosystem_complexity.fluxes import (
+    compute_external_soil_inputs,
+    f_moisture,
+    f_temp,
+    npp_allocation,
+)
 from ecosystem_complexity.state import EcosystemState, ModelParams
 from ecosystem_complexity.transfer import get_transfer_matrix
 
@@ -85,6 +90,11 @@ def step_14C(
     forcing_t: dict,
     config: ModelConfig,
     pool_index: PoolIndex,
+    *,
+    external_inputs_active: bool = False,
+    external_input_source_key: str = "GPP_obs",
+    external_input_is_npp: bool = False,
+    external_input_target_indices: jnp.ndarray | None = None,
 ) -> jnp.ndarray:
     """
     One Euler step of ¹⁴C tracer pool dynamics — pure JAX, no Python loops.
@@ -156,15 +166,46 @@ def step_14C(
     fm_vec = fm_layers[pool_to_layer]
     ff_vec = state.thawed_frac[pool_to_layer]
 
-    # ── GPP and NPP allocation ────────────────────────────────────────────
-    GPP = forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
-    F_npp = npp_allocation(GPP, _CUE, params.log_alloc, n_ag)  # (n_ag,)
+    # ── GPP — prescribed or LUE model ────────────────────────────────────
+    CUE = jnp.exp(params.log_CUE)
+    if external_inputs_active:
+        GPP_prescribed = forcing_t[external_input_source_key]
+        GPP = jnp.where(
+            jnp.isnan(GPP_prescribed),
+            forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI)),
+            GPP_prescribed,
+        )
+        # Fraction of NPP bypassing AG pools → scale AG ¹⁴C NPP input down
+        soil_frac = jax.nn.sigmoid(params.log_soil_input_fraction)
+        ag_frac = 1.0 - soil_frac
+    else:
+        GPP = forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
+        ag_frac = 1.0
+
+    F_npp = npp_allocation(GPP, CUE, params.log_alloc, n_ag) * ag_frac  # (n_ag,)
 
     # ── Atmospheric ¹⁴C ratio ─────────────────────────────────────────────
     R_atm = _R_STD * (1.0 + forcing_t["delta14C_atm"] / 1000.0)
 
     # ── ¹⁴C NPP inputs (aboveground pools only) ────────────────────────────
     F14_npp = jnp.zeros(n_pools).at[:n_ag].set(F_npp * R_atm)
+
+    # ── External direct soil ¹⁴C inputs ──────────────────────────────────
+    # Mirror the ¹²C external inputs, weighted by the atmospheric ¹⁴C ratio.
+    if external_inputs_active:
+        GPP_or_NPP = GPP if not external_input_is_npp else GPP * CUE
+        ext_inputs_12C = compute_external_soil_inputs(
+            GPP_or_NPP=GPP_or_NPP,
+            is_npp=external_input_is_npp,
+            log_CUE=params.log_CUE,
+            log_soil_input_fraction=params.log_soil_input_fraction,
+            log_external_input_partition=params.log_external_input_partition,
+            n_pools=n_pools,
+            target_pool_indices=external_input_target_indices,
+        )
+        F14_ext = ext_inputs_12C * R_atm
+    else:
+        F14_ext = jnp.zeros(n_pools)
 
     # ── Transfer matrix (softmax logits → fractions) ──────────────────────
     F_mat = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n, n)
@@ -182,7 +223,7 @@ def step_14C(
     decay = params.lambda_14C * state.C14                        # (n_pools,)
 
     # ── Euler update ──────────────────────────────────────────────────────
-    dC14 = F14_npp + F14_in - F14_out - decay
+    dC14 = F14_npp + F14_ext + F14_in - F14_out - decay
     return state.C14 + dC14 * dt
 
 

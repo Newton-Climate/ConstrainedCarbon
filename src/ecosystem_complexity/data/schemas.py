@@ -22,6 +22,8 @@ class ForcingData(NamedTuple):
     snow_depth: jnp.ndarray     # (T,) m — NaN if unavailable
     active_layer: jnp.ndarray   # (T,) m — jnp.inf if non-permafrost
     delta14C_atm: jnp.ndarray   # (T,) Δ¹⁴C ‰ — set by attach_atm14C()
+    GPP_obs: jnp.ndarray        # (T,) gC m⁻² day⁻¹ — NaN if not available
+    NPP_obs: jnp.ndarray        # (T,) gC m⁻² day⁻¹ — NaN if not available
 
 
 class ObservationData(NamedTuple):

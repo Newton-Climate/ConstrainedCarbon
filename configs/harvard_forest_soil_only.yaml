@@ -1,0 +1,106 @@
+site:
+  id: "US-Ha1-soil"
+  name: "Harvard Forest – Soil Only (prescribed GPP input)"
+  lat: 42.54
+  lon: -72.17
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 300
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  # No aboveground pools — all carbon enters via the external_inputs pathway.
+  aboveground_pools: []
+
+  soil_layers:
+    - name: organic
+      depth_top_m: 0.00
+      depth_bot_m: 0.05
+      permafrost_eligible: false
+      som_pools:
+        - name: litter
+          # Analytically inverted from hf271 Oi C stock (1282 gC m-2) and
+          # GPP_mean=3.5, CUE=0.47, partition=0.45 → tau = obs / input = 1732 d
+          tau_prior_days: 1732
+          tau_prior_std: 600
+        - name: fast
+          # Inverted from hf271 Oe C stock (1924 gC m-2), fed by litter transfer
+          tau_prior_days: 7425
+          tau_prior_std: 2500
+
+    - name: mineral_A
+      depth_top_m: 0.05
+      depth_bot_m: 0.20
+      permafrost_eligible: false
+      som_pools:
+        - name: fast
+          # Inverted from hf271 A-lf C stock (1856 gC m-2); includes cascade input
+          tau_prior_days: 2513
+          tau_prior_std: 800
+        - name: slow
+          # Inverted from hf271 A-min C stock (4331 gC m-2); includes cascade input
+          tau_prior_days: 12434
+          tau_prior_std: 4000
+
+    - name: mineral_B
+      depth_top_m: 0.20
+      depth_bot_m: 0.60
+      permafrost_eligible: false
+      som_pools:
+        - name: slow
+          # No direct obs; kept physically reasonable for 20-60 cm mineral C
+          tau_prior_days: 27375
+          tau_prior_std: 10000
+        - name: passive
+          # No direct obs; deep passive fraction, ~300 yr
+          tau_prior_days: 109500
+          tau_prior_std: 40000
+
+  transfer_rules:
+    - [organic_litter,   organic_fast,      0.35]
+    - [organic_litter,   mineral_A_fast,    0.15]
+    - [organic_fast,     mineral_A_fast,    0.20]
+    - [organic_fast,     mineral_A_slow,    0.05]
+    - [mineral_A_fast,   mineral_A_slow,    0.12]
+    - [mineral_A_slow,   mineral_B_slow,    0.03]
+    - [mineral_A_slow,   mineral_B_passive, 0.01]
+    - [mineral_B_slow,   mineral_B_passive, 0.01]
+
+# Prescribed external soil carbon input pathway.
+# Uses AmeriFlux GPP_NT_VUT_REF (via ForcingData.GPP_obs) to drive soil
+# pools directly, bypassing the internal LUE GPP sub-model.
+external_inputs:
+  enabled: true
+  source: GPP_obs          # ForcingData field to use as GPP driver
+  CUE: 0.47               # carbon use efficiency
+  optimize_CUE: false
+
+  # Fraction of NPP entering soil pools directly.
+  # 1.0 = all direct to soil (no AG pools present).
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  # Partition total direct soil input among soil pools.
+  # softmax enforces fractions summing to 1 at runtime.
+  partition:
+    organic_litter:   0.45
+    mineral_A_fast:   0.35
+    mineral_A_slow:   0.15
+    mineral_B_slow:   0.05
+  optimize_partition: true
+
+parameters:
+  alloc: {}          # empty — no aboveground pools
+
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  optimizer: adam
+  learning_rate: 0.001
+  max_iterations: 500
+  weight_flux: 0.0         # no flux obs in soil-only mode
+  weight_14C: 1.0

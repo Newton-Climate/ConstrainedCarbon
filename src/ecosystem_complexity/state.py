@@ -104,6 +104,17 @@ class ModelParams(NamedTuple):
     alpha_priming: jnp.ndarray
     lambda_14C: jnp.ndarray
 
+    # ── external_inputs parameters ────────────────────────────────────────
+    # Always present; when external_inputs is disabled these hold fixed
+    # dummy values and are excluded from the optimisation vector.
+    #
+    # log_CUE                     scalar  — log(carbon use efficiency)
+    # log_soil_input_fraction     scalar  — logit of fraction bypassing AG pools
+    # log_external_input_partition (n_target_pools,) — logits → softmax partition
+    log_CUE: jnp.ndarray
+    log_soil_input_fraction: jnp.ndarray
+    log_external_input_partition: jnp.ndarray
+
 
 # ---------------------------------------------------------------------------
 # Factory: initial state
@@ -324,6 +335,26 @@ def make_default_params(config: ModelConfig) -> ModelParams:
     # ── lambda_14C (fixed) ─────────────────────────────────────────────────
     lambda_14C = jnp.array(_LAMBDA_14C, dtype=jnp.float32)
 
+    # ── external_inputs parameters ────────────────────────────────────────
+    ext = config.external_inputs
+    if ext is not None and ext.enabled:
+        log_CUE = jnp.array(math.log(ext.CUE), dtype=jnp.float32)
+        # logit(p) = log(p / (1 - p)); clamp away from ±∞
+        sif = float(ext.soil_input_fraction)
+        sif = max(1e-6, min(1.0 - 1e-6, sif))
+        log_soil_input_fraction = jnp.array(
+            math.log(sif / (1.0 - sif)), dtype=jnp.float32
+        )
+        # Initialise partition logits from prior fractions (normalise first)
+        fracs = jnp.array(list(ext.partition.values()), dtype=jnp.float32)
+        fracs_norm = fracs / fracs.sum()
+        log_external_input_partition = jnp.log(fracs_norm)
+    else:
+        # Disabled defaults: CUE=0.5, soil_fraction≈0, empty partition
+        log_CUE = jnp.array(math.log(0.5), dtype=jnp.float32)
+        log_soil_input_fraction = jnp.array(-1e6, dtype=jnp.float32)
+        log_external_input_partition = jnp.zeros(0, dtype=jnp.float32)
+
     return ModelParams(
         log_tau=log_tau,
         log_f_transfer=log_f_transfer,
@@ -333,4 +364,7 @@ def make_default_params(config: ModelConfig) -> ModelParams:
         log_gamma_moist=log_gamma_moist,
         alpha_priming=alpha_priming,
         lambda_14C=lambda_14C,
+        log_CUE=log_CUE,
+        log_soil_input_fraction=log_soil_input_fraction,
+        log_external_input_partition=log_external_input_partition,
     )

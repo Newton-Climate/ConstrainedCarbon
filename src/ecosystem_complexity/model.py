@@ -42,6 +42,7 @@ import numpy as np
 import ecosystem_complexity.tracer_14C as tracer_14C
 from ecosystem_complexity.config import ModelConfig, PoolIndex
 from ecosystem_complexity.fluxes import (
+    compute_external_soil_inputs,
     f_moisture,
     f_temp,
     het_respiration,
@@ -78,7 +79,7 @@ def _gpp(sw_radiation: jnp.ndarray) -> jnp.ndarray:
 
     This is a placeholder; the inversion will constrain GPP via NEE obs.
     """
-    return sw_radiation * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
+    return 8.0 * sw_radiation * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
 
 
 def _pool_env_vecs(
@@ -129,6 +130,11 @@ def _step_12C_pure(
     n_ag_pools: int,
     pool_to_layer: jnp.ndarray,
     dt: float,
+    # External-inputs static arguments (resolved at JIT trace time)
+    external_inputs_active: bool = False,
+    external_input_source_key: str = "GPP_obs",
+    external_input_is_npp: bool = False,
+    external_input_target_indices: jnp.ndarray | None = None,
 ) -> EcosystemState:
     """
     One Euler step of ¹²C pool dynamics — pure function, no ``self``.
@@ -140,10 +146,13 @@ def _step_12C_pure(
         \\frac{dC_{12,i}}{dt} =
             \\underbrace{\\sum_j F_{ji}\\,F_{\\text{decomp},j}}_{\\text{transfers in}}
             + F_{\\text{NPP},i}
+            + F_{\\text{ext},i}
             - F_{\\text{decomp},i}
 
     where ``F[j, i]`` is the fraction of pool-j outflux routed to pool i
-    (from ``get_transfer_matrix``), and ``F_{decomp,i} = C_i / τ_i · ft · fm · ff``.
+    (from ``get_transfer_matrix``), ``F_{decomp,i} = C_i / τ_i · ft · fm · ff``,
+    and ``F_{ext,i}`` is the optional external soil carbon input term (zero when
+    ``external_inputs_active=False``).
 
     Parameters
     ----------
@@ -161,14 +170,35 @@ def _step_12C_pure(
         Static pool→layer index array — not traced.
     dt :
         Timestep in days (Python float, not traced).
+    external_inputs_active :
+        Static Python bool — when True, prescribed GPP/NPP forcing is used
+        instead of the internal LUE model.
+    external_input_source_key :
+        Key in ``forcing_t`` containing prescribed GPP or NPP values.
+    external_input_is_npp :
+        Static bool — True when the source field is already NPP (skip CUE).
+    external_input_target_indices :
+        Integer indices of soil pools that receive direct carbon input.
 
     Returns
     -------
     EcosystemState
         New state with ``C12`` updated; all other fields unchanged.
     """
-    # ── GPP and autotrophic respiration ───────────────────────────────────
-    GPP = _gpp(forcing_t["sw_radiation"])
+    # ── GPP — use prescribed value or internal LUE model ─────────────────
+    CUE = jnp.exp(params.log_CUE)
+    if external_inputs_active:
+        GPP_prescribed = forcing_t[external_input_source_key]
+        # Fall back to LUE estimate when the prescribed value is NaN
+        GPP = jnp.where(
+            jnp.isnan(GPP_prescribed), _gpp(forcing_t["sw_radiation"]), GPP_prescribed
+        )
+        # Fraction of NPP that bypasses AG pools and enters soil directly
+        soil_frac = jax.nn.sigmoid(params.log_soil_input_fraction)
+        ag_frac = 1.0 - soil_frac
+    else:
+        GPP = _gpp(forcing_t["sw_radiation"])
+        ag_frac = 1.0
 
     # ── Environmental scalars (per pool) ─────────────────────────────────
     ft_vec, fm_vec, ff_vec = _pool_env_vecs(
@@ -182,8 +212,22 @@ def _step_12C_pure(
     )
 
     # ── NPP allocation to aboveground pools ───────────────────────────────
-    F_npp = npp_allocation(GPP, _CUE, params.log_alloc, n_ag_pools)
+    F_npp = npp_allocation(GPP, CUE, params.log_alloc, n_ag_pools) * ag_frac
     npp_inputs = jnp.zeros(n_pools).at[:n_ag_pools].set(F_npp)
+
+    # ── External soil inputs (non-zero when external_inputs_active=True) ──
+    if external_inputs_active:
+        ext_inputs = compute_external_soil_inputs(
+            GPP_or_NPP=GPP if not external_input_is_npp else GPP * CUE,
+            is_npp=external_input_is_npp,
+            log_CUE=params.log_CUE,
+            log_soil_input_fraction=params.log_soil_input_fraction,
+            log_external_input_partition=params.log_external_input_partition,
+            n_pools=n_pools,
+            target_pool_indices=external_input_target_indices,
+        )
+    else:
+        ext_inputs = jnp.zeros(n_pools)
 
     # ── Transfer matrix ───────────────────────────────────────────────────
     F_mat = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n, n)
@@ -198,7 +242,7 @@ def _step_12C_pure(
     influx = F_mat.T @ f_decomp                                  # (n_pools,)
 
     # ── Euler update ──────────────────────────────────────────────────────
-    dC12 = (influx + npp_inputs - f_decomp) * dt
+    dC12 = (influx + npp_inputs + ext_inputs - f_decomp) * dt
     C12_new = state.C12 + dC12
 
     return state._replace(C12=C12_new)
@@ -243,6 +287,13 @@ class EcosystemModel:
     _pool_to_layer: jnp.ndarray | None = field(default=None, init=False, repr=False)
     _n_pools: int = field(default=0, init=False, repr=False)
     _n_ag_pools: int = field(default=0, init=False, repr=False)
+    # External-inputs static config (resolved at construction time)
+    _ext_active: bool = field(default=False, init=False, repr=False)
+    _ext_source_key: str = field(default="GPP_obs", init=False, repr=False)
+    _ext_is_npp: bool = field(default=False, init=False, repr=False)
+    _ext_target_indices: jnp.ndarray | None = field(
+        default=None, init=False, repr=False
+    )
 
     # ------------------------------------------------------------------
     # Initialisation
@@ -266,6 +317,26 @@ class EcosystemModel:
         self._n_pools = n_pools
         self._n_ag_pools = n_ag
 
+        # ── External-inputs static config ─────────────────────────────
+        ext = self.config.external_inputs
+        ext_active = ext is not None and ext.enabled
+        if ext_active:
+            ext_source_key = ext.source
+            ext_is_npp = (ext.source == "NPP_obs")
+            ext_target_indices = jnp.array(
+                [self.pool_index[name] for name in ext.target_pool_names],
+                dtype=jnp.int32,
+            )
+        else:
+            ext_source_key = "GPP_obs"
+            ext_is_npp = False
+            ext_target_indices = jnp.zeros(0, dtype=jnp.int32)
+
+        self._ext_active = ext_active
+        self._ext_source_key = ext_source_key
+        self._ext_is_npp = ext_is_npp
+        self._ext_target_indices = ext_target_indices
+
         # ── JIT-compile scan-compatible step ──────────────────────────
         # Close over current params so jax.lax.scan only needs
         # (state, forcing_t) as arguments.
@@ -285,6 +356,10 @@ class EcosystemModel:
                 n_ag_pools=n_ag,
                 pool_to_layer=pool_to_layer,
                 dt=dt,
+                external_inputs_active=ext_active,
+                external_input_source_key=ext_source_key,
+                external_input_is_npp=ext_is_npp,
+                external_input_target_indices=ext_target_indices,
             )
             return new_state, None
 
@@ -331,6 +406,10 @@ class EcosystemModel:
             n_ag_pools=self._n_ag_pools,
             pool_to_layer=self._pool_to_layer,  # type: ignore[arg-type]
             dt=float(self.config.dt_days),
+            external_inputs_active=self._ext_active,
+            external_input_source_key=self._ext_source_key,
+            external_input_is_npp=self._ext_is_npp,
+            external_input_target_indices=self._ext_target_indices,
         )
 
     def step_14C(
@@ -362,7 +441,11 @@ class EcosystemModel:
             are unchanged.
         """
         new_C14 = tracer_14C.step_14C(
-            state, params, forcing_t, self.config, self.pool_index
+            state, params, forcing_t, self.config, self.pool_index,
+            external_inputs_active=self._ext_active,
+            external_input_source_key=self._ext_source_key,
+            external_input_is_npp=self._ext_is_npp,
+            external_input_target_indices=self._ext_target_indices,
         )
         return state._replace(C14=new_C14)
 
@@ -397,9 +480,21 @@ class EcosystemModel:
             Keys: ``'GPP'``, ``'Ra'``, ``'NPP'``, ``'Rh'``, ``'ER'``,
             ``'NEE'``.
         """
-        GPP = _gpp(forcing_t["sw_radiation"])
-        Ra = GPP * (1.0 - _CUE)
-        NPP = GPP * _CUE
+        CUE = jnp.exp(params.log_CUE)
+
+        # ── GPP — prescribed or LUE estimate ──────────────────────────────
+        if self._ext_active:
+            GPP_prescribed = forcing_t[self._ext_source_key]
+            GPP = jnp.where(
+                jnp.isnan(GPP_prescribed),
+                _gpp(forcing_t["sw_radiation"]),
+                GPP_prescribed,
+            )
+        else:
+            GPP = _gpp(forcing_t["sw_radiation"])
+
+        Ra = GPP * (1.0 - CUE)
+        NPP = GPP * CUE
 
         ft_vec, fm_vec, ff_vec = _pool_env_vecs(
             forcing_t["soil_temp"],
@@ -424,6 +519,26 @@ class EcosystemModel:
         ER = Ra + Rh
         NEE = nee_flux(GPP, Ra, Rh)
 
+        # ── External input diagnostics ────────────────────────────────────
+        # Always include these keys with static shapes for jax.lax.scan.
+        n_targets = len(self._ext_target_indices)  # type: ignore[arg-type]
+        if self._ext_active:
+            GPP_or_NPP = GPP if not self._ext_is_npp else GPP * CUE
+            ext_inputs = compute_external_soil_inputs(
+                GPP_or_NPP=GPP_or_NPP,
+                is_npp=self._ext_is_npp,
+                log_CUE=params.log_CUE,
+                log_soil_input_fraction=params.log_soil_input_fraction,
+                log_external_input_partition=params.log_external_input_partition,
+                n_pools=self._n_pools,
+                target_pool_indices=self._ext_target_indices,  # type: ignore[arg-type]
+            )
+            ext_total = jnp.sum(ext_inputs)
+            ext_by_pool = ext_inputs[self._ext_target_indices]  # type: ignore[index]
+        else:
+            ext_total = jnp.array(0.0)
+            ext_by_pool = jnp.zeros(n_targets)
+
         return {
             "GPP": GPP,
             "Ra": Ra,
@@ -431,4 +546,7 @@ class EcosystemModel:
             "Rh": Rh,
             "ER": ER,
             "NEE": NEE,
+            "GPP_forcing_used": GPP,
+            "external_C_input_total": ext_total,
+            "external_C_input_by_pool": ext_by_pool,
         }
