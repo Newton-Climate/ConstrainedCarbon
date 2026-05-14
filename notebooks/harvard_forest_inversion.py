@@ -312,104 +312,121 @@ def run_inversion():
     w_prior = np.array(out_prior.C12) / (tau_p[None, :] + 1e-30)
     d14C_resp_prior = (np.array(out_prior.delta14C) * w_prior).sum(-1) / (w_prior.sum(-1) + 1e-30)
 
-    # ── Optimization ─────────────────────────────────────────────────────────
-    # 10 parameters (log_tau × 6 + log_external_input_partition × 4)
-    # vs 8 pool obs + 41 respired CO₂ obs = 49 total observations
-    _opt_fields = ("log_tau", "log_external_input_partition")
+    _opt_fields  = ("log_tau", "log_external_input_partition")
     n_opt_params = sum(
         int(np.prod(getattr(make_default_params(config), f).shape))
         for f in _opt_fields
     )
-    print(f"\nRunning optimization (Adam, 800 iterations)…")
-    print(f"  Fields: {_opt_fields}  ({n_opt_params} params)")
-    print(f"  Obs: {int(jnp.sum(~jnp.isnan(jnp.concatenate([a for a in delta14C_obs.values()]))))} pool-Δ¹⁴C"
-          f" + {n_resp_obs} resp-Δ¹⁴C = "
-          f"{int(jnp.sum(~jnp.isnan(jnp.concatenate([a for a in delta14C_obs.values()]))))+n_resp_obs} total")
+    n_pool_obs = int(jnp.sum(~jnp.isnan(
+        jnp.concatenate([a for a in delta14C_obs.values()]))))
+
+    # ── Optimization 1: pool Δ¹⁴C only (no respiration) ─────────────────────
+    obs_pool_only = ObservationData(
+        time=forcing.time,
+        NEE=jnp.full(T, jnp.nan), GPP=jnp.full(T, jnp.nan),
+        ER=jnp.full(T, jnp.nan),  NEE_unc=jnp.full(T, jnp.nan),
+        delta14C_obs=delta14C_obs, deltaD14C_obs={}, C_pools_obs={},
+        delta14C_resp=None,          # respiration constraint OFF
+    )
+    print(f"\nRun 1 — pool Δ¹⁴C only  ({n_pool_obs} obs, Adam 800 iter)…")
     t0 = time.perf_counter()
-    result = optimize(model, forcing, obs, state0=state0, fields=_opt_fields)
-    print(f"  Done  [{time.perf_counter()-t0:.1f}s]")
-    print(f"  Converged: {result.converged}  after {result.n_iter} iterations")
-    loss_hist = np.array(result.loss_history)
-    valid_loss = loss_hist[np.isfinite(loss_hist)]
-    if len(valid_loss) > 0:
-        print(f"  Initial loss: {float(valid_loss[0]):.5f}")
-        print(f"  Final loss:   {float(valid_loss[-1]):.5f}")
-        if valid_loss[-1] > 0:
-            print(f"  Reduction:    {float(valid_loss[0]/valid_loss[-1]):.1f}×")
+    result_pool = optimize(model, forcing, obs_pool_only, state0=state0,
+                           fields=_opt_fields)
+    dt1 = time.perf_counter() - t0
+    lh1 = np.array(result_pool.loss_history)
+    vl1 = lh1[np.isfinite(lh1)]
+    print(f"  Done [{dt1:.0f}s]  loss {vl1[0]:.4f} → {vl1[-1]:.4f}"
+          f"  ({vl1[0]/vl1[-1]:.1f}× reduction)")
 
-    # ── Forward run with OPTIMIZED params ────────────────────────────────────
-    print("\nRunning optimized forward simulation…")
-    out_opt = run_model(model, forcing, state0=state0, params=result.params_opt)
-    jax.block_until_ready(out_opt.delta14C)
+    out_pool = run_model(model, forcing, state0=state0, params=result_pool.params_opt)
+    jax.block_until_ready(out_pool.delta14C)
+    tau_pool = np.exp(np.array(result_pool.params_opt.log_tau))
+    w_pool   = np.array(out_pool.C12) / (tau_pool[None, :] + 1e-30)
+    d14C_resp_pool = (np.array(out_pool.delta14C) * w_pool).sum(-1) / (w_pool.sum(-1) + 1e-30)
 
-    # Optimized respired Δ¹⁴C
-    tau_o  = np.exp(np.array(result.params_opt.log_tau))
-    w_opt  = np.array(out_opt.C12) / (tau_o[None, :] + 1e-30)
-    d14C_resp_opt = (np.array(out_opt.delta14C) * w_opt).sum(-1) / (w_opt.sum(-1) + 1e-30)
+    # ── Optimization 2: pool Δ¹⁴C + respired CO₂ ────────────────────────────
+    obs_both = ObservationData(
+        time=forcing.time,
+        NEE=jnp.full(T, jnp.nan), GPP=jnp.full(T, jnp.nan),
+        ER=jnp.full(T, jnp.nan),  NEE_unc=jnp.full(T, jnp.nan),
+        delta14C_obs=delta14C_obs, deltaD14C_obs={}, C_pools_obs={},
+        delta14C_resp=delta14C_resp,   # respiration constraint ON
+    )
+    print(f"\nRun 2 — pool Δ¹⁴C + resp Δ¹⁴C  ({n_pool_obs} + {n_resp_obs} obs, Adam 800 iter)…")
+    t0 = time.perf_counter()
+    result_both = optimize(model, forcing, obs_both, state0=state0,
+                           fields=_opt_fields)
+    dt2 = time.perf_counter() - t0
+    lh2 = np.array(result_both.loss_history)
+    vl2 = lh2[np.isfinite(lh2)]
+    print(f"  Done [{dt2:.0f}s]  loss {vl2[0]:.4f} → {vl2[-1]:.4f}"
+          f"  ({vl2[0]/vl2[-1]:.1f}× reduction)")
 
-    # ── Print τ comparison ────────────────────────────────────────────────────
-    tau_prior_yr = tau_p / 365.0
-    tau_opt_yr   = tau_o / 365.0
-    print("\nTurnover times:")
-    print(f"  {'Pool':<25s}  {'τ prior (yr)':>12}  {'τ opt (yr)':>10}  {'ratio':>7}")
-    print("  " + "─" * 60)
-    for i, name in enumerate(idx.pool_names):
-        print(f"  {name:<25s}  {tau_prior_yr[i]:>12.1f}  {tau_opt_yr[i]:>10.1f}  {tau_opt_yr[i]/tau_prior_yr[i]:>7.2f}×")
+    out_both = run_model(model, forcing, state0=state0, params=result_both.params_opt)
+    jax.block_until_ready(out_both.delta14C)
+    tau_both = np.exp(np.array(result_both.params_opt.log_tau))
+    w_both   = np.array(out_both.C12) / (tau_both[None, :] + 1e-30)
+    d14C_resp_both = (np.array(out_both.delta14C) * w_both).sum(-1) / (w_both.sum(-1) + 1e-30)
 
-    # ── Print partition comparison ────────────────────────────────────────────
+    # ── Diagnostics ───────────────────────────────────────────────────────────
     def _softmax(x):
-        e = np.exp(x - x.max())
-        return e / e.sum()
+        e = np.exp(x - x.max()); return e / e.sum()
 
-    lp_prior   = np.array(params_prior.log_external_input_partition)
-    lp_opt     = np.array(result.params_opt.log_external_input_partition)
-    part_prior = _softmax(lp_prior)
-    part_opt   = _softmax(lp_opt)
     _ext       = load_config(HF_SOIL_CONFIG).external_inputs
     part_names = list(_ext.partition.keys()) if _ext is not None else []
 
-    print("\nInput partition (softmax):")
-    print(f"  {'Pool':<25s}  {'prior':>8}  {'opt':>8}  {'Δ':>8}")
-    print("  " + "─" * 54)
+    print(f"\n{'Pool':<25s}  {'τ prior':>10}  {'τ pool':>10}  {'τ both':>10}")
+    print("  " + "─" * 58)
+    for i, name in enumerate(idx.pool_names):
+        print(f"  {name:<25s}  {tau_p[i]/365:>10.1f}  "
+              f"{tau_pool[i]/365:>10.1f}  {tau_both[i]/365:>10.1f}")
+
+    print(f"\n{'Pool':<25s}  {'part prior':>10}  {'part pool':>10}  {'part both':>10}")
+    print("  " + "─" * 58)
+    pp = _softmax(np.array(params_prior.log_external_input_partition))
+    pp1 = _softmax(np.array(result_pool.params_opt.log_external_input_partition))
+    pp2 = _softmax(np.array(result_both.params_opt.log_external_input_partition))
     for i, pname in enumerate(part_names):
-        print(f"  {pname:<25s}  {part_prior[i]:>8.3f}  {part_opt[i]:>8.3f}  {part_opt[i]-part_prior[i]:>+8.3f}")
+        print(f"  {pname:<25s}  {pp[i]:>10.3f}  {pp1[i]:>10.3f}  {pp2[i]:>10.3f}")
 
-    # ── Print model Δ¹⁴C at pool obs timesteps ───────────────────────────────
-    print("\nModel vs. Obs — pool Δ¹⁴C at observation timesteps:")
-    print(f"  {'Pool':<22s}  {'Year':>6}  {'Obs':>8}  {'Prior':>8}  {'Opt':>8}  {'Δ(opt-obs)':>10}")
-    print("  " + "─" * 68)
-    for pool_name in sorted(delta14C_obs.keys()):
-        pool_i    = idx[pool_name]
-        obs_arr   = np.array(delta14C_obs[pool_name])
-        valid_t   = np.where(np.isfinite(obs_arr))[0]
-        sim_prior = np.array(out_prior.delta14C)
-        sim_opt   = np.array(out_opt.delta14C)
-        for t_i in valid_t:
-            yr = 1970.0 + float(np.array(forcing.time)[t_i]) / 365.25
-            print(f"  {pool_name:<22s}  {yr:>6.1f}  {obs_arr[t_i]:>8.1f}"
-                  f"  {sim_prior[t_i, pool_i]:>8.1f}  {sim_opt[t_i, pool_i]:>8.1f}"
-                  f"  {sim_opt[t_i, pool_i]-obs_arr[t_i]:>+10.1f}")
-
-    return (time_years, out_prior, out_opt, result,
+    return (time_years, out_prior, out_pool, out_both,
+            result_pool, result_both,
             delta14C_obs, delta14C_resp,
-            d14C_resp_prior, d14C_resp_opt,
-            params_prior, result.params_opt, idx)
+            d14C_resp_prior, d14C_resp_pool, d14C_resp_both,
+            params_prior, result_pool.params_opt, result_both.params_opt, idx)
 
 
 # ════════════════════════════════════════════════════════════════════════════
 # Figure
 # ════════════════════════════════════════════════════════════════════════════
 
-def make_inversion_figure(time_years, out_prior, out_opt, result,
+def make_inversion_figure(time_years, out_prior, out_pool, out_both,
+                          result_pool, result_both,
                           delta14C_obs, delta14C_resp,
-                          d14C_resp_prior, d14C_resp_opt,
-                          params_prior, params_opt, pool_idx):
-    """4-panel figure: (a) loss, (b) τ bar chart, (c) pool Δ¹⁴C, (d) respired CO₂ Δ¹⁴C."""
+                          d14C_resp_prior, d14C_resp_pool, d14C_resp_both,
+                          params_prior, params_pool, params_both, pool_idx):
+    """
+    4-panel comparison figure showing 3 runs:
+      Prior  ·  Opt-pool (pool Δ¹⁴C only)  ·  Opt-both (pool Δ¹⁴C + resp Δ¹⁴C)
+
+    (a) Normalized loss convergence for both optimizations
+    (b) τ bar chart — 3 groups per pool
+    (c) Pool Δ¹⁴C trajectories — 3 lines + hf212-03 obs
+    (d) Respired CO₂ Δ¹⁴C — 3 lines + hf212-01 NWN obs
+    """
+    from matplotlib.lines import Line2D
+
+    # Consistent run colours
+    C_PRIOR = "0.55"          # medium gray
+    C_POOL  = "steelblue"     # pool-only opt
+    C_BOTH  = "tomato"        # pool + resp opt
+
+    pool_names_set = set(pool_idx.pool_names)
 
     fig = plt.figure(figsize=(16, 12))
     gs = gridspec.GridSpec(
         2, 2, figure=fig,
-        hspace=0.38, wspace=0.28,
+        hspace=0.40, wspace=0.30,
         left=0.07, right=0.97, top=0.91, bottom=0.07,
     )
     ax_loss = fig.add_subplot(gs[0, 0])
@@ -417,144 +434,135 @@ def make_inversion_figure(time_years, out_prior, out_opt, result,
     ax_14c  = fig.add_subplot(gs[1, 0])
     ax_resp = fig.add_subplot(gs[1, 1])
 
-    iters = np.arange(1, result.n_iter + 1)
-
-    # ── Panel (a): Loss convergence ───────────────────────────────────────────
-    lh      = np.array(result.loss_history)
-    l14c_h  = np.array(result.loss_14C_history)
-    lresp_h = np.array(result.loss_resp_history)
-
-    ax_loss.semilogy(iters, lh,      lw=1.5, color="black",     label="total")
-    ax_loss.semilogy(iters, l14c_h,  lw=1.0, color="steelblue",
-                     linestyle="--", label="pool Δ¹⁴C")
-    ax_loss.semilogy(iters, lresp_h, lw=1.0, color="tomato",
-                     linestyle=":",  label="resp CO₂ Δ¹⁴C")
-    if result.converged:
-        ax_loss.axvline(result.n_iter, lw=0.8, color="gray", linestyle=":",
-                        alpha=0.7, label=f"converged @ {result.n_iter}")
+    # ── Panel (a): Normalized loss convergence ────────────────────────────────
+    # Normalise each run to its own initial loss so both fit on the same scale.
+    lh1 = np.array(result_pool.loss_history);  lh1 = lh1[np.isfinite(lh1)]
+    lh2 = np.array(result_both.loss_history);  lh2 = lh2[np.isfinite(lh2)]
+    iters1 = np.arange(1, len(lh1) + 1)
+    iters2 = np.arange(1, len(lh2) + 1)
+    ax_loss.plot(iters1, lh1 / lh1[0], lw=1.5, color=C_POOL,
+                 label=f"pool Δ¹⁴C only  ({lh1[0]:.3f} → {lh1[-1]:.3f})")
+    ax_loss.plot(iters2, lh2 / lh2[0], lw=1.5, color=C_BOTH, linestyle="--",
+                 label=f"pool + resp Δ¹⁴C  ({lh2[0]:.3f} → {lh2[-1]:.3f})")
     ax_loss.set_xlabel("Iteration", fontsize=9)
-    ax_loss.set_ylabel("Loss (MSE, ‰²/timestep)", fontsize=9)
-    ax_loss.set_title("(a) Optimization convergence", fontsize=9, loc="left")
-    ax_loss.legend(fontsize=8, framealpha=0.8)
+    ax_loss.set_ylabel("Loss / initial loss", fontsize=9)
+    ax_loss.set_title("(a) Optimization convergence (normalized)", fontsize=9, loc="left")
+    ax_loss.legend(fontsize=8, framealpha=0.85)
     ax_loss.tick_params(labelsize=8)
     ax_loss.grid(axis="both", lw=0.4, alpha=0.4)
+    ax_loss.set_ylim(bottom=0)
 
-    _finite = lh[np.isfinite(lh)]
-    if len(_finite) >= 2:
-        l0, lf = float(_finite[0]), float(_finite[-1])
-        red = f"{l0/lf:.1f}×" if lf > 0 else "N/A"
-        ax_loss.text(0.98, 0.97,
-                     f"Initial: {l0:.4f}\nFinal:   {lf:.4f}\nReduction: {red}",
-                     transform=ax_loss.transAxes, va="top", ha="right",
-                     fontsize=8, color="0.3",
-                     bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.8))
-
-    # ── Panel (b): τ comparison bar chart ─────────────────────────────────────
+    # ── Panel (b): τ bar chart — 3 groups per pool ───────────────────────────
     tau_prior = np.exp(np.array(params_prior.log_tau)) / 365.0
-    tau_opt   = np.exp(np.array(params_opt.log_tau))   / 365.0
+    tau_pool  = np.exp(np.array(params_pool.log_tau))  / 365.0
+    tau_both  = np.exp(np.array(params_both.log_tau))  / 365.0
     pool_names = list(pool_idx.pool_names)
     n_pools = len(pool_names)
     x = np.arange(n_pools)
-    w = 0.35
+    w = 0.25
 
-    ax_tau.bar(x - w/2, tau_prior, w, label="prior τ",     color="steelblue", alpha=0.7)
-    ax_tau.bar(x + w/2, tau_opt,   w, label="optimized τ", color="tomato",    alpha=0.7)
-
-    for i in range(n_pools):
-        ratio = tau_opt[i] / tau_prior[i]
-        if abs(ratio - 1.0) > 0.02:
-            ax_tau.text(x[i], max(tau_prior[i], tau_opt[i]) * 1.05,
-                        f"{ratio:.2f}×", ha="center", fontsize=7,
-                        color="tomato" if ratio > 1.0 else "steelblue")
+    ax_tau.bar(x - w,   tau_prior, w, label="Prior",             color="0.75",  alpha=0.9)
+    ax_tau.bar(x,       tau_pool,  w, label="Pool Δ¹⁴C opt",    color=C_POOL,  alpha=0.75)
+    ax_tau.bar(x + w,   tau_both,  w, label="Pool+resp Δ¹⁴C opt", color=C_BOTH, alpha=0.75)
 
     short_names = [n.replace("_", "\n") for n in pool_names]
     ax_tau.set_xticks(x)
     ax_tau.set_xticklabels(short_names, fontsize=7)
     ax_tau.set_ylabel("Turnover time (years)", fontsize=9)
-    ax_tau.set_title("(b) Turnover times: prior vs. optimized", fontsize=9, loc="left")
-    ax_tau.legend(fontsize=8, framealpha=0.8)
+    ax_tau.set_title("(b) Turnover times — prior vs. constrained", fontsize=9, loc="left")
+    ax_tau.legend(fontsize=8, framealpha=0.85)
     ax_tau.tick_params(axis="y", labelsize=8)
     ax_tau.grid(axis="y", lw=0.4, alpha=0.4)
 
-    # ── Panel (c): Pool Δ¹⁴C trajectories ────────────────────────────────────
-    d14C_prior = np.array(out_prior.delta14C)
-    d14C_opt   = np.array(out_opt.delta14C)
+    # ── Panel (c): Pool Δ¹⁴C trajectories — 3 lines ─────────────────────────
+    d14C_prior_arr = np.array(out_prior.delta14C)
+    d14C_pool_arr  = np.array(out_pool.delta14C)
+    d14C_both_arr  = np.array(out_both.delta14C)
 
-    pool_names_set = set(pool_idx.pool_names)
     for pool_name, (label, color, marker) in _POOL_STYLES.items():
         if pool_name not in pool_names_set:
             continue
         i = pool_idx[pool_name]
-        ax_14c.plot(time_years, d14C_prior[:, i],
-                    lw=0.8, color="gray", linestyle="--", alpha=0.5)
-        ax_14c.plot(time_years, d14C_opt[:, i],
-                    lw=1.5, color=color, alpha=0.9, label=label)
+        ax_14c.plot(time_years, d14C_prior_arr[:, i],
+                    lw=0.9, color=color, linestyle=":", alpha=0.45)
+        ax_14c.plot(time_years, d14C_pool_arr[:, i],
+                    lw=1.2, color=color, linestyle="--", alpha=0.75)
+        ax_14c.plot(time_years, d14C_both_arr[:, i],
+                    lw=1.8, color=color, alpha=1.0, label=label)
+        # Obs scatter
         if pool_name in delta14C_obs:
             obs_arr = np.array(delta14C_obs[pool_name])
             valid   = np.where(np.isfinite(obs_arr))[0]
             for t_i in valid:
                 ax_14c.scatter(time_years[t_i], obs_arr[t_i],
-                               s=70, color=color, marker=marker,
-                               edgecolors="black", linewidths=0.8, zorder=6)
+                               s=80, color=color, marker=marker,
+                               edgecolors="black", linewidths=0.9, zorder=7)
 
-    from matplotlib.lines import Line2D
+    # Legend: line style = run; colour = pool
     handles_c = [
-        Line2D([0], [0], color="gray", lw=0.8, linestyle="--", alpha=0.5, label="Prior"),
-        Line2D([0], [0], color="black", lw=1.5,                              label="Optimized"),
+        Line2D([0], [0], color="0.4", lw=0.9, ls=":",  alpha=0.55, label="Prior"),
+        Line2D([0], [0], color="0.4", lw=1.2, ls="--", alpha=0.75, label="Pool Δ¹⁴C opt"),
+        Line2D([0], [0], color="0.4", lw=1.8,                       label="Pool+resp opt"),
     ] + [
-        Line2D([0], [0], color=_POOL_STYLES[p][1], lw=1.5,
+        Line2D([0], [0], color=_POOL_STYLES[p][1], lw=1.8,
                marker=_POOL_STYLES[p][2], ms=6,
-               label=f"{_POOL_STYLES[p][0]}")
+               label=_POOL_STYLES[p][0])
         for p in _POOL_STYLES if p in pool_names_set
     ]
     ax_14c.axhline(0, lw=0.5, color="gray", linestyle=":")
     ax_14c.set_ylabel("Δ¹⁴C (‰)", fontsize=9)
     ax_14c.set_xlabel("Year", fontsize=9)
-    ax_14c.set_title("(c) Pool Δ¹⁴C — prior (gray) vs. optimized  ·  obs = hf212-03",
-                     fontsize=9, loc="left")
+    ax_14c.set_title(
+        "(c) Pool Δ¹⁴C  ·  dotted=prior  dashed=pool opt  solid=pool+resp opt"
+        "  ·  markers=hf212-03 obs", fontsize=8.5, loc="left")
     ax_14c.tick_params(labelsize=8)
     ax_14c.grid(axis="y", lw=0.4, alpha=0.4)
     ax_14c.legend(handles=handles_c, fontsize=7.5, ncol=2, framealpha=0.85)
 
-    # ── Panel (d): Respired CO₂ Δ¹⁴C ────────────────────────────────────────
-    # Obs scatter (NWN means)
+    # ── Panel (d): Respired CO₂ Δ¹⁴C — 3 lines ──────────────────────────────
     resp_obs_arr  = np.array(delta14C_resp)
     valid_resp    = np.where(np.isfinite(resp_obs_arr))[0]
     obs_yrs_resp  = time_years[valid_resp]
     obs_vals_resp = resp_obs_arr[valid_resp]
 
     ax_resp.plot(time_years, d14C_resp_prior,
-                 lw=0.8, color="gray", linestyle="--", alpha=0.5, label="Prior model")
-    ax_resp.plot(time_years, d14C_resp_opt,
-                 lw=1.5, color="steelblue", alpha=0.9,            label="Optimized model")
+                 lw=0.9, color=C_PRIOR, linestyle=":", alpha=0.7, label="Prior")
+    ax_resp.plot(time_years, d14C_resp_pool,
+                 lw=1.4, color=C_POOL,  linestyle="--", alpha=0.85,
+                 label="Pool Δ¹⁴C opt")
+    ax_resp.plot(time_years, d14C_resp_both,
+                 lw=1.8, color=C_BOTH,  alpha=1.0,
+                 label="Pool+resp Δ¹⁴C opt")
     ax_resp.scatter(obs_yrs_resp, obs_vals_resp,
-                    s=40, color="tomato", marker="o",
-                    edgecolors="black", linewidths=0.6, zorder=6,
-                    label="hf212-01 NWN obs")
+                    s=40, color="black", marker="o", alpha=0.7,
+                    edgecolors="none", zorder=6, label="hf212-01 NWN obs")
 
-    # RMSE annotation
+    # RMSE annotation for all 3
     if len(valid_resp) > 0:
-        rmse_prior = np.sqrt(np.mean((d14C_resp_prior[valid_resp] - obs_vals_resp) ** 2))
-        rmse_opt   = np.sqrt(np.mean((d14C_resp_opt[valid_resp]   - obs_vals_resp) ** 2))
+        rmse_p = np.sqrt(np.mean((d14C_resp_prior[valid_resp] - obs_vals_resp) ** 2))
+        rmse_1 = np.sqrt(np.mean((d14C_resp_pool[valid_resp]  - obs_vals_resp) ** 2))
+        rmse_2 = np.sqrt(np.mean((d14C_resp_both[valid_resp]  - obs_vals_resp) ** 2))
         ax_resp.text(0.02, 0.97,
-                     f"Prior RMSE:  {rmse_prior:.1f} ‰\nOpt RMSE:    {rmse_opt:.1f} ‰",
+                     f"Prior RMSE:          {rmse_p:.1f} ‰\n"
+                     f"Pool Δ¹⁴C RMSE:     {rmse_1:.1f} ‰\n"
+                     f"Pool+resp RMSE:  {rmse_2:.1f} ‰",
                      transform=ax_resp.transAxes, va="top", ha="left",
-                     fontsize=8, color="0.3",
-                     bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.8))
+                     fontsize=8, color="0.2",
+                     bbox=dict(boxstyle="round,pad=0.35", fc="white", ec="none", alpha=0.85))
 
     ax_resp.axhline(0, lw=0.5, color="gray", linestyle=":")
     ax_resp.set_ylabel("Δ¹⁴C of respired CO₂ (‰)", fontsize=9)
     ax_resp.set_xlabel("Year", fontsize=9)
-    ax_resp.set_title("(d) Respired CO₂ Δ¹⁴C — flux-weighted model vs. hf212-01 NWN",
-                      fontsize=9, loc="left")
+    ax_resp.set_title(
+        "(d) Respired CO₂ Δ¹⁴C (flux-weighted) vs. hf212-01 NWN",
+        fontsize=9, loc="left")
     ax_resp.tick_params(labelsize=8)
     ax_resp.grid(axis="y", lw=0.4, alpha=0.4)
     ax_resp.legend(fontsize=8, framealpha=0.85)
 
     fig.suptitle(
-        "Harvard Forest — Soil-Only Δ¹⁴C Inversion\n"
-        "Pool obs: hf212-03 (4 pools × 1996+2007 = 8 pts)  ·  "
-        "Respired CO₂ obs: hf212-01 NWN (41 dates, 1996–2010)",
+        "Harvard Forest Soil-Only Δ¹⁴C Inversion — effect of adding constraints\n"
+        "Prior  →  +pool Δ¹⁴C (hf212-03, 8 obs)  →  +resp CO₂ Δ¹⁴C (hf212-01 NWN, 41 obs)",
         fontsize=10,
     )
 
@@ -572,5 +580,16 @@ def make_inversion_figure(time_years, out_prior, out_opt, result,
 # ════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    results = run_inversion()
-    make_inversion_figure(*results)
+    (time_years, out_prior, out_pool, out_both,
+     result_pool, result_both,
+     delta14C_obs, delta14C_resp,
+     d14C_resp_prior, d14C_resp_pool, d14C_resp_both,
+     params_prior, params_pool, params_both, idx) = run_inversion()
+
+    make_inversion_figure(
+        time_years, out_prior, out_pool, out_both,
+        result_pool, result_both,
+        delta14C_obs, delta14C_resp,
+        d14C_resp_prior, d14C_resp_pool, d14C_resp_both,
+        params_prior, params_pool, params_both, idx,
+    )
