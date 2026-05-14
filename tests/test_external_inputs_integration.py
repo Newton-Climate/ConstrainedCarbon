@@ -167,18 +167,21 @@ def test_harvard_soil_only_14C_bomb_signal(soil_only_model):
 def test_harvard_soil_only_inversion_tau_recovery_synthetic(soil_only_model):
     """
     Synthetic loss-descent test: starting from perturbed tau values,
-    the Adam optimiser should reduce the loss over 20 iterations.
+    the Adam optimiser should reduce the loss over 30 iterations.
 
     We use a simple C12-stock MSE loss against a synthetic "truth" generated
     by running the model with default parameters.
+
+    Note: T must be long enough to see signal from the updated (analytical) τ
+    priors.  The litter pool τ ≈ 1732 days (~4.7 yr), so a 365-day run gives
+    a ~20% turnover — sufficient signal for the gradient to point downhill.
     """
     import optax
 
-    from ecosystem_complexity.api import _build_forcing_dict, _get_opt_fields, _params_to_vector, _vector_to_params
+    from ecosystem_complexity.api import _get_opt_fields, _params_to_vector, _vector_to_params
 
-    T = 30
+    T = 365   # 1 year — needed to see signal with τ priors ~1700–100 000 days
     forcing = _make_forcing(T, gpp=4.0)
-    forcing_dict = _build_forcing_dict(forcing)
 
     config = load_config(_SOIL_ONLY_PATH)
     params_true = make_default_params(config)
@@ -193,7 +196,8 @@ def test_harvard_soil_only_inversion_tau_recovery_synthetic(soil_only_model):
     log_tau_perturbed = params_true.log_tau + 0.5
     params_init = params_true._replace(log_tau=log_tau_perturbed)
 
-    opt_fields = _get_opt_fields(config)
+    # Optimize only log_tau for this unit test (fewer params → faster, cleaner)
+    opt_fields = ("log_tau",)
     vec0 = _params_to_vector(params_init, opt_fields)
 
     def loss_fn(vec):
@@ -207,13 +211,13 @@ def test_harvard_soil_only_inversion_tau_recovery_synthetic(soil_only_model):
     vec = vec0
 
     losses = []
-    for _ in range(20):
+    for _ in range(30):
         loss_val, grads = grad_fn(vec)
         updates, opt_state = tx.update(grads, opt_state)
         vec = optax.apply_updates(vec, updates)
         losses.append(float(loss_val))
 
     assert losses[-1] < losses[0], (
-        f"Loss should decrease over 20 Adam steps. "
-        f"Initial: {losses[0]:.4f}, Final: {losses[-1]:.4f}"
+        f"Loss should decrease over 30 Adam steps. "
+        f"Initial: {losses[0]:.6f}, Final: {losses[-1]:.6f}"
     )

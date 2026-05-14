@@ -15,6 +15,7 @@ from .config import load_config, ModelConfig, PoolIndex
 from .state import EcosystemState, ModelParams, make_initial_state, make_default_params
 from .model import EcosystemModel
 from .fluxes import thawed_frac as compute_thawed_frac
+from .tracer_14C import compute_delta14C
 from .data.schemas import ForcingData, ObservationData
 
 
@@ -201,12 +202,9 @@ def run_model(
         state = model.step_12C(state, p, ft)
         state = model.step_14C(state, p, ft)
 
-        lambda_14C = p.lambda_14C
         C12 = state.C12
         C14 = state.C14
-        # Avoid division by zero for empty pools.
-        fm = jnp.where(C12 > 0, C14 / (C12 * lambda_14C + 1e-30), 0.0)
-        delta14C = (fm - 1.0) * 1000.0
+        delta14C = compute_delta14C(C14, C12)
 
         diag = model.diagnose(state, p, ft)
         return (state, p), (C12, C14, delta14C,
@@ -281,11 +279,21 @@ def optimize(
     forcing: ForcingData,
     observations: ObservationData,
     state0: Optional[EcosystemState] = None,
+    fields: Optional[tuple[str, ...]] = None,
 ) -> OptimizationResult:
     """Optimise model parameters against flux and 14C observations.
 
     Uses the inversion settings from the model config (``config.inversion_raw``
     or falls back to sensible defaults).
+
+    Parameters
+    ----------
+    fields:
+        Whitelist of ``ModelParams`` field names to include in the optimisation
+        vector.  If ``None`` (default), all fields returned by
+        ``_get_opt_fields(config)`` are used.  Pass an explicit tuple to reduce
+        the problem to a tractable subset, e.g.
+        ``fields=("log_tau", "log_external_input_partition")``.
     """
     # ── Hyper-parameters ──────────────────────────────────────────────────────
     inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
@@ -294,6 +302,7 @@ def optimize(
     n_iter = int(inv_cfg.get("max_iterations", 500))
     w_flux = float(inv_cfg.get("weight_flux", 1.0))
     w_14C = float(inv_cfg.get("weight_14C", 1.0))
+    grad_clip = float(inv_cfg.get("grad_clip", 1.0))
 
     params0 = make_default_params(model.config)
     if state0 is None:
@@ -301,7 +310,11 @@ def optimize(
             model.config,
             model._site_config)  # type: ignore[attr-defined]
 
-    opt_fields = _get_opt_fields(model.config)
+    # Allow caller to restrict which fields enter the optimisation vector.
+    if fields is not None:
+        opt_fields = tuple(fields)
+    else:
+        opt_fields = _get_opt_fields(model.config)
     vec0 = _params_to_vector(params0, opt_fields)
 
     # Pre-build valid masks for flux observations.
@@ -317,10 +330,15 @@ def optimize(
         out = run_model(model, forcing, state0=state0, params=p)
 
         # Flux loss (MSE over valid observations).
+        # Use the "double-where" pattern: replace obs NaN with sim so the
+        # squared difference is 0 at masked timesteps in BOTH forward and
+        # backward passes (avoids NaN gradients from jnp.where branch eval).
         def _mse(sim, obs, mask):
+            obs_safe = jnp.where(mask, obs, sim)
+            diff = sim - obs_safe
             return jnp.where(
                 jnp.any(mask),
-                jnp.mean(jnp.where(mask, (sim - obs) ** 2, 0.0)),
+                jnp.mean(jnp.where(mask, diff ** 2, 0.0)),
                 0.0,
             )
 
@@ -331,18 +349,23 @@ def optimize(
         ) / 3.0
 
         # 14C loss — mean over all pool/time pairs with observations.
+        # Double-where pattern applied here too to prevent NaN gradient
+        # propagation through the unmasked (NaN obs) branch.
+        _pool_names_set = set(model.pool_index.pool_names)
         l_14C = jnp.zeros(())
         n_14C_terms = 0
         for pool_name, delta14C_obs_arr in observations.delta14C_obs.items():
-            if pool_name not in model.pool_index:
+            if pool_name not in _pool_names_set:
                 continue
-            idx = model.pool_index.index(pool_name)
+            idx = model.pool_index[pool_name]
             obs_arr = jnp.array(delta14C_obs_arr)
             sim_arr = out.delta14C[:, idx]
             valid = ~jnp.isnan(obs_arr)
             if jnp.any(valid):
+                obs_safe = jnp.where(valid, obs_arr, sim_arr)  # NaN → sim (diff=0)
+                diff = sim_arr - obs_safe
                 l_14C = l_14C + jnp.mean(
-                    jnp.where(valid, (sim_arr - obs_arr) ** 2, 0.0))
+                    jnp.where(valid, diff ** 2, 0.0))
                 n_14C_terms += 1
         if n_14C_terms > 0:
             l_14C = l_14C / n_14C_terms
@@ -353,13 +376,15 @@ def optimize(
     grad_fn = jax.value_and_grad(_loss_and_components, has_aux=True)
 
     # ── Optimiser ─────────────────────────────────────────────────────────────
+    _use_lbfgs = False
     if optimizer_name.lower() == "lbfgs":
         try:
             tx = optax.lbfgs()
+            _use_lbfgs = True
         except AttributeError:
-            tx = optax.adam(lr)
+            tx = optax.chain(optax.clip_by_global_norm(grad_clip), optax.adam(lr))
     else:
-        tx = optax.adam(lr)
+        tx = optax.chain(optax.clip_by_global_norm(grad_clip), optax.adam(lr))
 
     opt_state = tx.init(vec0)
     vec = vec0
@@ -370,14 +395,33 @@ def optimize(
     tau_hist = []
     converged = False
 
+    best_vec = vec0
+    best_loss = float("inf")
+
     for i in range(n_iter):
         (loss_val, (l_flux, l_14C, taus)), grads = grad_fn(vec)
-        updates, opt_state = tx.update(grads, opt_state, vec,
-                                       value=loss_val, grad=grads,
-                                       value_fn=lambda v: _loss_and_components(v)[0])
+
+        # Guard against NaN/Inf divergence — stop and revert to best seen so far.
+        loss_float = float(loss_val)
+        if not math.isfinite(loss_float):
+            vec = best_vec
+            break
+
+        if loss_float < best_loss:
+            best_loss = loss_float
+            best_vec = vec
+
+        if _use_lbfgs:
+            updates, opt_state = tx.update(
+                grads, opt_state, vec,
+                value=loss_val, grad=grads,
+                value_fn=lambda v: _loss_and_components(v)[0],
+            )
+        else:
+            updates, opt_state = tx.update(grads, opt_state, vec)
         vec = optax.apply_updates(vec, updates)
 
-        loss_hist.append(float(loss_val))
+        loss_hist.append(loss_float)
         loss_flux_hist.append(float(l_flux))
         loss_14C_hist.append(float(l_14C))
         tau_hist.append(np.array(taus))
@@ -388,6 +432,9 @@ def optimize(
             if rel < 1e-5:
                 converged = True
                 break
+
+    # Use the best-seen parameter vector (guards against overshoot at end).
+    vec = best_vec
 
     params_opt = _vector_to_params(vec, params0, opt_fields)
 
