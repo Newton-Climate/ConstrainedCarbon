@@ -27,8 +27,8 @@ Public API
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
 import yaml
 
@@ -76,6 +76,30 @@ class SoilLayerDef:
 
 
 @dataclass(frozen=True)
+class ExternalInputsConfig:
+    """
+    Parsed and validated ``external_inputs`` YAML block.
+
+    When this block is present and ``enabled=True``, the internal LUE GPP
+    submodel is bypassed and carbon enters soil pools from a prescribed
+    ``ForcingData`` field (``GPP_obs`` or ``NPP_obs``).
+
+    Pool names in ``partition`` follow the ``{layer_name}_{som_pool_name}``
+    convention used everywhere else in the model (e.g. ``"organic_litter"``).
+    """
+
+    enabled: bool
+    source: str                          # ForcingData field name: "GPP_obs" or "NPP_obs"
+    CUE: float                           # carbon use efficiency (0 < CUE ≤ 1)
+    optimize_CUE: bool
+    soil_input_fraction: float           # fraction of NPP bypassing AG pools [0, 1]
+    optimize_soil_input_fraction: bool
+    partition: dict[str, float]          # {pool_name: prior_fraction}; priors sum ≤ 1
+    optimize_partition: bool
+    target_pool_names: tuple[str, ...]   # ordered keys from partition (for ModelParams)
+
+
+@dataclass(frozen=True)
 class ModelConfig:
     """
     Complete, validated model configuration parsed from a YAML file.
@@ -116,6 +140,9 @@ class ModelConfig:
     inversion_raw: dict[str, Any]
     analysis_raw: dict[str, Any]
     output_raw: dict[str, Any]
+
+    # Optional typed external-inputs config (None when block is absent from YAML)
+    external_inputs: Optional[ExternalInputsConfig] = None
 
 
 # ---------------------------------------------------------------------------
@@ -346,6 +373,92 @@ def _check_alloc_coverage(config: ModelConfig) -> None:
         )
 
 
+def _check_external_inputs(config: ModelConfig, valid_names: set[str]) -> None:
+    """Validate the external_inputs block when present and enabled."""
+    ext = config.external_inputs
+    if ext is None or not ext.enabled:
+        return
+
+    # source must be a recognised ForcingData field
+    valid_sources = {"GPP_obs", "NPP_obs"}
+    if ext.source not in valid_sources:
+        raise ConfigValidationError(
+            f"external_inputs.source {ext.source!r} is not valid.  "
+            f"Allowed values: {sorted(valid_sources)}"
+        )
+
+    # soil_input_fraction must be in [0, 1]
+    if not (0.0 <= ext.soil_input_fraction <= 1.0):
+        raise ConfigValidationError(
+            f"external_inputs.soil_input_fraction={ext.soil_input_fraction} "
+            f"is outside [0, 1]."
+        )
+
+    # CUE must be in (0, 1]
+    if not (0.0 < ext.CUE <= 1.0):
+        raise ConfigValidationError(
+            f"external_inputs.CUE={ext.CUE} is outside (0, 1]."
+        )
+
+    # All partition pool names must exist and must be soil pools (not AG)
+    ag_names = {p.name for p in config.aboveground_pools}
+    for pool_name in ext.partition:
+        if pool_name not in valid_names:
+            raise ConfigValidationError(
+                f"external_inputs.partition references unknown pool "
+                f"{pool_name!r}.  Known pools: {sorted(valid_names)}"
+            )
+        if pool_name in ag_names:
+            raise ConfigValidationError(
+                f"external_inputs.partition references aboveground pool "
+                f"{pool_name!r}.  Only soil pools are valid targets."
+            )
+
+    # Partition prior fractions must be non-negative and sum to (0, 1]
+    fracs = list(ext.partition.values())
+    if any(f < 0 for f in fracs):
+        raise ConfigValidationError(
+            "external_inputs.partition contains negative fractions."
+        )
+    total = sum(fracs)
+    if total <= 0 or total > 1.0 + 1e-9:
+        raise ConfigValidationError(
+            f"external_inputs.partition fractions sum to {total:.6f}; "
+            f"they must be positive and sum to a value in (0, 1]."
+        )
+
+
+def _parse_external_inputs(
+    raw: Optional[dict[str, Any]],
+) -> Optional[ExternalInputsConfig]:
+    """Parse the optional external_inputs YAML block into a typed dataclass."""
+    if raw is None:
+        return None
+    enabled = bool(raw.get("enabled", False))
+    if not enabled:
+        return None
+    source = str(raw.get("source", "GPP_obs"))
+    CUE = float(raw.get("CUE", 0.5))
+    optimize_CUE = bool(raw.get("optimize_CUE", False))
+    soil_input_fraction = float(raw.get("soil_input_fraction", 0.0))
+    optimize_soil_input_fraction = bool(raw.get("optimize_soil_input_fraction", False))
+    partition_raw: dict[str, Any] = raw.get("partition", {})
+    partition = {k: float(v) for k, v in partition_raw.items()}
+    optimize_partition = bool(raw.get("optimize_partition", False))
+    target_pool_names = tuple(partition.keys())
+    return ExternalInputsConfig(
+        enabled=enabled,
+        source=source,
+        CUE=CUE,
+        optimize_CUE=optimize_CUE,
+        soil_input_fraction=soil_input_fraction,
+        optimize_soil_input_fraction=optimize_soil_input_fraction,
+        partition=partition,
+        optimize_partition=optimize_partition,
+        target_pool_names=target_pool_names,
+    )
+
+
 def _validate(config: ModelConfig) -> None:
     """
     Raise ``ConfigValidationError`` if any semantic constraint is violated.
@@ -355,12 +468,14 @@ def _validate(config: ModelConfig) -> None:
     2. Outflow fractions from any single source pool sum to ≤ 1.0.
     3. Soil layer depths are strictly monotonic and contiguous.
     4. NPP alloc fractions exist for every aboveground pool.
+    5. external_inputs block (when present and enabled) is self-consistent.
     """
     valid_names = _all_valid_pool_names(config)
     _check_transfer_pool_names(config, valid_names)
     _check_transfer_sums(config)
     _check_layer_depths(config)
     _check_alloc_coverage(config)
+    _check_external_inputs(config, valid_names)
 
 
 # ---------------------------------------------------------------------------
@@ -411,6 +526,8 @@ def load_config(path: str) -> ModelConfig:
     transfer_rules = _parse_transfer_rules(model.get("transfer_rules", []))
     alloc = _parse_alloc(params, ag_pools)
 
+    external_inputs = _parse_external_inputs(raw.get("external_inputs"))
+
     config = ModelConfig(
         # Site
         site_id=str(site.get("id", "")),
@@ -434,6 +551,8 @@ def load_config(path: str) -> ModelConfig:
         inversion_raw=dict(raw.get("inversion", {})),
         analysis_raw=dict(raw.get("analysis", {})),
         output_raw=dict(raw.get("output", {})),
+        # Typed external-inputs config
+        external_inputs=external_inputs,
     )
 
     _validate(config)

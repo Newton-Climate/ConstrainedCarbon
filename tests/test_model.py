@@ -233,7 +233,11 @@ def test_step_14C_no_longer_raises(
 # ---------------------------------------------------------------------------
 
 
-_EXPECTED_DIAG_KEYS = {"GPP", "Ra", "NPP", "Rh", "ER", "NEE"}
+_EXPECTED_DIAG_KEYS = {
+    "GPP", "Ra", "NPP", "Rh", "ER", "NEE",
+    # external_inputs diagnostics (always present; zero when feature disabled)
+    "GPP_forcing_used", "external_C_input_total", "external_C_input_by_pool",
+}
 
 
 def test_diagnose_keys(harvard_model, initial_state, harvard_params, dummy_forcing):
@@ -245,10 +249,13 @@ def test_diagnose_keys(harvard_model, initial_state, harvard_params, dummy_forci
 def test_diagnose_all_finite(
     harvard_model, initial_state, harvard_params, dummy_forcing
 ):
-    """All diagnostic values are finite jnp scalars."""
+    """All diagnostic values are finite jnp scalars or arrays."""
     diag = harvard_model.diagnose(initial_state, harvard_params, dummy_forcing)
     for key, val in diag.items():
-        assert jnp.isfinite(val), f"diagnose[{key!r}] = {val} is not finite"
+        arr = jnp.asarray(val)
+        if arr.size == 0:
+            continue  # empty array (e.g. external_C_input_by_pool with no targets)
+        assert jnp.all(jnp.isfinite(arr)), f"diagnose[{key!r}] = {val} is not finite"
 
 
 def test_diagnose_gpp_positive(
@@ -642,4 +649,128 @@ def test_pool_positivity():
     assert n_bad == 0, (
         f"C12 went negative at {n_bad} / 3650 timesteps — "
         f"Euler step is unstable for the current tau values"
+    )
+
+
+# ---------------------------------------------------------------------------
+# external_inputs pathway
+# ---------------------------------------------------------------------------
+
+_SOIL_ONLY_PATH = str(pathlib.Path(__file__).parent.parent / "configs" / "harvard_forest_soil_only.yaml")
+
+
+@pytest.fixture(scope="module")
+def soil_only_config():
+    return load_config(_SOIL_ONLY_PATH)
+
+
+@pytest.fixture(scope="module")
+def soil_only_model(soil_only_config):
+    from ecosystem_complexity.state import make_default_params
+    idx = PoolIndex(soil_only_config)
+    params = make_default_params(soil_only_config)
+    return EcosystemModel(config=soil_only_config, params=params, pool_index=idx)
+
+
+@pytest.fixture(scope="module")
+def soil_only_state(soil_only_config):
+    from ecosystem_complexity.state import make_initial_state
+    site_cfg = {"mat_c": 8.5, "permafrost": False}
+    return make_initial_state(soil_only_config, site_cfg)
+
+
+@pytest.fixture(scope="module")
+def soil_only_params(soil_only_config):
+    from ecosystem_complexity.state import make_default_params
+    return make_default_params(soil_only_config)
+
+
+def _soil_forcing(n_layers: int, gpp: float = 5.0):
+    """Forcing dict for soil-only model tests."""
+    return {
+        "air_temp": jnp.array(15.0),
+        "sw_radiation": jnp.array(100.0),
+        "soil_temp": jnp.full(n_layers, 15.0),
+        "soil_moisture": jnp.full(n_layers, 0.3),
+        "delta14C_atm": jnp.array(50.0),
+        "GPP_obs": jnp.array(gpp),
+        "NPP_obs": jnp.array(float("nan")),
+    }
+
+
+def test_step_12C_with_external_inputs_pool_sum_increases(
+    soil_only_model, soil_only_state, soil_only_params, soil_only_config
+):
+    """
+    With external_inputs active and positive GPP_obs, target soil pools
+    receive positive carbon inputs (pool sum strictly increases vs. zero-GPP case).
+    """
+    n_layers = len(soil_only_config.soil_layers)
+    forcing_with_gpp = _soil_forcing(n_layers, gpp=5.0)
+    forcing_no_gpp = _soil_forcing(n_layers, gpp=0.0)
+
+    state_with = soil_only_model.step_12C(soil_only_state, soil_only_params, forcing_with_gpp)
+    state_none = soil_only_model.step_12C(soil_only_state, soil_only_params, forcing_no_gpp)
+
+    # Pool sum must be higher when GPP_obs > 0 (net input > 0)
+    sum_with = float(jnp.sum(state_with.C12))
+    sum_none = float(jnp.sum(state_none.C12))
+    assert sum_with > sum_none, (
+        f"Pool sum with GPP_obs=5 ({sum_with:.4f}) should exceed "
+        f"sum with GPP_obs=0 ({sum_none:.4f})"
+    )
+
+
+def test_step_12C_external_inputs_disabled_matches_baseline(
+    harvard_model, initial_state, harvard_params, dummy_forcing
+):
+    """
+    When external_inputs is not configured (Harvard model), step_12C output
+    is identical whether or not GPP_obs is in the forcing dict.
+
+    The external_inputs pathway is disabled, so GPP_obs is ignored.
+    """
+    # Forcing with and without GPP_obs — should produce the same state
+    forcing_with = dict(dummy_forcing)
+    forcing_with["GPP_obs"] = jnp.array(999.0)   # should be ignored
+    forcing_with["NPP_obs"] = jnp.array(float("nan"))
+
+    state_base = harvard_model.step_12C(initial_state, harvard_params, dummy_forcing)
+    state_extra = harvard_model.step_12C(initial_state, harvard_params, forcing_with)
+
+    np.testing.assert_allclose(
+        np.array(state_base.C12), np.array(state_extra.C12), rtol=1e-6,
+        err_msg="step_12C changed when GPP_obs was added to forcing (external_inputs disabled)",
+    )
+
+
+def test_external_14C_input_uses_atmospheric_signature(
+    soil_only_model, soil_only_state, soil_only_params, soil_only_config
+):
+    """
+    When external inputs are active, the 14C content of new soil inputs
+    reflects the atmospheric Δ14C signal (positive bomb-spike → higher C14).
+
+    Compare: two steps with different delta14C_atm but same GPP_obs.
+    The step with higher delta14C_atm should produce higher total C14.
+    """
+    n_layers = len(soil_only_config.soil_layers)
+
+    forcing_low = _soil_forcing(n_layers, gpp=5.0)
+    forcing_low["delta14C_atm"] = jnp.array(-100.0)   # depleted 14C
+
+    forcing_high = dict(forcing_low)
+    forcing_high["delta14C_atm"] = jnp.array(200.0)   # bomb-spike 14C
+
+    # Start with zero C14 so new inputs dominate
+    state0 = soil_only_state._replace(C14=jnp.zeros_like(soil_only_state.C14))
+
+    state_low = soil_only_model.step_14C(state0, soil_only_params, forcing_low)
+    state_high = soil_only_model.step_14C(state0, soil_only_params, forcing_high)
+
+    sum_low = float(jnp.sum(state_low.C14))
+    sum_high = float(jnp.sum(state_high.C14))
+    assert sum_high > sum_low, (
+        f"Higher delta14C_atm should yield more C14 in soil pools. "
+        f"Got: low={sum_low:.6e}, high={sum_high:.6e}"
     )
