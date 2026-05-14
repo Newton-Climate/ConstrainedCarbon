@@ -38,6 +38,7 @@ class OptimizationResult(NamedTuple):
     loss_history: jnp.ndarray        # (n_iter,)
     loss_flux_history: jnp.ndarray   # (n_iter,)
     loss_14C_history: jnp.ndarray    # (n_iter,)
+    loss_resp_history: jnp.ndarray   # (n_iter,) — respired CO₂ Δ¹⁴C loss
     tau_history: jnp.ndarray         # (n_iter, n_pools)
     converged: bool
     n_iter: int
@@ -302,6 +303,7 @@ def optimize(
     n_iter = int(inv_cfg.get("max_iterations", 500))
     w_flux = float(inv_cfg.get("weight_flux", 1.0))
     w_14C = float(inv_cfg.get("weight_14C", 1.0))
+    w_resp = float(inv_cfg.get("weight_resp_14C", 0.0))
     grad_clip = float(inv_cfg.get("grad_clip", 1.0))
 
     params0 = make_default_params(model.config)
@@ -370,8 +372,28 @@ def optimize(
         if n_14C_terms > 0:
             l_14C = l_14C / n_14C_terms
 
-        loss = w_flux * l_flux + w_14C * l_14C
-        return loss, (l_flux, l_14C, jnp.exp(p.log_tau))
+        # Respired CO₂ Δ¹⁴C loss — flux-weighted mean across all pools.
+        # Respiration flux from pool i ∝ C12_i / τ_i, giving the weighting.
+        # Double-where pattern applied for NaN-safe gradients.
+        l_resp = jnp.zeros(())
+        if w_resp > 0.0 and observations.delta14C_resp is not None:
+            tau_vals = jnp.exp(p.log_tau)                          # (n_pools,)
+            weights = out.C12 / (tau_vals[None, :] + 1e-30)       # (T, n_pools)
+            w_sum = weights.sum(-1, keepdims=False) + 1e-30        # (T,)
+            d14C_resp_sim = (out.delta14C * weights).sum(-1) / w_sum  # (T,)
+
+            obs_resp = jnp.array(observations.delta14C_resp)
+            valid_resp = ~jnp.isnan(obs_resp)
+            obs_resp_safe = jnp.where(valid_resp, obs_resp, d14C_resp_sim)
+            diff_resp = d14C_resp_sim - obs_resp_safe
+            l_resp = jnp.where(
+                jnp.any(valid_resp),
+                jnp.mean(jnp.where(valid_resp, diff_resp ** 2, 0.0)),
+                0.0,
+            )
+
+        loss = w_flux * l_flux + w_14C * l_14C + w_resp * l_resp
+        return loss, (l_flux, l_14C, l_resp, jnp.exp(p.log_tau))
 
     grad_fn = jax.value_and_grad(_loss_and_components, has_aux=True)
 
@@ -392,6 +414,7 @@ def optimize(
     loss_hist = []
     loss_flux_hist = []
     loss_14C_hist = []
+    loss_resp_hist = []
     tau_hist = []
     converged = False
 
@@ -399,7 +422,7 @@ def optimize(
     best_loss = float("inf")
 
     for i in range(n_iter):
-        (loss_val, (l_flux, l_14C, taus)), grads = grad_fn(vec)
+        (loss_val, (l_flux, l_14C, l_resp, taus)), grads = grad_fn(vec)
 
         # Guard against NaN/Inf divergence — stop and revert to best seen so far.
         loss_float = float(loss_val)
@@ -424,6 +447,7 @@ def optimize(
         loss_hist.append(loss_float)
         loss_flux_hist.append(float(l_flux))
         loss_14C_hist.append(float(l_14C))
+        loss_resp_hist.append(float(l_resp))
         tau_hist.append(np.array(taus))
 
         if i > 10:
@@ -443,6 +467,7 @@ def optimize(
         loss_history=jnp.array(loss_hist),
         loss_flux_history=jnp.array(loss_flux_hist),
         loss_14C_history=jnp.array(loss_14C_hist),
+        loss_resp_history=jnp.array(loss_resp_hist),
         tau_history=jnp.array(tau_hist),
         converged=converged,
         n_iter=len(loss_hist),

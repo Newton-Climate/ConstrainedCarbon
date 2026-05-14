@@ -103,5 +103,6 @@ inversion:
   learning_rate: 0.0003    # conservative — prevents NaN divergence
   max_iterations: 800
   weight_flux: 0.0         # no flux obs in soil-only mode
-  weight_14C: 1.0
+  weight_14C: 1.0          # pool-level Δ¹⁴C (hf212-03: 8 obs)
+  weight_resp_14C: 1.0     # respired CO₂ Δ¹⁴C (hf212-01: 41 obs × NWN)
   grad_clip: 1.0           # global-norm gradient clipping

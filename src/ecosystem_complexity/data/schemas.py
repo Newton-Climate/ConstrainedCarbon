@@ -6,7 +6,7 @@ ObservationData — eddy-covariance fluxes, radiocarbon, and pool-C observations
 """
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 import jax.numpy as jnp
 
@@ -35,3 +35,6 @@ class ObservationData(NamedTuple):
     delta14C_obs: dict      # {pool_name: (Δ14C ‰, uncertainty ‰, year)}
     deltaD14C_obs: dict     # {pool_name: (Δ-Δ14C ‰, uncertainty ‰, year)}
     C_pools_obs: dict       # {pool_name: (gC m⁻², uncertainty)}
+    # Optional — flux-weighted respired CO₂ Δ¹⁴C (T,); NaN at unmeasured days.
+    # Defaults to None so existing ObservationData constructors need no change.
+    delta14C_resp: Optional[jnp.ndarray] = None
