@@ -99,6 +99,7 @@ parameters:
   gamma_moisture: 5.0
 
 inversion:
+  # ── Adam gradient-descent settings ────────────────────────────────────────
   optimizer: adam
   learning_rate: 0.0003    # conservative — prevents NaN divergence
   max_iterations: 800
@@ -106,3 +107,13 @@ inversion:
   weight_14C: 1.0          # pool-level Δ¹⁴C (hf212-03: 8 obs)
   weight_resp_14C: 1.0     # respired CO₂ Δ¹⁴C (hf212-01: 41 obs × NWN)
   grad_clip: 1.0           # global-norm gradient clipping
+
+  # ── Optimal Estimation (Levenberg-Marquardt) settings ─────────────────────
+  # Used by optimize_oe().  State vector: log_tau (6) + log_partition (4)
+  # + log_f_transfer (42, prior keeps structural zeros fixed) = 52 params.
+  oe_max_iterations: 20
+  sigma_pool_14C: 5.0      # assumed 1-σ obs uncertainty for pool Δ¹⁴C (‰)
+  sigma_resp_14C: 10.0     # assumed 1-σ obs uncertainty for resp CO₂ Δ¹⁴C (‰)
+  lm_lambda0: 0.001        # initial LM damping parameter
+  lm_lambda_factor: 10.0   # LM damping scale factor
+  oe_convergence_eps: 0.0001  # max(|Δx|) convergence threshold
