@@ -111,7 +111,7 @@ inversion:
   # ── Optimal Estimation (Levenberg-Marquardt) settings ─────────────────────
   # Used by optimize_oe().  State vector: log_tau (6) + log_partition (4)
   # + log_f_transfer (42, prior keeps structural zeros fixed) = 52 params.
-  oe_max_iterations: 20
+  oe_max_iterations: 40
   sigma_pool_14C: 5.0      # assumed 1-σ obs uncertainty for pool Δ¹⁴C (‰)
   sigma_resp_14C: 10.0     # assumed 1-σ obs uncertainty for resp CO₂ Δ¹⁴C (‰)
   lm_lambda0: 0.001        # initial LM damping parameter
