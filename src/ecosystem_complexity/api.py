@@ -39,6 +39,7 @@ class OptimizationResult(NamedTuple):
     loss_flux_history: jnp.ndarray   # (n_iter,)
     loss_14C_history: jnp.ndarray    # (n_iter,)
     loss_resp_history: jnp.ndarray   # (n_iter,) — respired CO₂ Δ¹⁴C loss
+    loss_carbon_history: jnp.ndarray # (n_iter,) — carbon stock constraint loss
     tau_history: jnp.ndarray         # (n_iter, n_pools)
     converged: bool
     n_iter: int
@@ -304,6 +305,7 @@ def optimize(
     w_flux = float(inv_cfg.get("weight_flux", 1.0))
     w_14C = float(inv_cfg.get("weight_14C", 1.0))
     w_resp = float(inv_cfg.get("weight_resp_14C", 0.0))
+    w_carbon = float(inv_cfg.get("weight_carbon", 0.0))
     grad_clip = float(inv_cfg.get("grad_clip", 1.0))
 
     params0 = make_default_params(model.config)
@@ -392,8 +394,24 @@ def optimize(
                 0.0,
             )
 
-        loss = w_flux * l_flux + w_14C * l_14C + w_resp * l_resp
-        return loss, (l_flux, l_14C, l_resp, jnp.exp(p.log_tau))
+        # Carbon stock loss — soft constraint on time-mean C12 per pool.
+        # C_pools_obs: {pool_name: (mean_gC_m2, sigma_gC_m2)}
+        # Uses the mean modelled C12 over the full simulation window.
+        l_carbon = jnp.zeros(())
+        n_carbon_terms = 0
+        for pool_name, (c_obs_mean, c_obs_sigma) in (observations.C_pools_obs or {}).items():
+            if pool_name not in set(model.pool_index.pool_names):
+                continue
+            idx = model.pool_index[pool_name]
+            c_sim_mean = jnp.mean(out.C12[:, idx])
+            sigma = float(c_obs_sigma) + 1.0  # avoid divide-by-zero
+            l_carbon = l_carbon + ((c_sim_mean - float(c_obs_mean)) / sigma) ** 2
+            n_carbon_terms += 1
+        if n_carbon_terms > 0:
+            l_carbon = l_carbon / n_carbon_terms
+
+        loss = w_flux * l_flux + w_14C * l_14C + w_resp * l_resp + w_carbon * l_carbon
+        return loss, (l_flux, l_14C, l_resp, l_carbon, jnp.exp(p.log_tau))
 
     grad_fn = jax.value_and_grad(_loss_and_components, has_aux=True)
 
@@ -415,6 +433,7 @@ def optimize(
     loss_flux_hist = []
     loss_14C_hist = []
     loss_resp_hist = []
+    loss_carbon_hist = []
     tau_hist = []
     converged = False
 
@@ -422,7 +441,7 @@ def optimize(
     best_loss = float("inf")
 
     for i in range(n_iter):
-        (loss_val, (l_flux, l_14C, l_resp, taus)), grads = grad_fn(vec)
+        (loss_val, (l_flux, l_14C, l_resp, l_carbon, taus)), grads = grad_fn(vec)
 
         # Guard against NaN/Inf divergence — stop and revert to best seen so far.
         loss_float = float(loss_val)
@@ -448,6 +467,7 @@ def optimize(
         loss_flux_hist.append(float(l_flux))
         loss_14C_hist.append(float(l_14C))
         loss_resp_hist.append(float(l_resp))
+        loss_carbon_hist.append(float(l_carbon))
         tau_hist.append(np.array(taus))
 
         if i > 10:
@@ -468,7 +488,340 @@ def optimize(
         loss_flux_history=jnp.array(loss_flux_hist),
         loss_14C_history=jnp.array(loss_14C_hist),
         loss_resp_history=jnp.array(loss_resp_hist),
+        loss_carbon_history=jnp.array(loss_carbon_hist),
         tau_history=jnp.array(tau_hist),
         converged=converged,
         n_iter=len(loss_hist),
+    )
+
+
+# ── Optimal Estimation ────────────────────────────────────────────────────────
+
+class OEResult(NamedTuple):
+    """Result of an Optimal Estimation inversion via Levenberg-Marquardt."""
+    params_opt: ModelParams
+    x_opt: jnp.ndarray              # (n_state,) optimal state vector
+    x_prior: jnp.ndarray            # (n_state,) prior state vector
+    Sx: jnp.ndarray                 # (n_state, n_state) posterior covariance
+    averaging_kernel: jnp.ndarray   # (n_state, n_state)  A = Sₓ (KᵀSₑ⁻¹K)
+    y_obs: jnp.ndarray              # (n_obs,) stacked observation vector
+    y_prior: jnp.ndarray            # (n_obs,) prior model prediction
+    y_opt: jnp.ndarray              # (n_obs,) posterior model prediction
+    cost_history: jnp.ndarray       # (n_iter,) total OE cost per LM step
+    converged: bool
+    n_iter: int
+    state_names: list               # length n_state — labels for diagnostics
+
+
+# Default fields for OE: add log_f_transfer to the Adam-10 set.
+_OE_DEFAULT_FIELDS = ("log_tau", "log_external_input_partition", "log_f_transfer")
+
+
+def _build_oe_obs_vector(
+    observations: ObservationData,
+    model,
+    sigma_pool: float,
+    sigma_resp: float,
+    sigma_carbon: Optional[float] = None,
+):
+    """
+    Flatten ObservationData into a dense (n_obs,) observation vector for OE.
+
+    Observation blocks (in order):
+      1. Pool-level Δ¹⁴C   — one entry per (time, pool) with finite obs
+      2. Respired CO₂ Δ¹⁴C — one entry per time-step with finite obs
+      3. Carbon stocks      — one entry per pool in C_pools_obs
+                              σ taken from the (mean, sigma) tuple in
+                              C_pools_obs; ``sigma_carbon`` is used as a
+                              fallback when the tuple sigma is zero/None.
+
+    Returns
+    -------
+    y              : (n_obs,) float32  — observed values
+    Se_diag        : (n_obs,) float32  — observation error variances σ²
+    t_pool_idx     : (n_pool_obs,) int32
+    pool_col_idx   : (n_pool_obs,) int32
+    t_resp_idx     : (n_resp_obs,) int32
+    carbon_col_idx : (n_carbon_obs,) int32 — pool indices for C-stock obs
+    n_pool_obs, n_resp_obs, n_carbon_obs : int
+    """
+    pool_names_set = set(model.pool_index.pool_names)
+
+    # ── Block 1: pool Δ¹⁴C ───────────────────────────────────────────────────
+    t_p, col_p, y_p = [], [], []
+    for pool_name in sorted(observations.delta14C_obs.keys()):
+        if pool_name not in pool_names_set:
+            continue
+        obs_arr = np.array(observations.delta14C_obs[pool_name])
+        valid = np.where(np.isfinite(obs_arr))[0]
+        pcol = model.pool_index[pool_name]
+        for t in valid:
+            t_p.append(int(t)); col_p.append(pcol); y_p.append(float(obs_arr[t]))
+
+    n_pool_obs   = len(t_p)
+    t_pool_idx   = jnp.array(t_p,   dtype=jnp.int32)
+    pool_col_idx = jnp.array(col_p, dtype=jnp.int32)
+    y_pool       = jnp.array(y_p,   dtype=jnp.float32)
+
+    # ── Block 2: respired Δ¹⁴C ───────────────────────────────────────────────
+    t_r, y_r = [], []
+    if observations.delta14C_resp is not None:
+        resp_np = np.array(observations.delta14C_resp)
+        for t in np.where(np.isfinite(resp_np))[0]:
+            t_r.append(int(t)); y_r.append(float(resp_np[t]))
+
+    n_resp_obs = len(t_r)
+    t_resp_idx = jnp.array(t_r, dtype=jnp.int32)
+    y_resp     = jnp.array(y_r, dtype=jnp.float32)
+
+    # ── Block 3: carbon stocks ────────────────────────────────────────────────
+    c_col, y_c, se_c = [], [], []
+    for pool_name, (c_mean, c_sigma) in (observations.C_pools_obs or {}).items():
+        if pool_name not in pool_names_set:
+            continue
+        sigma_c = float(c_sigma) if (c_sigma and c_sigma > 0) else (sigma_carbon or 1000.0)
+        c_col.append(model.pool_index[pool_name])
+        y_c.append(float(c_mean))
+        se_c.append(sigma_c ** 2)
+
+    n_carbon_obs   = len(c_col)
+    carbon_col_idx = jnp.array(c_col, dtype=jnp.int32)
+    y_carbon       = jnp.array(y_c,  dtype=jnp.float32)
+    Se_carbon      = jnp.array(se_c, dtype=jnp.float32)
+
+    # ── Assemble full obs vector and Se ──────────────────────────────────────
+    y_parts  = [y_pool]
+    se_parts = [jnp.full(n_pool_obs, sigma_pool ** 2)]
+
+    if n_resp_obs > 0:
+        y_parts.append(y_resp)
+        se_parts.append(jnp.full(n_resp_obs, sigma_resp ** 2))
+
+    if n_carbon_obs > 0:
+        y_parts.append(y_carbon)
+        se_parts.append(Se_carbon)
+
+    y       = jnp.concatenate(y_parts)      if y_parts  else jnp.zeros(0)
+    Se_diag = jnp.concatenate(se_parts)     if se_parts else jnp.zeros(0)
+
+    return (y, Se_diag,
+            t_pool_idx, pool_col_idx, t_resp_idx,
+            carbon_col_idx,
+            n_pool_obs, n_resp_obs, n_carbon_obs)
+
+
+def _build_sa_diag(
+    config: ModelConfig,
+    params0: ModelParams,
+    opt_fields: tuple,
+) -> jnp.ndarray:
+    """
+    Build the diagonal of Sₐ (prior error variances) for the OE state vector.
+
+    log_tau[i]             : σ = tau_prior_std[i] / tau_prior_days[i]  (log-space)
+    log_f_transfer[i,j]    : σ = 0.5 for real transfer rules, 0.02 for structural zeros
+    log_external_input_partition : σ = 1.0  (broad logit prior)
+    everything else        : σ = 0.5
+    """
+    pool_idx = PoolIndex(config)
+    n_pools  = len(pool_idx)
+
+    # Pool name → (tau_prior_days, tau_prior_std)
+    tau_info: dict[str, tuple[float, float]] = {}
+    for layer in config.soil_layers:
+        for pool in layer.som_pools:
+            pname = f"{layer.name}_{pool.name}"
+            tau_info[pname] = (pool.tau_prior_days, pool.tau_prior_std)
+
+    # (src_i, dst_j) pairs from YAML transfer rules
+    real_transfer_pairs = set()
+    for src_name, dst_name, _ in config.transfer_rules:
+        real_transfer_pairs.add((pool_idx[src_name], pool_idx[dst_name]))
+
+    sa_parts = []
+    for f in opt_fields:
+        val = getattr(params0, f)
+        n   = int(math.prod(val.shape))
+
+        if f == "log_tau":
+            sigma = np.array([
+                tau_info.get(name, (1000.0, 1000.0))[1]
+                / max(tau_info.get(name, (1000.0, 1000.0))[0], 1.0)
+                for name in pool_idx.pool_names
+            ], dtype=np.float32)
+            sa_parts.append(jnp.array(sigma ** 2))
+
+        elif f == "log_f_transfer":
+            sigma = np.full(n, 0.02, dtype=np.float32)
+            for (si, dj) in real_transfer_pairs:
+                flat_i = si * (n_pools + 1) + dj
+                sigma[flat_i] = 0.5
+            sa_parts.append(jnp.array(sigma ** 2))
+
+        elif f == "log_external_input_partition":
+            sa_parts.append(jnp.full(n, 1.0 ** 2))
+
+        else:
+            sa_parts.append(jnp.full(n, 0.5 ** 2))
+
+    return jnp.concatenate(sa_parts)
+
+
+def optimize_oe(
+    model,
+    forcing: ForcingData,
+    observations: ObservationData,
+    state0: Optional[EcosystemState] = None,
+    fields: Optional[tuple] = None,
+) -> OEResult:
+    """
+    Optimal Estimation inversion via Levenberg-Marquardt.
+
+    Minimises the OE cost function:
+        J(x) = (y − F(x))ᵀ Sₑ⁻¹ (y − F(x)) + (x − xₐ)ᵀ Sₐ⁻¹ (x − xₐ)
+
+    Both Sₐ (prior error covariance) and Sₑ (observation error covariance)
+    are diagonal.  The Jacobian K = ∂F/∂x is computed via ``jax.jacobian``.
+
+    Default state vector: log_tau (6) + log_external_input_partition (4)
+    + log_f_transfer (6 × 7 = 42, but prior keeps structural zeros fixed).
+    Total: 52 state variables vs ~50 observations.
+
+    Returns an OEResult that includes the posterior covariance Sₓ and the
+    averaging kernel A = Sₓ (KᵀSₑ⁻¹K), which together quantify information
+    content and posterior uncertainty for each state variable.
+    """
+    inv_cfg      = getattr(model.config, "inversion_raw", {}) or {}
+    n_iter       = int(inv_cfg.get("oe_max_iterations", 20))
+    sigma_pool   = float(inv_cfg.get("sigma_pool_14C", 5.0))
+    sigma_resp   = float(inv_cfg.get("sigma_resp_14C", 10.0))
+    sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
+    lam0         = float(inv_cfg.get("lm_lambda0", 1e-3))
+    lam_factor   = float(inv_cfg.get("lm_lambda_factor", 10.0))
+    eps          = float(inv_cfg.get("oe_convergence_eps", 1e-4))
+
+    params0 = make_default_params(model.config)
+    if state0 is None:
+        state0 = make_initial_state(model.config, model._site_config)
+
+    opt_fields = tuple(fields) if fields is not None else _OE_DEFAULT_FIELDS
+
+    # ── State vector ──────────────────────────────────────────────────────────
+    xa = _params_to_vector(params0, opt_fields)
+    x  = xa
+
+    Sa_diag     = _build_sa_diag(model.config, params0, opt_fields)
+    Sa_inv_diag = 1.0 / (Sa_diag + 1e-30)
+
+    state_names = []
+    for f in opt_fields:
+        val = getattr(params0, f)
+        for i in range(int(math.prod(val.shape))):
+            state_names.append(f"{f}[{i}]")
+
+    # ── Observation vector ────────────────────────────────────────────────────
+    (y, Se_diag,
+     t_pool_idx, pool_col_idx, t_resp_idx,
+     carbon_col_idx,
+     n_pool_obs, n_resp_obs, n_carbon_obs) = _build_oe_obs_vector(
+        observations, model, sigma_pool, sigma_resp, sigma_carbon)
+
+    Se_inv_diag = 1.0 / (Se_diag + 1e-30)
+    n_obs = int(y.shape[0])
+
+    if n_obs == 0:
+        raise ValueError("optimize_oe: no observations found in ObservationData")
+
+    print(f"  OE obs vector: {n_pool_obs} pool Δ¹⁴C  +  {n_resp_obs} resp Δ¹⁴C"
+          f"  +  {n_carbon_obs} C-stock  =  {n_obs} total")
+
+    # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
+    def _forward(x_vec):
+        p   = _vector_to_params(x_vec, params0, opt_fields)
+        out = run_model(model, forcing, state0=state0, params=p)
+
+        parts = [out.delta14C[t_pool_idx, pool_col_idx]]
+
+        if n_resp_obs > 0:
+            tau_v     = jnp.exp(p.log_tau)
+            w         = out.C12 / (tau_v[None, :] + 1e-30)
+            d14c_resp = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)
+            parts.append(d14c_resp[t_resp_idx])
+
+        if n_carbon_obs > 0:
+            # Predicted obs: time-mean C12 for each constrained pool
+            c12_mean = jnp.mean(out.C12, axis=0)          # (n_pools,)
+            parts.append(c12_mean[carbon_col_idx])
+
+        return jnp.concatenate(parts)
+
+    _jac_fn = jax.jacobian(_forward)
+
+    y_prior = _forward(xa)
+
+    # ── Levenberg-Marquardt loop ──────────────────────────────────────────────
+    lam = lam0
+    cost_hist: list[float] = []
+    converged = False
+
+    for _ in range(n_iter):
+        F_x = _forward(x)
+        K   = _jac_fn(x)                           # (n_obs, n_x)
+
+        resid      = y - F_x                        # (n_obs,)
+        prior_r    = xa - x                         # (n_x,)
+
+        KtSe       = K.T * Se_inv_diag              # (n_x, n_obs)
+        KtSeK      = KtSe @ K                       # (n_x, n_x)
+        KtSe_r     = KtSe @ resid                   # (n_x,)
+
+        cost = float(
+            jnp.sum(Se_inv_diag * resid ** 2)
+            + jnp.sum(Sa_inv_diag * prior_r ** 2)
+        )
+        cost_hist.append(cost)
+
+        H  = KtSeK + jnp.diag(Sa_inv_diag) + lam * jnp.eye(int(xa.shape[0]))
+        g  = KtSe_r + Sa_inv_diag * prior_r
+        dx = jnp.linalg.solve(H, g)
+
+        x_new  = x + dx
+        F_new  = _forward(x_new)
+        r_new  = y - F_new
+        pr_new = xa - x_new
+        cost_new = float(
+            jnp.sum(Se_inv_diag * r_new ** 2)
+            + jnp.sum(Sa_inv_diag * pr_new ** 2)
+        )
+
+        if cost_new < cost:
+            x   = x_new
+            lam = max(float(lam) / lam_factor, 1e-10)
+        else:
+            lam = min(float(lam) * lam_factor, 1e10)
+
+        if float(jnp.max(jnp.abs(dx))) < eps:
+            converged = True
+            break
+
+    # ── Posterior covariance and averaging kernel ─────────────────────────────
+    K_f    = _jac_fn(x)
+    KtSeK_f = (K_f.T * Se_inv_diag) @ K_f
+    H_f    = KtSeK_f + jnp.diag(Sa_inv_diag)
+    Sx     = jnp.linalg.inv(H_f)
+    A      = Sx @ KtSeK_f
+
+    return OEResult(
+        params_opt=_vector_to_params(x, params0, opt_fields),
+        x_opt=x,
+        x_prior=xa,
+        Sx=Sx,
+        averaging_kernel=A,
+        y_obs=y,
+        y_prior=y_prior,
+        y_opt=_forward(x),
+        cost_history=jnp.array(cost_hist),
+        converged=converged,
+        n_iter=len(cost_hist),
+        state_names=state_names,
     )
