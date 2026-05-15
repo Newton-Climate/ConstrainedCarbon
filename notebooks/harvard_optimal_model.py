@@ -494,6 +494,33 @@ def run_optimal_inversion():
     state0 = _build_state0(config, idx)
     print(f"  State0 total C12: {float(jnp.sum(state0.C12)):.0f} gC m⁻²")
 
+    # ── Analytical SS helper (used for posterior diagnostic runs) ────────────
+    # Pre-compute mean decomp modifier matching what optimize_oe will use,
+    # so diagnostic forward runs start from the same C12 as OE _forward.
+    from ecosystem_complexity.api import _analytical_c12_ss
+    import numpy as _np
+    _air_t_np = _np.nan_to_num(_np.array(forcing.air_temp), nan=5.0)
+    _soil_t_raw = _np.array(forcing.soil_temp[:, 0])
+    _T_soil_np = _np.where(_np.isnan(_soil_t_raw), _air_t_np, _soil_t_raw)
+    _theta_np  = _np.where(_np.isnan(_np.array(forcing.soil_moisture[:, 0])), 0.3,
+                           _np.array(forcing.soil_moisture[:, 0]))
+    from ecosystem_complexity.fluxes import f_temp as _ft_fn, f_moisture as _fm_fn, thawed_frac as _ff_fn
+    _params0 = make_default_params(config)
+    _ft_   = _ft_fn(jnp.array(_T_soil_np, dtype=jnp.float32), _params0.log_Q10[0])
+    _fm_   = _fm_fn(jnp.array(_theta_np, dtype=jnp.float32), _params0.log_theta_opt[0], _params0.log_gamma_moist[0])
+    _fff_  = _ff_fn(jnp.array(_T_soil_np, dtype=jnp.float32))
+    _mean_modifier = float(jnp.nanmean(_ft_ * _fm_ * _fff_))
+    _cue_val   = float(model.config.external_inputs.CUE)
+    _mean_gpp  = float(jnp.nanmean(forcing.GPP_obs))
+    _mean_input_val = _mean_gpp * _cue_val
+    _n_pools   = len(idx)
+    print(f"  Diagnostic SS: mean_modifier={_mean_modifier:.4f}, mean_input={_mean_input_val:.4f} gC/m²/day")
+
+    def _make_ss_state(params_opt):
+        """Return state0 with C12 replaced by analytical SS for given params."""
+        c12_ss = _analytical_c12_ss(params_opt, _n_pools, _mean_input_val, _mean_modifier)
+        return state0._replace(C12=c12_ss)
+
     # ── Prior forward run ─────────────────────────────────────────────────────
     print("\nPrior forward simulation…")
     params_prior = make_default_params(config)
@@ -516,7 +543,7 @@ def run_optimal_inversion():
     print(f"  Done [{dt1:.0f}s]  J {ch1[0]:.2f} → {ch1[-1]:.2f}"
           f"  ({'converged' if result_carbon_only.converged else 'max-iter'})")
 
-    out_carbon_only = run_model(model, forcing, state0=state0,
+    out_carbon_only = run_model(model, forcing, state0=_make_ss_state(result_carbon_only.params_opt),
                                 params=result_carbon_only.params_opt)
     jax.block_until_ready(out_carbon_only.delta14C)
 
@@ -530,7 +557,7 @@ def run_optimal_inversion():
     print(f"  Done [{dt2:.0f}s]  J {ch2[0]:.2f} → {ch2[-1]:.2f}"
           f"  ({'converged' if result_carbon_pool.converged else 'max-iter'})")
 
-    out_carbon_pool = run_model(model, forcing, state0=state0,
+    out_carbon_pool = run_model(model, forcing, state0=_make_ss_state(result_carbon_pool.params_opt),
                                 params=result_carbon_pool.params_opt)
     jax.block_until_ready(out_carbon_pool.delta14C)
 
@@ -544,7 +571,7 @@ def run_optimal_inversion():
     print(f"  Done [{dt3:.0f}s]  J {ch3[0]:.2f} → {ch3[-1]:.2f}"
           f"  ({'converged' if result_carbon_resp.converged else 'max-iter'})")
 
-    out_carbon_resp = run_model(model, forcing, state0=state0,
+    out_carbon_resp = run_model(model, forcing, state0=_make_ss_state(result_carbon_resp.params_opt),
                                 params=result_carbon_resp.params_opt)
     jax.block_until_ready(out_carbon_resp.delta14C)
 
@@ -563,7 +590,8 @@ def run_optimal_inversion():
                       for n, v in zip(result_all.state_names[:6],
                                       np.diag(np.array(result_all.Sx))[:6])))
 
-    out_all = run_model(model, forcing, state0=state0, params=result_all.params_opt)
+    out_all = run_model(model, forcing, state0=_make_ss_state(result_all.params_opt),
+                        params=result_all.params_opt)
     jax.block_until_ready(out_all.delta14C)
 
     # ── OE Run 5 — full OE + FluxNet ER annual Rh ────────────────────────────
@@ -581,7 +609,7 @@ def run_optimal_inversion():
                       for n, v in zip(result_all_er.state_names[:6],
                                       np.diag(np.array(result_all_er.Sx))[:6])))
 
-    out_all_er = run_model(model, forcing, state0=state0,
+    out_all_er = run_model(model, forcing, state0=_make_ss_state(result_all_er.params_opt),
                            params=result_all_er.params_opt)
     jax.block_until_ready(out_all_er.delta14C)
 
@@ -651,8 +679,7 @@ def run_optimal_inversion():
     er_np    = np.array(er_sliced)
     time_yrs = np.array(forcing.time)
     years_np = 1970.0 + time_yrs / 365.25
-    tau5     = np.exp(np.array(result_all_er.params_opt.log_tau))
-    rh5      = np.sum(np.array(out_all_er.C12) / (tau5[None, :] + 1e-30), axis=-1)
+    rh5      = np.array(out_all_er.Rh)   # heterotrophic respiration (correct formula)
     f_het    = float(model.config.inversion.get("f_hetero", 0.55)) if hasattr(model.config, 'inversion') else 0.55
     for yr in range(int(years_np[0]), int(years_np[-1]) + 1):
         mask = (years_np >= yr) & (years_np < yr + 1)

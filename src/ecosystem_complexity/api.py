@@ -15,6 +15,7 @@ from .config import load_config, ModelConfig, PoolIndex
 from .state import EcosystemState, ModelParams, make_initial_state, make_default_params
 from .model import EcosystemModel
 from .fluxes import thawed_frac as compute_thawed_frac
+from .transfer import get_transfer_matrix
 from .tracer_14C import compute_delta14C
 from .data.schemas import ForcingData, ObservationData
 
@@ -716,6 +717,58 @@ def _build_sa_diag(
     return jnp.concatenate(sa_parts)
 
 
+def _analytical_c12_ss(
+    params: "ModelParams",
+    n_pools: int,
+    mean_input: float,
+    mean_modifier: float = 1.0,
+) -> jnp.ndarray:
+    """
+    Compute analytical steady-state C12 stocks for a cascade pool system.
+
+    At true steady state for pool i:
+        dC_i/dt = I_i - (C_i / τ_i) × modifier = 0
+        → C_i = I_i × τ_i / modifier
+
+    where ``modifier`` is the climatological mean of the combined
+    temperature × moisture × freeze-thaw decomposition scalar.
+
+    Cascade effective inputs:
+        I_active   = mean_input
+        I_j        = Σ_i F[i,j] × I_i  (upstream transfers)
+
+    Uses the softmax-based transfer fractions from ``get_transfer_matrix``.
+
+    Parameters
+    ----------
+    params :
+        Current ModelParams (log_tau and log_f_transfer must be set).
+    n_pools :
+        Number of carbon pools.
+    mean_input :
+        Long-term mean carbon input to the active (first) pool [gC m⁻² day⁻¹].
+    mean_modifier : float, optional
+        Climatological mean of (f_T × f_moisture × f_freeze) over all soil
+        layers.  Default 1.0 (no correction).
+
+    Returns
+    -------
+    jnp.ndarray
+        Shape ``(n_pools,)`` steady-state C12 stocks [gC m⁻²].
+    """
+    tau = jnp.exp(params.log_tau)                              # (n_pools,)
+    F   = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n_pools, n_pools)
+
+    # Effective inputs via cascade: I_j = sum_i(F[i,j] * I_i)
+    I = jnp.zeros(n_pools)
+    I = I.at[0].set(float(mean_input))
+    for j in range(1, n_pools):
+        I = I.at[j].set(jnp.dot(F[:j, j], I[:j]))
+
+    # Correct for decomposition modifier (true SS has longer effective τ)
+    return I * tau / float(mean_modifier)
+
+
 def optimize_oe(
     model,
     forcing: ForcingData,
@@ -755,6 +808,38 @@ def optimize_oe(
 
     opt_fields = tuple(fields) if fields is not None else _OE_DEFAULT_FIELDS
 
+    # ── Steady-state mean input (for analytical C12 initialisation) ───────────
+    # 300-yr spinup may be too short for slow/passive pools (τ ≫ 300 yr).
+    # We initialise C12 analytically at each L-M step so the model starts from
+    # the parameter-implied steady state.  Only C12 is replaced; the Δ¹⁴C
+    # initial condition from the spinup is preserved (300 yr ≫ bomb record).
+    _ext_cfg    = model.config.external_inputs
+    _cue        = float(getattr(_ext_cfg, "CUE", 0.47))
+    _mean_gpp   = float(jnp.nanmean(forcing.GPP_obs))
+    _mean_input = _mean_gpp * _cue           # gC m⁻² day⁻¹ entering active pool
+    _n_pools    = len(model.pool_index)
+
+    # Pre-compute climatological mean decomposition modifier from forcing data.
+    # Uses the same NaN fills as _build_forcing_dict so results match the model.
+    # f_decomp = (C12/tau) × f_T × f_moisture × f_freeze
+    # At SS: C_i = I_i × tau_i / mean_modifier
+    _p0       = params0
+    _air_t_np = np.nan_to_num(np.array(forcing.air_temp),     nan=5.0)
+    _soil_t_raw = np.array(forcing.soil_temp[:, 0])
+    _T_soil_np  = np.where(np.isnan(_soil_t_raw), _air_t_np, _soil_t_raw)  # NaN → air_temp
+    _theta_raw  = np.array(forcing.soil_moisture[:, 0])
+    _theta_np   = np.where(np.isnan(_theta_raw), 0.3, _theta_raw)           # NaN → 0.3
+    from .fluxes import f_temp as _f_temp, f_moisture as _f_moisture, thawed_frac as _ff
+    _ft  = _f_temp(jnp.array(_T_soil_np, dtype=jnp.float32), _p0.log_Q10[0], T_ref=15.0)
+    _fm  = _f_moisture(jnp.array(_theta_np, dtype=jnp.float32),
+                       _p0.log_theta_opt[0], _p0.log_gamma_moist[0])
+    _fff = _ff(jnp.array(_T_soil_np, dtype=jnp.float32))
+    _mod = float(jnp.nanmean(_ft * _fm * _fff))
+    _mean_modifier = _mod if np.isfinite(_mod) and _mod > 0.05 else 0.05
+    print(f"  Spinup SS: mean_input={_mean_input:.4f} gC/m²/day, "
+          f"mean_modifier={_mean_modifier:.4f}, "
+          f"eff_tau_active={float(jnp.exp(_p0.log_tau[0]))/_mean_modifier/365:.1f} yr")
+
     # ── State vector ──────────────────────────────────────────────────────────
     xa = _params_to_vector(params0, opt_fields)
     x  = xa
@@ -790,8 +875,15 @@ def optimize_oe(
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
     def _forward(x_vec):
-        p   = _vector_to_params(x_vec, params0, opt_fields)
-        out = run_model(model, forcing, state0=state0, params=p)
+        p = _vector_to_params(x_vec, params0, opt_fields)
+
+        # Replace C12 initial conditions with analytical steady-state values.
+        # This eliminates the spinup drift when τ_passive >> spinup_years.
+        # Δ¹⁴C initial conditions from the spinup are kept as-is.
+        c12_ss   = _analytical_c12_ss(p, _n_pools, _mean_input, _mean_modifier)
+        state_ss = state0._replace(C12=c12_ss)
+
+        out = run_model(model, forcing, state0=state_ss, params=p)
 
         parts = [out.delta14C[t_pool_idx, pool_col_idx]]
 
@@ -807,10 +899,9 @@ def optimize_oe(
             parts.append(c12_mean[carbon_col_idx])
 
         if n_er_obs > 0:
-            # Predicted Rh: sum(C12_i / tau_i) for all pools [gC m⁻² day⁻¹]
-            tau_v  = jnp.exp(p.log_tau)
-            rh_daily = jnp.sum(out.C12 / (tau_v[None, :] + 1e-30), axis=-1)  # (T,)
-            rh_annual = W_er @ rh_daily   # (n_er_obs,)
+            # Predicted Rh from model output (already includes f_T × f_M × f_freeze
+            # × respiration fraction — same quantity that W_er was built to match).
+            rh_annual = W_er @ out.Rh   # (n_er_obs,)
             parts.append(rh_annual)
 
         return jnp.concatenate(parts)
