@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import math
-from typing import NamedTuple, Optional
+from dataclasses import dataclass
+from typing import Callable, NamedTuple, Optional
 
 import jax
 import jax.numpy as jnp
@@ -498,6 +499,35 @@ def optimize(
 
 # ── Optimal Estimation ────────────────────────────────────────────────────────
 
+
+@dataclass
+class ObsBlock:
+    """
+    Self-contained observation block for Optimal Estimation.
+
+    Each block represents one logical observation type (e.g. pool Δ¹⁴C,
+    respired Δ¹⁴C, carbon stocks, annual ER flux).  Blocks are assembled
+    into the full OE observation vector by simple concatenation.
+
+    Fields
+    ------
+    name : str
+        Human-readable label used in log messages and diagnostics.
+    y : jnp.ndarray  shape (n_i,)
+        Observed values.
+    Se : jnp.ndarray  shape (n_i,)
+        Diagonal observation-error variances σ² (same length as y).
+    predict : Callable[[ModelOutput, ModelParams], jnp.ndarray]
+        Pure-JAX function that takes the full model output and current
+        parameters and returns the simulated counterpart of y, shape (n_i,).
+        Must be differentiable via jax.jacobian.
+    """
+    name: str
+    y: jnp.ndarray
+    Se: jnp.ndarray
+    predict: Callable  # (ModelOutput, ModelParams) -> jnp.ndarray (n_i,)
+
+
 class OEResult(NamedTuple):
     """Result of an Optimal Estimation inversion via Levenberg-Marquardt."""
     params_opt: ModelParams
@@ -518,7 +548,7 @@ class OEResult(NamedTuple):
 _OE_DEFAULT_FIELDS = ("log_tau", "log_external_input_partition", "log_f_transfer")
 
 
-def _build_oe_obs_vector(
+def _build_obs_blocks(
     observations: ObservationData,
     model,
     sigma_pool: float,
@@ -526,66 +556,89 @@ def _build_oe_obs_vector(
     sigma_carbon: Optional[float] = None,
     f_hetero: float = 0.0,
     sigma_er_frac: float = 0.15,
-):
+) -> list[ObsBlock]:
     """
-    Flatten ObservationData into a dense (n_obs,) observation vector for OE.
+    Build the list of ObsBlock objects that together define the OE observation
+    vector.  Each block is independent: it owns its observed values, error
+    variances, and a JAX-differentiable ``predict`` callable.
 
-    Observation blocks (in order):
-      1. Pool-level Δ¹⁴C   — one entry per (time, pool) with finite obs
-      2. Respired CO₂ Δ¹⁴C — one entry per time-step with finite obs
-      3. Carbon stocks      — one entry per pool in C_pools_obs
-                              σ taken from the (mean, sigma) tuple in
-                              C_pools_obs; ``sigma_carbon`` is used as a
-                              fallback when the tuple sigma is zero/None.
-      4. Annual Rh flux     — annual mean Rh estimated from FluxNet ER:
-                              Rh_obs = ER_obs × f_hetero  [gC m⁻² day⁻¹]
-                              σ = Rh_obs × sigma_er_frac
-                              Only included when f_hetero > 0 and
-                              observations.ER contains finite values.
-                              W_er (n_er_obs × T) is a precomputed
-                              aggregation weight matrix for use in _forward.
+    Adding a new observation type means appending one more ObsBlock here;
+    ``optimize_oe`` and ``_forward`` need no changes.
+
+    Current blocks (appended in order; each is skipped if it has zero obs):
+      1. pool_14C    — pool-level Δ¹⁴C at sparse (time, pool) pairs
+      2. resp_14C    — flux-weighted respired Δ¹⁴C at sparse time indices
+      3. c_stock     — time-mean carbon stocks, one entry per constrained pool
+      4. er_annual   — annual mean ecosystem respiration from FluxNet ER;
+                       model prediction is Rh_sim / sigmoid(log_f_hetero)
+
+    Parameters
+    ----------
+    observations : ObservationData
+    model        : EcosystemModel
+    sigma_pool   : float   Δ¹⁴C obs error [‰] for pool-level obs
+    sigma_resp   : float   Δ¹⁴C obs error [‰] for respired CO₂ obs
+    sigma_carbon : float   fallback C-stock obs error [gC m⁻²] (used when
+                           the C_pools_obs tuple sigma is zero/None)
+    f_hetero     : float   prior f_hetero > 0 enables the ER block;
+                           actual value used only as on/off flag — the
+                           posterior value comes from p.log_f_hetero
+    sigma_er_frac: float   fractional σ on annual ER observations
 
     Returns
     -------
-    y              : (n_obs,) float32  — observed values
-    Se_diag        : (n_obs,) float32  — observation error variances σ²
-    t_pool_idx     : (n_pool_obs,) int32
-    pool_col_idx   : (n_pool_obs,) int32
-    t_resp_idx     : (n_resp_obs,) int32
-    carbon_col_idx : (n_carbon_obs,) int32 — pool indices for C-stock obs
-    W_er           : (n_er_obs, T) float32 — annual aggregation weights
-    n_pool_obs, n_resp_obs, n_carbon_obs, n_er_obs : int
+    list[ObsBlock]
+        Non-empty blocks only.  Concatenate .y and .Se to get the full
+        OE vectors; call b.predict(out, p) for each block to build F(x).
     """
     pool_names_set = set(model.pool_index.pool_names)
+    blocks: list[ObsBlock] = []
 
-    # ── Block 1: pool Δ¹⁴C ───────────────────────────────────────────────────
+    # ── Block 1: pool-level Δ¹⁴C ────────────────────────────────────────────
     t_p, col_p, y_p = [], [], []
     for pool_name in sorted(observations.delta14C_obs.keys()):
         if pool_name not in pool_names_set:
             continue
         obs_arr = np.array(observations.delta14C_obs[pool_name])
-        valid = np.where(np.isfinite(obs_arr))[0]
-        pcol = model.pool_index[pool_name]
+        valid   = np.where(np.isfinite(obs_arr))[0]
+        pcol    = model.pool_index[pool_name]
         for t in valid:
             t_p.append(int(t)); col_p.append(pcol); y_p.append(float(obs_arr[t]))
 
-    n_pool_obs   = len(t_p)
-    t_pool_idx   = jnp.array(t_p,   dtype=jnp.int32)
-    pool_col_idx = jnp.array(col_p, dtype=jnp.int32)
-    y_pool       = jnp.array(y_p,   dtype=jnp.float32)
+    if t_p:
+        _t   = jnp.array(t_p,   dtype=jnp.int32)
+        _col = jnp.array(col_p, dtype=jnp.int32)
+        blocks.append(ObsBlock(
+            name="pool_14C",
+            y=jnp.array(y_p, dtype=jnp.float32),
+            Se=jnp.full(len(y_p), sigma_pool ** 2),
+            predict=lambda out, p, t=_t, col=_col: out.delta14C[t, col],
+        ))
 
-    # ── Block 2: respired Δ¹⁴C ───────────────────────────────────────────────
+    # ── Block 2: respired CO₂ Δ¹⁴C ─────────────────────────────────────────
     t_r, y_r = [], []
     if observations.delta14C_resp is not None:
         resp_np = np.array(observations.delta14C_resp)
         for t in np.where(np.isfinite(resp_np))[0]:
             t_r.append(int(t)); y_r.append(float(resp_np[t]))
 
-    n_resp_obs = len(t_r)
-    t_resp_idx = jnp.array(t_r, dtype=jnp.int32)
-    y_resp     = jnp.array(y_r, dtype=jnp.float32)
+    if t_r:
+        _t_r = jnp.array(t_r, dtype=jnp.int32)
 
-    # ── Block 3: carbon stocks ────────────────────────────────────────────────
+        def _predict_resp(out, p, t_r=_t_r):
+            tau_v = jnp.exp(p.log_tau)
+            w     = out.C12 / (tau_v[None, :] + 1e-30)          # (T, n_pools)
+            d14c  = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)  # (T,)
+            return d14c[t_r]
+
+        blocks.append(ObsBlock(
+            name="resp_14C",
+            y=jnp.array(y_r, dtype=jnp.float32),
+            Se=jnp.full(len(y_r), sigma_resp ** 2),
+            predict=_predict_resp,
+        ))
+
+    # ── Block 3: carbon stocks ───────────────────────────────────────────────
     c_col, y_c, se_c = [], [], []
     for pool_name, (c_mean, c_sigma) in (observations.C_pools_obs or {}).items():
         if pool_name not in pool_names_set:
@@ -595,71 +648,55 @@ def _build_oe_obs_vector(
         y_c.append(float(c_mean))
         se_c.append(sigma_c ** 2)
 
-    n_carbon_obs   = len(c_col)
-    carbon_col_idx = jnp.array(c_col, dtype=jnp.int32)
-    y_carbon       = jnp.array(y_c,  dtype=jnp.float32)
-    Se_carbon      = jnp.array(se_c, dtype=jnp.float32)
+    if c_col:
+        _c_col = jnp.array(c_col, dtype=jnp.int32)
+        blocks.append(ObsBlock(
+            name="c_stock",
+            y=jnp.array(y_c, dtype=jnp.float32),
+            Se=jnp.array(se_c, dtype=jnp.float32),
+            predict=lambda out, p, col=_c_col: jnp.mean(out.C12, axis=0)[col],
+        ))
 
-    # ── Block 4: annual Rh from FluxNet ER ───────────────────────────────────
-    T = len(np.array(observations.time))
-    W_er_np   = np.zeros((0, T), dtype=np.float32)
-    y_er_list: list[float] = []
-    se_er_list: list[float] = []
-
+    # ── Block 4: annual ER from FluxNet (model predicts ER = Rh / f_hetero) ─
     if f_hetero > 0.0 and observations.ER is not None:
-        er_np    = np.array(observations.ER, dtype=np.float64)
+        T        = len(np.array(observations.time))
+        er_np    = np.array(observations.ER,   dtype=np.float64)
         time_np  = np.array(observations.time, dtype=np.float64)
         years_np = 1970.0 + time_np / 365.25
-
         yr_start = int(np.floor(years_np[0]))
         yr_end   = int(np.floor(years_np[-1]))
-        rows: list[np.ndarray] = []
+
+        rows:     list[np.ndarray] = []
+        y_er:     list[float]      = []
+        se_er:    list[float]      = []
 
         for yr in range(yr_start, yr_end + 1):
             mask = (years_np >= yr) & (years_np < yr + 1) & np.isfinite(er_np)
-            if mask.sum() < 30:          # require ≥30 days of valid ER data
+            if mask.sum() < 30:
                 continue
-            er_est = float(np.mean(er_np[mask]))   # raw annual mean ER [gC m⁻² d⁻¹]
-            # σ on ER obs itself (not on Rh): captures ER measurement + partitioning
-            # uncertainty, independent of f_hetero.
+            er_est = float(np.mean(er_np[mask]))
             sigma  = max(abs(er_est) * sigma_er_frac, 0.01)
             row    = np.zeros(T, dtype=np.float32)
             row[mask] = 1.0 / mask.sum()
             rows.append(row)
-            y_er_list.append(er_est)          # store raw ER (not Rh)
-            se_er_list.append(sigma ** 2)
+            y_er.append(er_est)
+            se_er.append(sigma ** 2)
 
         if rows:
-            W_er_np = np.stack(rows, axis=0)   # (n_er_obs, T)
+            _W = jnp.array(np.stack(rows, axis=0))  # (n_er_obs, T)
 
-    n_er_obs = len(y_er_list)
-    W_er     = jnp.array(W_er_np)
-    y_er     = jnp.array(y_er_list,  dtype=jnp.float32)
-    Se_er    = jnp.array(se_er_list, dtype=jnp.float32)
+            def _predict_er(out, p, W=_W):
+                f_het = jax.nn.sigmoid(p.log_f_hetero)
+                return (W @ out.Rh) / (f_het + 1e-6)
 
-    # ── Assemble full obs vector and Se ──────────────────────────────────────
-    y_parts  = [y_pool]
-    se_parts = [jnp.full(n_pool_obs, sigma_pool ** 2)]
+            blocks.append(ObsBlock(
+                name="er_annual",
+                y=jnp.array(y_er,  dtype=jnp.float32),
+                Se=jnp.array(se_er, dtype=jnp.float32),
+                predict=_predict_er,
+            ))
 
-    if n_resp_obs > 0:
-        y_parts.append(y_resp)
-        se_parts.append(jnp.full(n_resp_obs, sigma_resp ** 2))
-
-    if n_carbon_obs > 0:
-        y_parts.append(y_carbon)
-        se_parts.append(Se_carbon)
-
-    if n_er_obs > 0:
-        y_parts.append(y_er)
-        se_parts.append(Se_er)
-
-    y       = jnp.concatenate(y_parts)  if y_parts  else jnp.zeros(0)
-    Se_diag = jnp.concatenate(se_parts) if se_parts else jnp.zeros(0)
-
-    return (y, Se_diag,
-            t_pool_idx, pool_col_idx, t_resp_idx,
-            carbon_col_idx, W_er,
-            n_pool_obs, n_resp_obs, n_carbon_obs, n_er_obs)
+    return blocks
 
 
 def _build_sa_diag(
@@ -892,61 +929,38 @@ def optimize_oe(
         for i in range(int(math.prod(val.shape))):
             state_names.append(f"{f}[{i}]")
 
-    f_hetero     = float(inv_cfg.get("f_hetero",      0.0))
+    f_hetero      = float(inv_cfg.get("f_hetero",      0.0))
     sigma_er_frac = float(inv_cfg.get("sigma_er_frac", 0.15))
 
-    # ── Observation vector ────────────────────────────────────────────────────
-    (y, Se_diag,
-     t_pool_idx, pool_col_idx, t_resp_idx,
-     carbon_col_idx, W_er,
-     n_pool_obs, n_resp_obs, n_carbon_obs, n_er_obs) = _build_oe_obs_vector(
+    # ── Observation blocks ────────────────────────────────────────────────────
+    obs_blocks = _build_obs_blocks(
         observations, model, sigma_pool, sigma_resp, sigma_carbon,
-        f_hetero=f_hetero, sigma_er_frac=sigma_er_frac)
+        f_hetero=f_hetero, sigma_er_frac=sigma_er_frac,
+    )
 
-    Se_inv_diag = 1.0 / (Se_diag + 1e-30)
-    n_obs = int(y.shape[0])
-
-    if n_obs == 0:
+    if not obs_blocks:
         raise ValueError("optimize_oe: no observations found in ObservationData")
 
-    print(f"  OE obs vector: {n_pool_obs} pool Δ¹⁴C  +  {n_resp_obs} resp Δ¹⁴C"
-          f"  +  {n_carbon_obs} C-stock  +  {n_er_obs} annual ER  =  {n_obs} total")
+    y       = jnp.concatenate([b.y  for b in obs_blocks])
+    Se_diag = jnp.concatenate([b.Se for b in obs_blocks])
+
+    block_summary = "  +  ".join(f"{len(b.y)} {b.name}" for b in obs_blocks)
+    print(f"  OE obs vector: {block_summary}  =  {int(y.shape[0])} total")
+
+    Se_inv_diag = 1.0 / (Se_diag + 1e-30)
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
     def _forward(x_vec):
         p = _vector_to_params(x_vec, params0, opt_fields)
 
-        # Replace C12 initial conditions with analytical steady-state values.
-        # This eliminates the spinup drift when τ_passive >> spinup_years.
-        # Δ¹⁴C initial conditions from the spinup are kept as-is.
+        # Replace C12 with analytical steady-state to eliminate spinup drift.
+        # Δ¹⁴C initial conditions from the spinup state are kept as-is.
         c12_ss   = _analytical_c12_ss(p, _n_pools, _mean_input, _mean_modifier,
                                        target_indices=_ext_target_idx)
         state_ss = state0._replace(C12=c12_ss)
+        out      = run_model(model, forcing, state0=state_ss, params=p)
 
-        out = run_model(model, forcing, state0=state_ss, params=p)
-
-        parts = [out.delta14C[t_pool_idx, pool_col_idx]]
-
-        if n_resp_obs > 0:
-            tau_v     = jnp.exp(p.log_tau)
-            w         = out.C12 / (tau_v[None, :] + 1e-30)
-            d14c_resp = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)
-            parts.append(d14c_resp[t_resp_idx])
-
-        if n_carbon_obs > 0:
-            # Predicted obs: time-mean C12 for each constrained pool
-            c12_mean = jnp.mean(out.C12, axis=0)          # (n_pools,)
-            parts.append(c12_mean[carbon_col_idx])
-
-        if n_er_obs > 0:
-            # y_er stores raw annual ER.  Model predicts ER = Rh_sim / f_hetero.
-            # f_hetero = sigmoid(p.log_f_hetero) ∈ (0, 1).
-            f_het      = jax.nn.sigmoid(p.log_f_hetero)
-            rh_annual  = W_er @ out.Rh           # (n_er_obs,) annual mean Rh
-            er_predicted = rh_annual / (f_het + 1e-6)   # convert to ER
-            parts.append(er_predicted)
-
-        return jnp.concatenate(parts)
+        return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 
     _jac_fn = jax.jacobian(_forward)
 
