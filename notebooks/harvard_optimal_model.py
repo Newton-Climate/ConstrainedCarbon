@@ -102,11 +102,12 @@ HF_HR_PATH = _data(
     "data/harvard_forest/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/"
     "AMF_US-Ha1_FLUXNET_FULLSET_HR_1991-2020_3-5.csv"
 )
-_OPT_CONFIG    = _wt("configs/harvard_optimal_config.yaml")
+_OPT_CONFIG    = _wt("configs/harvard_3pool_config.yaml")
 _SOIL_CONFIG   = _wt("configs/harvard_forest_soil_only.yaml")   # 6-pool reference
 HF_SOIL_14C_PATH = _data("data/harvard_forest/hf212-03-14c-org.csv")
 HF_RESP_14C_PATH = _data("data/harvard_forest/hf212-01-14c-no-treat.csv")
 HF_SOIL_C_PATH   = _data("data/harvard_forest/hf271-07-soils.csv")
+HF_SOIL_C_PATH2  = _data("data/harvard_forest/hf324-06-soil-carbon.csv")
 HUA_PATH     = _data("data/shared/atm_14C/Hua_2021.csv")
 GRAVEN_PATH  = _data("data/shared/atm_14C/Graven_2017.csv")
 INTCAL_PATH  = _data("data/shared/atm_14C/intcal20.14c")
@@ -148,13 +149,16 @@ def _slice_forcing(forcing, start, end):
 
 def _build_pool_14C_obs_bulk(soil_14c_path, forcing_time, pool_names):
     """
-    Build ``delta14C_obs`` for the 2-pool model by mass-averaging the 4
-    hf212-03 horizons into a single bulk ``soil_active`` and ``soil_passive``
-    observation.
+    Build ``delta14C_obs`` by mapping hf212-03 horizons to model pools.
 
-    Strategy:
-      soil_active  ← mean(Oi, Oe)          [organic-rich; fast cycling]
-      soil_passive ← mean(A-lf, A-min)     [mineral-protected; slow cycling]
+    3-pool mapping (active + slow + passive):
+      soil_active  ← Oi               [fresh litter; fastest cycling]
+      soil_slow    ← mean(Oe, A-lf)   [intermediate; organic + mineral-A fast]
+      soil_passive ← A-min            [mineral-protected; pre-bomb depleted]
+
+    2-pool fallback (active + passive):
+      soil_active  ← mean(Oi, Oe)
+      soil_passive ← mean(A-lf, A-min)
     """
     d14c_df = pd.read_csv(soil_14c_path)
     d14c_df["horizon"] = d14c_df["horizon"].str.strip()
@@ -163,29 +167,34 @@ def _build_pool_14C_obs_bulk(soil_14c_path, forcing_time, pool_names):
     years_np = 1970.0 + time_np / 365.25
     T = len(time_np)
 
-    _active_horizons  = ["Oi", "Oe"]
-    _passive_horizons = ["A-lf", "A-min"]
-
     pool_name_set = set(pool_names)
-    obs_dict = {}
+    has_slow = "soil_slow" in pool_name_set
 
+    if has_slow:
+        _horizon_map = {
+            "soil_active":  ["Oi"],
+            "soil_slow":    ["Oe", "A-lf"],
+            "soil_passive": ["A-min"],
+        }
+    else:
+        _horizon_map = {
+            "soil_active":  ["Oi", "Oe"],
+            "soil_passive": ["A-lf", "A-min"],
+        }
+
+    obs_dict = {}
     for year in d14c_df["year"].unique():
         yr_df = d14c_df[d14c_df["year"] == year]
         t_idx = int(np.argmin(np.abs(years_np - (float(year) + 0.5))))
 
-        if "soil_active" in pool_name_set:
-            vals = yr_df.loc[yr_df["horizon"].isin(_active_horizons), "of.14c.12c"].dropna()
+        for pool_name, horizons in _horizon_map.items():
+            if pool_name not in pool_name_set:
+                continue
+            vals = yr_df.loc[yr_df["horizon"].isin(horizons), "of.14c.12c"].dropna()
             if len(vals):
-                if "soil_active" not in obs_dict:
-                    obs_dict["soil_active"] = np.full(T, np.nan, dtype=np.float32)
-                obs_dict["soil_active"][t_idx] = float(vals.mean())
-
-        if "soil_passive" in pool_name_set:
-            vals = yr_df.loc[yr_df["horizon"].isin(_passive_horizons), "of.14c.12c"].dropna()
-            if len(vals):
-                if "soil_passive" not in obs_dict:
-                    obs_dict["soil_passive"] = np.full(T, np.nan, dtype=np.float32)
-                obs_dict["soil_passive"][t_idx] = float(vals.mean())
+                if pool_name not in obs_dict:
+                    obs_dict[pool_name] = np.full(T, np.nan, dtype=np.float32)
+                obs_dict[pool_name][t_idx] = float(vals.mean())
 
     return {k: jnp.array(v) for k, v in obs_dict.items()}
 
@@ -207,12 +216,20 @@ def _build_resp_14C_obs(resp_14c_path, forcing_time):
     return jnp.array(arr)
 
 
-def _build_state0_2pool(config, pool_index):
+def _build_state0(config, pool_index):
     """
-    Initialise 2-pool state from hf271 C stocks and hf212-03 Δ¹⁴C data.
+    Initialise model state from hf271 C stocks and hf212-03 Δ¹⁴C data.
 
-    Active pool ← sum(Oi + Oe) C stocks, mean Δ¹⁴C from 1996
-    Passive pool ← sum(A-lf + A-min) C stocks, mean Δ¹⁴C from 1996
+    3-pool mapping (active + slow + passive):
+      soil_active  ← 0.40 × O_mean   (Oi fraction ~40% of organic layer)
+      soil_slow    ← 0.60 × O_mean + 0.30 × M_mean   (Oe + A-lf)
+      soil_passive ← 0.70 × M_mean   (A-min + deeper mineral)
+
+    2-pool fallback (active + passive):
+      soil_active  ← O_mean
+      soil_passive ← M_mean
+
+    Δ¹⁴C is initialised from 1996 hf212-03 horizon means.
     """
     from ecosystem_complexity.state import make_initial_state
 
@@ -228,14 +245,27 @@ def _build_state0_2pool(config, pool_index):
         vals = d14c_1996.loc[d14c_1996["horizon"].isin(horizons), "of.14c.12c"].dropna()
         return float(vals.mean()) if len(vals) else 0.0
 
-    C12_by_pool = {
-        "soil_active":  org_mean,
-        "soil_passive": min_mean,
-    }
-    d14C_by_pool = {
-        "soil_active":  _mean_d14c(["Oi", "Oe"]),
-        "soil_passive": _mean_d14c(["A-lf", "A-min"]),
-    }
+    has_slow = "soil_slow" in pool_index.pool_names
+    if has_slow:
+        C12_by_pool = {
+            "soil_active":  0.40 * org_mean,
+            "soil_slow":    0.60 * org_mean + 0.30 * min_mean,
+            "soil_passive": 0.70 * min_mean,
+        }
+        d14C_by_pool = {
+            "soil_active":  _mean_d14c(["Oi"]),
+            "soil_slow":    _mean_d14c(["Oe", "A-lf"]),
+            "soil_passive": _mean_d14c(["A-min"]),
+        }
+    else:
+        C12_by_pool = {
+            "soil_active":  org_mean,
+            "soil_passive": min_mean,
+        }
+        d14C_by_pool = {
+            "soil_active":  _mean_d14c(["Oi", "Oe"]),
+            "soil_passive": _mean_d14c(["A-lf", "A-min"]),
+        }
 
     base    = make_initial_state(config, {})
     n_pools = len(pool_index)
@@ -251,6 +281,42 @@ def _build_state0_2pool(config, pool_index):
         C14_arr[i] = C12_arr[i] * _R_STD * (1.0 + d14c_val / 1000.0)
 
     return base._replace(C12=jnp.array(C12_arr), C14=jnp.array(C14_arr))
+
+
+_HF324_CORE_AREA_CM2 = 10.0  # cm² — back-calculated from bulk density × depth × %C
+
+
+def _build_soil_carbon_obs(path: str, pool_names: list) -> dict:
+    """
+    Load EMS-site carbon stock observations from hf324-06-soil-carbon.csv.
+
+    Returns {pool_name: (mean_gC_m2, sem_gC_m2)} using the standard error
+    of the mean (SEM = std/√n) as the constraint uncertainty, so that the
+    large within-horizon sample spread does not wash out the constraint.
+
+    Horizon → pool mapping:
+      organic (Oi/Oe combined) → soil_active
+      mineral (0–15 cm)        → soil_passive
+      soil_slow: not directly measured; left unconstrained.
+
+    Unit conversion: c.mass.rocks (gC per core) × 10000 cm²/m² / core_area_cm²
+    Core area = 10.0 cm² (confirmed via BD × depth × %C back-calculation).
+    Only EMS site, use.not == 1 rows are included.
+    """
+    df = pd.read_csv(path, encoding="latin1")
+    ems = df[(df["site"] == "ems") & (df["use.not"] == 1)].copy()
+    ems["gC_m2"] = ems["c.mass.rocks"] * 10000.0 / _HF324_CORE_AREA_CM2
+
+    pool_name_set = set(pool_names)
+    result = {}
+    for horizon, pool_name in [("organic", "soil_active"), ("mineral", "soil_passive")]:
+        if pool_name not in pool_name_set:
+            continue
+        vals = ems.loc[ems["horizon"] == horizon, "gC_m2"].dropna()
+        if len(vals):
+            sem = float(vals.std() / np.sqrt(len(vals)))
+            result[pool_name] = (float(vals.mean()), sem)
+    return result
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -294,10 +360,13 @@ def run_optimal_inversion():
     print("Building observations…")
     delta14C_obs  = _build_pool_14C_obs_bulk(HF_SOIL_14C_PATH, forcing.time, idx.pool_names)
     delta14C_resp = _build_resp_14C_obs(HF_RESP_14C_PATH, forcing.time)
+    c_pools_obs   = _build_soil_carbon_obs(HF_SOIL_C_PATH2, idx.pool_names)
 
     n_pool_obs = sum(int(jnp.sum(~jnp.isnan(a))) for a in delta14C_obs.values())
     n_resp_obs = int(jnp.sum(~jnp.isnan(delta14C_resp)))
     print(f"  Pool Δ¹⁴C obs: {n_pool_obs}  |  Resp Δ¹⁴C obs: {n_resp_obs}")
+    for pn, (mu, sig) in c_pools_obs.items():
+        print(f"  C stock {pn}: {mu:.0f} ± {sig:.0f} gC m⁻²")
 
     _nan_T = jnp.full(T, jnp.nan)
     obs_all = ObservationData(
@@ -316,9 +385,17 @@ def run_optimal_inversion():
         C_pools_obs={},
         delta14C_resp=None,
     )
+    obs_with_carbon = ObservationData(
+        time=forcing.time,
+        NEE=_nan_T, GPP=_nan_T, ER=_nan_T, NEE_unc=_nan_T,
+        delta14C_obs=delta14C_obs,
+        deltaD14C_obs={},
+        C_pools_obs=c_pools_obs,
+        delta14C_resp=delta14C_resp,
+    )
 
     # ── Initial state ────────────────────────────────────────────────────────
-    state0 = _build_state0_2pool(config, idx)
+    state0 = _build_state0(config, idx)
     print(f"  State0 total C12: {float(jnp.sum(state0.C12)):.0f} gC m⁻²")
 
     # ── Prior forward run ─────────────────────────────────────────────────────
@@ -359,7 +436,20 @@ def run_optimal_inversion():
     out_both = run_model(model, forcing, state0=state0, params=result_both.params_opt)
     jax.block_until_ready(out_both.delta14C)
 
-    params_opt = result_both.params_opt
+    # ── Optimisation 3 — pool + resp Δ¹⁴C + carbon stocks ───────────────────
+    print(f"\nOpt 3 — pool + resp Δ¹⁴C + C stocks  ({n_pool_obs} + {n_resp_obs} + {len(c_pools_obs)} pools)…")
+    t0 = time.perf_counter()
+    result_carbon = optimize(model, forcing, obs_with_carbon, state0=state0,
+                             fields=_OPT_FIELDS)
+    dt3 = time.perf_counter() - t0
+    lh3 = np.array(result_carbon.loss_history)
+    vl3 = lh3[np.isfinite(lh3)]
+    print(f"  Done [{dt3:.0f}s]  loss {vl3[0]:.4f} → {vl3[-1]:.4f}")
+
+    out_carbon = run_model(model, forcing, state0=state0, params=result_carbon.params_opt)
+    jax.block_until_ready(out_carbon.delta14C)
+
+    params_opt = result_carbon.params_opt
 
     # ── Respired Δ¹⁴C for all runs ───────────────────────────────────────────
     def _resp_d14c(out, params):
@@ -367,8 +457,9 @@ def run_optimal_inversion():
         w   = np.array(out.C12) / (tau[None, :] + 1e-30)
         return (np.array(out.delta14C) * w).sum(-1) / (w.sum(-1) + 1e-30)
 
-    d14C_resp_pool = _resp_d14c(out_pool, result_pool.params_opt)
-    d14C_resp_both = _resp_d14c(out_both, params_opt)
+    d14C_resp_pool   = _resp_d14c(out_pool,   result_pool.params_opt)
+    d14C_resp_both   = _resp_d14c(out_both,   result_both.params_opt)
+    d14C_resp_carbon = _resp_d14c(out_carbon, result_carbon.params_opt)
 
     # ── Parameter summary ─────────────────────────────────────────────────────
     tau_opt = np.exp(np.array(params_opt.log_tau))
@@ -413,9 +504,17 @@ def run_optimal_inversion():
     dfs_6pool_ref = 1.029
     n_params_6pool_ref = 10
 
+    # ── Carbon stock diagnostics ──────────────────────────────────────────────
+    print("\nCarbon stock constraint diagnostics:")
+    for pn, (mu, sig) in c_pools_obs.items():
+        pi = idx[pn]
+        c_sim_mean_both   = float(np.mean(np.array(out_both.C12)[:, pi]))
+        c_sim_mean_carbon = float(np.mean(np.array(out_carbon.C12)[:, pi]))
+        print(f"  {pn}: obs={mu:.0f}±{sig:.0f}  |  opt2={c_sim_mean_both:.0f}  |  opt3={c_sim_mean_carbon:.0f} gC m⁻²")
+
     # ── Age diagnostics ───────────────────────────────────────────────────────
-    print("\nAge diagnostics (optimised 2-pool)…")
-    age_diag = compute_age_diagnostics(out_both, params_opt, model)
+    print("\nAge diagnostics (optimised 2-pool + C stock constraints)…")
+    age_diag = compute_age_diagnostics(out_carbon, params_opt, model)
     bulk_d14C_mean = float(np.nanmean(age_diag.bulk_delta14C))
     resp_d14C_mean = float(np.nanmean(age_diag.respired_delta14C))
     print(f"  Stored bulk Δ¹⁴C:  {bulk_d14C_mean:+.1f} ‰")
@@ -427,13 +526,17 @@ def run_optimal_inversion():
         out_prior=out_prior,
         out_pool=out_pool,
         out_both=out_both,
+        out_carbon=out_carbon,
         result_pool=result_pool,
         result_both=result_both,
+        result_carbon=result_carbon,
         delta14C_obs=delta14C_obs,
         delta14C_resp=delta14C_resp,
+        c_pools_obs=c_pools_obs,
         d14C_resp_prior=d14C_resp_prior,
         d14C_resp_pool=d14C_resp_pool,
         d14C_resp_both=d14C_resp_both,
+        d14C_resp_carbon=d14C_resp_carbon,
         params_prior=params_prior,
         params_opt=params_opt,
         pool_idx=idx,
@@ -446,6 +549,7 @@ def run_optimal_inversion():
         tau_opt=tau_opt,
         lh1=lh1,
         lh2=lh2,
+        lh3=lh3,
     )
 
 
@@ -466,28 +570,33 @@ def make_figure(r: dict, out_path: str | None = None):
     out_prior    = r["out_prior"]
     out_pool     = r["out_pool"]
     out_both     = r["out_both"]
+    out_carbon   = r["out_carbon"]
     delta14C_obs = r["delta14C_obs"]
+    c_pools_obs  = r["c_pools_obs"]
     d14C_resp    = r["delta14C_resp"]
     pool_idx     = r["pool_idx"]
     dof_2pool    = r["dof_2pool"]
     age_diag     = r["age_diag"]
     tau_p        = r["tau_p"]
     tau_opt      = r["tau_opt"]
-    lh1, lh2     = r["lh1"], r["lh2"]
+    lh1, lh2, lh3 = r["lh1"], r["lh2"], r["lh3"]
 
     pool_names = pool_idx.pool_names
-    pool_colors = ["tab:green", "tab:brown"]
-    pool_markers = ["o", "s"]
+    pool_colors  = ["tab:green", "tab:orange", "tab:brown"]
+    pool_markers = ["o", "^", "s"]
 
     fig = plt.figure(figsize=(16, 14))
     gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.45, wspace=0.32)
     axes = [fig.add_subplot(gs[r_, c]) for r_ in range(3) for c in range(2)]
     ax_loss, ax_tau, ax_pool14C, ax_resp14C, ax_info, ax_age = axes
 
+    C_CARBON = "darkorange"
+
     # ── (a) Loss convergence ─────────────────────────────────────────────────
     for lh, label, color in [
         (lh1, "pool Δ¹⁴C only", C_POOL),
         (lh2, "pool + resp Δ¹⁴C", C_BOTH),
+        (lh3, "pool + resp + C stocks", C_CARBON),
     ]:
         valid = lh[np.isfinite(lh)]
         if valid[0] > 0:
@@ -521,16 +630,19 @@ def make_figure(r: dict, out_path: str | None = None):
             continue
         pi = pool_idx[pool_name]
 
-        prior_line = np.array(out_prior.delta14C)[:, pi]
-        pool_line  = np.array(out_pool.delta14C)[:, pi]
-        both_line  = np.array(out_both.delta14C)[:, pi]
+        prior_line  = np.array(out_prior.delta14C)[:, pi]
+        pool_line   = np.array(out_pool.delta14C)[:, pi]
+        both_line   = np.array(out_both.delta14C)[:, pi]
+        carbon_line = np.array(out_carbon.delta14C)[:, pi]
 
         ax_pool14C.plot(time_years, prior_line, color=C_PRIOR, lw=1.0, alpha=0.6,
                         linestyle="--", label=f"prior ({pool_name})" if i == 0 else None)
-        ax_pool14C.plot(time_years, pool_line,  color=color,   lw=1.2, alpha=0.7,
+        ax_pool14C.plot(time_years, pool_line,  color=color,   lw=1.0, alpha=0.6,
                         linestyle=":")
-        ax_pool14C.plot(time_years, both_line,  color=color,   lw=1.8,
-                        label=f"{pool_name} (opt)")
+        ax_pool14C.plot(time_years, both_line,  color=color,   lw=1.4, alpha=0.8,
+                        linestyle="-.")
+        ax_pool14C.plot(time_years, carbon_line, color=color,  lw=1.8,
+                        label=f"{pool_name} (opt+C)")
 
         if pool_name in delta14C_obs:
             obs_arr  = np.array(delta14C_obs[pool_name])
@@ -541,19 +653,21 @@ def make_figure(r: dict, out_path: str | None = None):
 
     ax_pool14C.set_xlabel("Year")
     ax_pool14C.set_ylabel("Δ¹⁴C (‰)")
-    ax_pool14C.set_title("(c) Pool Δ¹⁴C  (prior – opt-pool -- opt-both)")
+    ax_pool14C.set_title("(c) Pool Δ¹⁴C  (prior – opt-pool -·- opt-both — opt+C)")
     ax_pool14C.legend(fontsize=8, ncol=2)
 
     # ── (d) Respired CO₂ Δ¹⁴C ───────────────────────────────────────────────
     resp_arr  = np.array(d14C_resp)
     resp_mask = ~np.isnan(resp_arr)
 
-    ax_resp14C.plot(time_years, r["d14C_resp_prior"], color=C_PRIOR, lw=1.0,
+    ax_resp14C.plot(time_years, r["d14C_resp_prior"],  color=C_PRIOR,  lw=1.0,
                     linestyle="--", label="prior", alpha=0.7)
-    ax_resp14C.plot(time_years, r["d14C_resp_pool"],  color=C_POOL,  lw=1.2,
+    ax_resp14C.plot(time_years, r["d14C_resp_pool"],   color=C_POOL,   lw=1.0,
                     linestyle=":", label="opt pool Δ¹⁴C only", alpha=0.8)
-    ax_resp14C.plot(time_years, r["d14C_resp_both"],  color=C_BOTH,  lw=1.8,
-                    label="opt pool + resp Δ¹⁴C")
+    ax_resp14C.plot(time_years, r["d14C_resp_both"],   color=C_BOTH,   lw=1.4,
+                    linestyle="-.", label="opt pool + resp Δ¹⁴C", alpha=0.9)
+    ax_resp14C.plot(time_years, r["d14C_resp_carbon"], color=C_CARBON, lw=1.8,
+                    label="opt pool + resp + C stocks")
     ax_resp14C.scatter(time_years[resp_mask], resp_arr[resp_mask],
                        color="k", marker="x", s=30, zorder=5,
                        label="obs (hf212-01 NWN)")
@@ -562,36 +676,39 @@ def make_figure(r: dict, out_path: str | None = None):
     ax_resp14C.set_title("(d) Respired CO₂ Δ¹⁴C")
     ax_resp14C.legend(fontsize=8)
 
-    # ── (e) Information content: DFS vs. n_params ────────────────────────────
-    n_2pool  = r["n_params_2pool"]
-    dfs_2pool = dof_2pool.dfs_total
-    n_6pool  = r["n_params_6pool_ref"]
-    dfs_6pool = r["dfs_6pool_ref"]
+    # ── (e) Carbon stock constraints: obs vs. modelled ───────────────────────
+    # Show time-mean modelled C12 for each pool across the three optimisation
+    # runs, with the hf324-06 observed mean ± 1σ as horizontal bands.
+    _bar_labels = ["opt1\npool Δ¹⁴C", "opt2\n+resp Δ¹⁴C", "opt3\n+C stocks"]
+    _bar_colors = [C_POOL, C_BOTH, C_CARBON]
+    _x_base = np.arange(len(_bar_labels))
+    _bar_w  = 0.28
 
-    ax_info.scatter([n_6pool], [dfs_6pool], color="gray",   s=120, zorder=5,
-                    label=f"6-pool (n={n_6pool}, DFS={dfs_6pool:.2f})", marker="^")
-    ax_info.scatter([n_2pool], [dfs_2pool], color=C_BOTH,   s=120, zorder=5,
-                    label=f"2-pool (n={n_2pool}, DFS={dfs_2pool:.2f})", marker="o")
+    for j, (pool_name, color, marker) in enumerate(zip(pool_names, pool_colors, pool_markers)):
+        if pool_name not in pool_idx.pool_names:
+            continue
+        pi = pool_idx[pool_name]
+        means_sim = [
+            float(np.mean(np.array(out.C12)[:, pi]))
+            for out in [r["out_pool"], r["out_both"], out_carbon]
+        ]
+        offset = (j - 0.5) * _bar_w
+        bars = ax_info.bar(_x_base + offset, means_sim, width=_bar_w,
+                           color=color, alpha=0.75,
+                           label=pool_name.replace("soil_", ""))
 
-    # Ideal line: DFS = n (all params constrained)
-    n_max = max(n_6pool, n_2pool) + 2
-    ax_info.plot([0, n_max], [0, n_max], color="0.7", lw=1.0,
-                 linestyle="--", label="DFS = n (ideal)")
-    ax_info.plot([0, n_max], [0, n_max * 0.5], color="0.85", lw=1.0,
-                 linestyle=":", label="DFS = 0.5n")
+        if pool_name in c_pools_obs:
+            c_mu, c_sig = c_pools_obs[pool_name]
+            ax_info.axhline(c_mu, color=color, lw=1.5, linestyle="--", alpha=0.9)
+            ax_info.axhspan(c_mu - c_sig, c_mu + c_sig,
+                            color=color, alpha=0.12,
+                            label=f"{pool_name.replace('soil_','')} obs ±1σ")
 
-    ax_info.set_xlabel("Number of optimised parameters (n)")
-    ax_info.set_ylabel("Degrees of freedom for signal (DFS)")
-    ax_info.set_title("(e) Information content vs. model complexity")
-    ax_info.legend(fontsize=9)
-    ax_info.set_xlim(0, n_max)
-    ax_info.set_ylim(0, min(n_max, dfs_2pool + 2))
-
-    # Annotation: DFS/n ratios
-    for n, dfs, label in [(n_6pool, dfs_6pool, "6-pool"), (n_2pool, dfs_2pool, "2-pool")]:
-        ax_info.annotate(f"DFS/n={dfs/n:.2f}",
-                         xy=(n, dfs), xytext=(n + 0.4, dfs - 0.05),
-                         fontsize=8, color="0.3")
+    ax_info.set_xticks(_x_base)
+    ax_info.set_xticklabels(_bar_labels, fontsize=8)
+    ax_info.set_ylabel("Mean C12 (gC m⁻²)")
+    ax_info.set_title("(e) Carbon stocks: model vs. hf324-06 obs")
+    ax_info.legend(fontsize=8)
 
     # ── (f) Age diagnostics ───────────────────────────────────────────────────
     ax_age.plot(time_years, age_diag.bulk_delta14C,      color="tab:blue",  lw=1.8,
@@ -617,8 +734,9 @@ def make_figure(r: dict, out_path: str | None = None):
     ax_age.axhline(0, color="0.7", lw=0.8)
 
     fig.suptitle(
-        "Harvard Forest — 2-Pool Optimal Model  (soil_active + soil_passive)",
-        fontsize=13, y=0.99,
+        "Harvard Forest — 3-Pool Optimal Model  (soil_active + soil_slow + soil_passive)\n"
+        "Opt3 adds hf324-06 carbon stock constraints (EMS site, SEM uncertainty)",
+        fontsize=12, y=0.99,
     )
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"\nFigure saved → {out_path}")

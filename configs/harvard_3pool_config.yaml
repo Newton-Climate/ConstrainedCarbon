@@ -1,0 +1,73 @@
+site:
+  id: "US-Ha1-3pool"
+  name: "Harvard Forest – 3-Pool Optimal (active + slow + passive)"
+  lat: 42.54
+  lon: -72.17
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 300
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 0.60
+      permafrost_eligible: false
+      som_pools:
+        - name: active
+          # Fast-cycling organic fraction (Oi/litter): ~2 yr turnover
+          # Constrained by bomb-14C peak in Oi horizon and respired CO2 Δ14C
+          tau_prior_days: 730
+          tau_prior_std: 365
+        - name: slow
+          # Intermediate fraction (Oe + A-lf): ~20 yr turnover
+          # Constrained by Oe and A-lf horizon Δ14C observations
+          tau_prior_days: 7300
+          tau_prior_std: 3000
+        - name: passive
+          # Mineral-protected fraction (A-min): ~100 yr turnover
+          # Constrained by pre-bomb (low positive) Δ14C in A-min horizon
+          tau_prior_days: 36500
+          tau_prior_std: 18250
+
+  # Cascade: active → slow → passive (physical protection / mineral association)
+  transfer_rules:
+    - [soil_active,  soil_slow,    0.25]
+    - [soil_slow,    soil_passive, 0.10]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  partition:
+    soil_active:  0.70
+    soil_slow:    0.25
+    soil_passive: 0.05
+  optimize_partition: true
+
+parameters:
+  alloc: {}
+
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  optimizer: adam
+  learning_rate: 0.0003
+  max_iterations: 1000
+  weight_flux: 0.0
+  weight_14C: 1.0
+  weight_resp_14C: 1.0
+  weight_carbon: 1.0
+  grad_clip: 1.0

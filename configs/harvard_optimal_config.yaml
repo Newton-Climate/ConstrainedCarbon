@@ -66,4 +66,5 @@ inversion:
   weight_flux: 0.0
   weight_14C: 1.0
   weight_resp_14C: 1.0
+  weight_carbon: 1.0
   grad_clip: 1.0

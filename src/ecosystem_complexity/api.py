@@ -39,6 +39,7 @@ class OptimizationResult(NamedTuple):
     loss_flux_history: jnp.ndarray   # (n_iter,)
     loss_14C_history: jnp.ndarray    # (n_iter,)
     loss_resp_history: jnp.ndarray   # (n_iter,) — respired CO₂ Δ¹⁴C loss
+    loss_carbon_history: jnp.ndarray # (n_iter,) — carbon stock constraint loss
     tau_history: jnp.ndarray         # (n_iter, n_pools)
     converged: bool
     n_iter: int
@@ -304,6 +305,7 @@ def optimize(
     w_flux = float(inv_cfg.get("weight_flux", 1.0))
     w_14C = float(inv_cfg.get("weight_14C", 1.0))
     w_resp = float(inv_cfg.get("weight_resp_14C", 0.0))
+    w_carbon = float(inv_cfg.get("weight_carbon", 0.0))
     grad_clip = float(inv_cfg.get("grad_clip", 1.0))
 
     params0 = make_default_params(model.config)
@@ -392,8 +394,24 @@ def optimize(
                 0.0,
             )
 
-        loss = w_flux * l_flux + w_14C * l_14C + w_resp * l_resp
-        return loss, (l_flux, l_14C, l_resp, jnp.exp(p.log_tau))
+        # Carbon stock loss — soft constraint on time-mean C12 per pool.
+        # C_pools_obs: {pool_name: (mean_gC_m2, sigma_gC_m2)}
+        # Uses the mean modelled C12 over the full simulation window.
+        l_carbon = jnp.zeros(())
+        n_carbon_terms = 0
+        for pool_name, (c_obs_mean, c_obs_sigma) in (observations.C_pools_obs or {}).items():
+            if pool_name not in set(model.pool_index.pool_names):
+                continue
+            idx = model.pool_index[pool_name]
+            c_sim_mean = jnp.mean(out.C12[:, idx])
+            sigma = float(c_obs_sigma) + 1.0  # avoid divide-by-zero
+            l_carbon = l_carbon + ((c_sim_mean - float(c_obs_mean)) / sigma) ** 2
+            n_carbon_terms += 1
+        if n_carbon_terms > 0:
+            l_carbon = l_carbon / n_carbon_terms
+
+        loss = w_flux * l_flux + w_14C * l_14C + w_resp * l_resp + w_carbon * l_carbon
+        return loss, (l_flux, l_14C, l_resp, l_carbon, jnp.exp(p.log_tau))
 
     grad_fn = jax.value_and_grad(_loss_and_components, has_aux=True)
 
@@ -415,6 +433,7 @@ def optimize(
     loss_flux_hist = []
     loss_14C_hist = []
     loss_resp_hist = []
+    loss_carbon_hist = []
     tau_hist = []
     converged = False
 
@@ -422,7 +441,7 @@ def optimize(
     best_loss = float("inf")
 
     for i in range(n_iter):
-        (loss_val, (l_flux, l_14C, l_resp, taus)), grads = grad_fn(vec)
+        (loss_val, (l_flux, l_14C, l_resp, l_carbon, taus)), grads = grad_fn(vec)
 
         # Guard against NaN/Inf divergence — stop and revert to best seen so far.
         loss_float = float(loss_val)
@@ -448,6 +467,7 @@ def optimize(
         loss_flux_hist.append(float(l_flux))
         loss_14C_hist.append(float(l_14C))
         loss_resp_hist.append(float(l_resp))
+        loss_carbon_hist.append(float(l_carbon))
         tau_hist.append(np.array(taus))
 
         if i > 10:
@@ -468,6 +488,7 @@ def optimize(
         loss_flux_history=jnp.array(loss_flux_hist),
         loss_14C_history=jnp.array(loss_14C_hist),
         loss_resp_history=jnp.array(loss_resp_hist),
+        loss_carbon_history=jnp.array(loss_carbon_hist),
         tau_history=jnp.array(tau_hist),
         converged=converged,
         n_iter=len(loss_hist),
