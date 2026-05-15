@@ -49,11 +49,14 @@ external_inputs:
   soil_input_fraction: 1.0
   optimize_soil_input_fraction: false
 
+  # Prior input fractions: most litter enters active (55%), some directly to
+  # slow via humification (35%), a small fraction to passive via mineral
+  # association (10%).  σ = 0.30 in log-space (wide; let Δ¹⁴C inform).
   partition:
-    soil_active:  1.00
-    soil_slow:    0.00
-    soil_passive: 0.00
-  optimize_partition: false   # all inputs enter at top of cascade only
+    soil_active:  0.55
+    soil_slow:    0.35
+    soil_passive: 0.10
+  optimize_partition: true
 
 parameters:
   alloc: {}

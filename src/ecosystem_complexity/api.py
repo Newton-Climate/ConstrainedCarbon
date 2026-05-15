@@ -670,7 +670,7 @@ def _build_sa_diag(
 
     log_tau[i]             : σ = tau_prior_std[i] / tau_prior_days[i]  (log-space)
     log_f_transfer[i,j]    : σ = 0.5 for real transfer rules, 0.02 for structural zeros
-    log_external_input_partition : σ = 1.0  (broad logit prior)
+    log_external_input_partition : σ = 0.30  (moderate; let Δ¹⁴C inform partition)
     everything else        : σ = 0.5
     """
     pool_idx = PoolIndex(config)
@@ -709,7 +709,7 @@ def _build_sa_diag(
             sa_parts.append(jnp.array(sigma ** 2))
 
         elif f == "log_external_input_partition":
-            sa_parts.append(jnp.full(n, 1.0 ** 2))
+            sa_parts.append(jnp.full(n, 0.30 ** 2))
 
         else:
             sa_parts.append(jnp.full(n, 0.5 ** 2))
@@ -724,32 +724,32 @@ def _analytical_c12_ss(
     mean_modifier: float = 1.0,
 ) -> jnp.ndarray:
     """
-    Compute analytical steady-state C12 stocks for a cascade pool system.
+    Compute analytical steady-state C12 stocks for a general pool system with
+    both direct external inputs and cascade transfers.
 
     At true steady state for pool i:
-        dC_i/dt = I_i - (C_i / τ_i) × modifier = 0
-        → C_i = I_i × τ_i / modifier
+        dC_i/dt = I_i_eff - (C_i / τ_i) × modifier = 0
+        → C_i = I_i_eff × τ_i / modifier
 
-    where ``modifier`` is the climatological mean of the combined
-    temperature × moisture × freeze-thaw decomposition scalar.
+    where ``I_i_eff`` is the total effective input to pool i:
+        I_i_eff = f_partition[i] × mean_input      (direct external)
+                + Σ_j F[j,i] × I_j_eff            (cascade from upstream)
 
-    Cascade effective inputs:
-        I_active   = mean_input
-        I_j        = Σ_i F[i,j] × I_i  (upstream transfers)
+    This forms a lower-triangular system solved by forward substitution.
 
-    Uses the softmax-based transfer fractions from ``get_transfer_matrix``.
+    ``modifier`` is the climatological mean of (f_T × f_moisture × f_freeze).
 
     Parameters
     ----------
     params :
-        Current ModelParams (log_tau and log_f_transfer must be set).
+        Current ModelParams.  ``log_tau``, ``log_f_transfer``, and (if present)
+        ``log_external_input_partition`` are used.
     n_pools :
         Number of carbon pools.
     mean_input :
-        Long-term mean carbon input to the active (first) pool [gC m⁻² day⁻¹].
+        Long-term mean total external carbon input [gC m⁻² day⁻¹].
     mean_modifier : float, optional
-        Climatological mean of (f_T × f_moisture × f_freeze) over all soil
-        layers.  Default 1.0 (no correction).
+        Climatological mean decomposition scalar.  Default 1.0.
 
     Returns
     -------
@@ -759,11 +759,22 @@ def _analytical_c12_ss(
     tau = jnp.exp(params.log_tau)                              # (n_pools,)
     F   = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n_pools, n_pools)
 
-    # Effective inputs via cascade: I_j = sum_i(F[i,j] * I_i)
-    I = jnp.zeros(n_pools)
-    I = I.at[0].set(float(mean_input))
+    # External input partition: softmax of log_external_input_partition
+    # If absent (empty array) default to all-to-first-pool (legacy cascade).
+    lep = params.log_external_input_partition
+    if lep.shape[0] == n_pools:
+        f_part = jax.nn.softmax(lep)          # (n_pools,) summing to 1
+    else:
+        # Fallback: all input to pool 0
+        f_part = jnp.zeros(n_pools).at[0].set(1.0)
+
+    # Effective inputs: I_direct + cascade from upstream pools.
+    # For a lower-triangular cascade (F[i,j]=0 if j<=i) this is solvable by
+    # forward substitution in pool order.
+    I = f_part * float(mean_input)   # direct external to each pool (n_pools,)
     for j in range(1, n_pools):
-        I = I.at[j].set(jnp.dot(F[:j, j], I[:j]))
+        # Add cascade inflows from all upstream pools i < j
+        I = I.at[j].add(jnp.dot(F[:j, j], I[:j]))
 
     # Correct for decomposition modifier (true SS has longer effective τ)
     return I * tau / float(mean_modifier)

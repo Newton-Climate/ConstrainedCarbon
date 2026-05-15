@@ -129,7 +129,7 @@ _HORIZON_TO_HORIZON_LABEL = {
     "A-min": "A-min (min slow)",
 }
 
-_OPT_FIELDS = ("log_tau", "log_f_transfer")  # partition fixed to active-only; exclude from OE
+_OPT_FIELDS = ("log_tau", "log_external_input_partition", "log_f_transfer")
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -571,9 +571,20 @@ def run_optimal_inversion():
         c12_ss = _analytical_c12_ss(params_opt, _n_pools, _mean_input_val, _mean_modifier)
         return state0._replace(C12=c12_ss)
 
+    # ── Sanity checks: prior SS and partition ────────────────────────────────
+    params_prior = make_default_params(config)
+    _prior_ss = _analytical_c12_ss(params_prior, _n_pools, _mean_input_val, _mean_modifier)
+    _prior_part = jax.nn.softmax(params_prior.log_external_input_partition)
+    print("\nSanity checks (prior):")
+    print(f"  Partition sum: {float(_prior_part.sum()):.6f}  (must be 1.000000)")
+    for i, nm in enumerate(idx.pool_names):
+        print(f"  SS C_{nm:<14} = {float(_prior_ss[i]):7.1f} gC m⁻²"
+              f"   (f_input={float(_prior_part[i]):.3f})")
+    _total_prior_ss = float(jnp.sum(_prior_ss))
+    print(f"  SS total C12          = {_total_prior_ss:.1f} gC m⁻²")
+
     # ── Prior forward run ─────────────────────────────────────────────────────
     print("\nPrior forward simulation…")
-    params_prior = make_default_params(config)
     t0 = time.perf_counter()
     out_prior = run_model(model, forcing, state0=state0, params=params_prior)
     jax.block_until_ready(out_prior.delta14C)
@@ -592,6 +603,8 @@ def run_optimal_inversion():
     ch1 = np.array(result_carbon_only.cost_history)
     print(f"  Done [{dt1:.0f}s]  J {ch1[0]:.2f} → {ch1[-1]:.2f}"
           f"  ({'converged' if result_carbon_only.converged else 'max-iter'})")
+    if ch1[-1] > 50:
+        print(f"  ⚠ OE1 final cost {ch1[-1]:.1f} > 50 — check SS initialisation")
 
     out_carbon_only = run_model(model, forcing, state0=_make_ss_state(result_carbon_only.params_opt),
                                 params=result_carbon_only.params_opt)
@@ -691,10 +704,12 @@ def run_optimal_inversion():
     for i, name in enumerate(idx.pool_names):
         print(f"  {name:<16}  {tau_p[i]/365:>13.1f}  {tau_opt[i]/365:>12.1f}")
 
-    print(f"\n{'Pool':<16}  {'part prior':>10}  {'part opt':>10}")
-    print("  " + "─" * 38)
+    print(f"\n{'Input fractions':<18}  {'prior':>8}  {'optimised':>10}")
+    print("  " + "─" * 41)
     for i, name in enumerate(idx.pool_names):
-        print(f"  {name:<16}  {part_prior[i]:>10.3f}  {part_opt[i]:>10.3f}")
+        print(f"  {name:<18}  {part_prior[i]:>8.3f}  {part_opt[i]:>10.3f}")
+    print(f"  {'sum (sanity)':<18}  {part_prior.sum():>8.3f}  {part_opt.sum():>10.3f}"
+          f"  ← must be 1.000")
 
     # ── Information content from OE averaging kernel ─────────────────────────
     print("\nInformation content (OE averaging kernel, OE5 run)…")
