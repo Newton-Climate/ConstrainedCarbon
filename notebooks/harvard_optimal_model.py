@@ -78,7 +78,7 @@ _REPO_ROOT = (
 if _SRC_ROOT not in sys.path:
     sys.path.insert(0, _SRC_ROOT)
 
-from ecosystem_complexity.api import build_model, run_model, optimize_oe, OEResult
+from ecosystem_complexity.api import build_model, run_model, optimize_oe, OEResult, _get_oe_fields
 from ecosystem_complexity.config import load_config
 from ecosystem_complexity.data.parsers import attach_atm14C, load_harvard_forest
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
@@ -129,9 +129,13 @@ _HORIZON_TO_HORIZON_LABEL = {
     "A-min": "A-min (min slow)",
 }
 
-_OPT_FIELDS    = ("log_tau", "log_external_input_partition", "log_f_transfer")
-# OE5 adds log_f_hetero so the ER-to-Rh partitioning is jointly estimated.
-_OPT_FIELDS_ER = _OPT_FIELDS + ("log_f_hetero",)
+# OE field sets — derived from config so config flags (optimize_partition, etc.)
+# are automatically respected.  _OPT_FIELDS_ER adds log_f_hetero for OE5 only;
+# this overrides the default rather than requiring a config flag, since OE1–4
+# use the same config but a different state vector.
+# (populated after model is loaded, inside run_optimal_inversion)
+_OPT_FIELDS    = None   # set to _get_oe_fields(config) after model load
+_OPT_FIELDS_ER = None   # set to _OPT_FIELDS + ("log_f_hetero",)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -439,12 +443,21 @@ def run_optimal_inversion():
         hemisphere="NH", start_year=1500.0, end_year=2025.0,
     )
 
-    # ── Build 2-pool model ───────────────────────────────────────────────────
-    print("Building 2-pool model…")
+    # ── Build 3-pool model ───────────────────────────────────────────────────
+    print("Building 3-pool model…")
     model  = build_model(_OPT_CONFIG)
     config = model.config
     idx    = model.pool_index
     print(f"  Pools: {idx.pool_names}")
+
+    # Derive OE field sets from config so optimize_partition / other flags are
+    # automatically respected — no manual sync needed when the YAML changes.
+    global _OPT_FIELDS, _OPT_FIELDS_ER
+    inv_cfg_nb   = getattr(config, "inversion_raw", {}) or {}
+    _OPT_FIELDS    = _get_oe_fields(config, inv_cfg_nb)
+    _OPT_FIELDS_ER = _OPT_FIELDS + ("log_f_hetero",)
+    print(f"  OE fields (OE1–4): {_OPT_FIELDS}")
+    print(f"  OE fields (OE5):   {_OPT_FIELDS_ER}")
 
     # ── Forcing ──────────────────────────────────────────────────────────────
     print("Loading flux forcing…")

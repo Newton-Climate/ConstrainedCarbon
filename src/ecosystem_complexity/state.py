@@ -353,10 +353,14 @@ def make_default_params(config: ModelConfig) -> ModelParams:
         log_soil_input_fraction = jnp.array(
             math.log(sif / (1.0 - sif)), dtype=jnp.float32
         )
-        # Initialise partition logits from prior fractions (normalise first)
+        # Initialise partition logits from prior fractions (normalise first).
+        # Clamp before log so zero-fraction pools yield a large-negative logit
+        # (~-13.8) rather than -inf, which would cause NaN in the LM step
+        # via  prior_r = xa - x = -inf - -inf = NaN.
         fracs = jnp.array(list(ext.partition.values()), dtype=jnp.float32)
         fracs_norm = fracs / fracs.sum()
-        log_external_input_partition = jnp.log(fracs_norm)
+        fracs_clamped = jnp.clip(fracs_norm, 1e-6, 1.0)
+        log_external_input_partition = jnp.log(fracs_clamped)
     else:
         # Disabled defaults: CUE=0.5, soil_fraction≈0, empty partition
         log_CUE = jnp.array(math.log(0.5), dtype=jnp.float32)

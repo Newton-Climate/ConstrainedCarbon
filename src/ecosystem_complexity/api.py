@@ -47,9 +47,22 @@ class OptimizationResult(NamedTuple):
     n_iter: int
 
 
-# Core fields always entered into the optimisation vector.
-# lambda_14C is a fixed physical constant (never optimised).
-# The three external_inputs fields are conditionally added by _get_opt_fields().
+# ── State-vector field selection ──────────────────────────────────────────────
+#
+# Both the gradient-based optimiser (optimize()) and the OE inversion
+# (optimize_oe()) build their state vector by selecting a subset of ModelParams
+# fields.  Field selection is config-driven so that:
+#   - fixed parameters (optimize_partition=false, etc.) are never put in the
+#     state vector — avoids -inf / NaN from prior_r = xa − x = −∞ − −∞
+#   - adding a new optimisable field only requires a YAML flag + one entry here
+#
+# Two flavours:
+#   _get_opt_fields(config)        — full Adam optimiser set (all env params)
+#   _get_oe_fields(config, inv_cfg) — trimmed OE set (τ + transfers + ext inputs)
+#
+# Rule of thumb: anything in _CORE_OPTIMIZED_FIELDS is always estimated;
+# anything with an "optimize_*" YAML flag is conditional.
+
 _CORE_OPTIMIZED_FIELDS = (
     "log_tau",
     "log_f_transfer",
@@ -60,9 +73,19 @@ _CORE_OPTIMIZED_FIELDS = (
     "alpha_priming",
 )
 
+# OE always estimates these (structural parameters only — no env params).
+_OE_CORE_FIELDS = (
+    "log_tau",
+    "log_f_transfer",
+)
+
 
 def _get_opt_fields(config: ModelConfig) -> tuple[str, ...]:
-    """Return the list of ModelParams fields to include in the opt vector."""
+    """Fields for the gradient-based Adam optimiser (optimize()).
+
+    Includes all environmental parameters plus any enabled external-input
+    fields.  Config ``optimize_*`` flags gate the conditional fields.
+    """
     fields = list(_CORE_OPTIMIZED_FIELDS)
     ext = config.external_inputs
     if ext is not None and ext.enabled:
@@ -72,6 +95,32 @@ def _get_opt_fields(config: ModelConfig) -> tuple[str, ...]:
             fields.append("log_soil_input_fraction")
         if ext.optimize_partition:
             fields.append("log_external_input_partition")
+    return tuple(fields)
+
+
+def _get_oe_fields(config: ModelConfig, inv_cfg: Optional[dict] = None) -> tuple[str, ...]:
+    """Fields for the OE Levenberg-Marquardt inversion (optimize_oe()).
+
+    Starts from the minimal OE core (τ, transfer fractions) and appends
+    fields that are enabled in the YAML config:
+
+      external_inputs.optimize_partition  → log_external_input_partition
+      inversion.optimize_f_hetero         → log_f_hetero
+
+    Any field with a prior value of ±inf would corrupt the LM step via
+    prior_r = xa − x = −∞ − −∞ = NaN; gating here (and clamping in
+    make_default_params) provides defense-in-depth.
+    """
+    fields = list(_OE_CORE_FIELDS)
+    inv = inv_cfg or {}
+    ext = config.external_inputs
+
+    if ext is not None and ext.enabled and ext.optimize_partition:
+        fields.append("log_external_input_partition")
+
+    if inv.get("optimize_f_hetero", False):
+        fields.append("log_f_hetero")
+
     return tuple(fields)
 
 
@@ -544,8 +593,6 @@ class OEResult(NamedTuple):
     state_names: list               # length n_state — labels for diagnostics
 
 
-# Default fields for OE: add log_f_transfer to the Adam-10 set.
-_OE_DEFAULT_FIELDS = ("log_tau", "log_external_input_partition", "log_f_transfer")
 
 
 def _build_obs_blocks(
@@ -856,9 +903,13 @@ def optimize_oe(
     Both Sₐ (prior error covariance) and Sₑ (observation error covariance)
     are diagonal.  The Jacobian K = ∂F/∂x is computed via ``jax.jacobian``.
 
-    Default state vector: log_tau (6) + log_external_input_partition (4)
-    + log_f_transfer (6 × 7 = 42, but prior keeps structural zeros fixed).
-    Total: 52 state variables vs ~50 observations.
+    Default state vector is derived from the config via ``_get_oe_fields``:
+      always:                log_tau, log_f_transfer
+      optimize_partition:    log_external_input_partition
+      optimize_f_hetero:     log_f_hetero
+
+    Pass ``fields`` explicitly to override (e.g. to add log_f_hetero for OE5
+    without setting optimize_f_hetero in the config).
 
     Returns an OEResult that includes the posterior covariance Sₓ and the
     averaging kernel A = Sₓ (KᵀSₑ⁻¹K), which together quantify information
@@ -877,7 +928,11 @@ def optimize_oe(
     if state0 is None:
         state0 = make_initial_state(model.config, model._site_config)
 
-    opt_fields = tuple(fields) if fields is not None else _OE_DEFAULT_FIELDS
+    # Use caller-supplied fields; fall back to the config-derived default.
+    # Never use a hardcoded constant here — fixed parameters (e.g. partition
+    # with optimize_partition=false) must NOT enter the state vector because
+    # their prior value can be -inf (from log(0)) which makes prior_r = NaN.
+    opt_fields = tuple(fields) if fields is not None else _get_oe_fields(model.config, inv_cfg)
 
     # ── Steady-state mean input (for analytical C12 initialisation) ───────────
     # 300-yr spinup may be too short for slow/passive pools (τ ≫ 300 yr).
@@ -920,14 +975,27 @@ def optimize_oe(
     xa = _params_to_vector(params0, opt_fields)
     x  = xa
 
-    Sa_diag     = _build_sa_diag(model.config, params0, opt_fields)
-    Sa_inv_diag = 1.0 / (Sa_diag + 1e-30)
-
     state_names = []
     for f in opt_fields:
         val = getattr(params0, f)
         for i in range(int(math.prod(val.shape))):
             state_names.append(f"{f}[{i}]")
+
+    # Guard: -inf or NaN in the prior vector will corrupt the LM step via
+    # prior_r = xa − x = −∞ − −∞ = NaN on iteration 1, poisoning the whole g.
+    _bad = ~jnp.isfinite(xa)
+    if bool(jnp.any(_bad)):
+        bad_names = [state_names[i] for i in np.where(np.array(_bad))[0]]
+        raise ValueError(
+            f"optimize_oe: prior state vector has non-finite values: {bad_names}.\n"
+            f"  Likely cause: a partition fraction is 0.0 so log(0)=-inf entered "
+            f"the state vector.  Fix: set optimize_partition=false in the config "
+            f"(so the zero-fraction logit stays out of the state vector), or use "
+            f"non-zero prior fractions in the partition dict."
+        )
+
+    Sa_diag     = _build_sa_diag(model.config, params0, opt_fields)
+    Sa_inv_diag = 1.0 / (Sa_diag + 1e-30)
 
     f_hetero      = float(inv_cfg.get("f_hetero",      0.0))
     sigma_er_frac = float(inv_cfg.get("sigma_er_frac", 0.15))
