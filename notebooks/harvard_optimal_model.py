@@ -108,7 +108,7 @@ HF_HR_PATH = _data(
     "data/harvard_forest/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/"
     "AMF_US-Ha1_FLUXNET_FULLSET_HR_1991-2020_3-5.csv"
 )
-_OPT_CONFIG    = _wt("configs/harvard_4pool_config.yaml")
+_OPT_CONFIG    = _wt("configs/harvard_3pool_config.yaml")
 _SOIL_CONFIG   = _wt("configs/harvard_forest_soil_only.yaml")   # 6-pool reference
 HF_SOIL_14C_PATH = _data("data/harvard_forest/hf212-03-14c-org.csv")
 HF_RESP_14C_PATH = _data("data/harvard_forest/hf212-01-14c-no-treat.csv")
@@ -600,6 +600,7 @@ def run_optimal_inversion():
 
     return dict(
         time_years=time_years,
+        forcing_GPP=forcing.GPP_obs,
         out_prior=out_prior,
         out_oe1=out_carbon_only,
         out_oe2=out_carbon_pool,
@@ -665,10 +666,10 @@ def make_figure(r: dict, out_path: str | None = None):
     pool_colors  = ["tab:green", "tab:orange", "tab:brown", "tab:purple"]
     pool_markers = ["o", "^", "s", "D"]
 
-    fig = plt.figure(figsize=(16, 14))
-    gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.45, wspace=0.32)
-    axes = [fig.add_subplot(gs[r_, c]) for r_ in range(3) for c in range(2)]
-    ax_loss, ax_tau, ax_pool14C, ax_resp14C, ax_info, ax_age = axes
+    fig = plt.figure(figsize=(16, 19))
+    gs = gridspec.GridSpec(4, 2, figure=fig, hspace=0.48, wspace=0.32)
+    axes = [fig.add_subplot(gs[r_, c]) for r_ in range(4) for c in range(2)]
+    ax_loss, ax_tau, ax_pool14C, ax_resp14C, ax_info, ax_age, ax_gpp, ax_cstock = axes
 
     # ── (a) Loss convergence ─────────────────────────────────────────────────
     for lh, label, color in [
@@ -809,10 +810,56 @@ def make_figure(r: dict, out_path: str | None = None):
     ax_age.legend(fontsize=8)
     ax_age.axhline(0, color="0.7", lw=0.8)
 
+    # ── (g) GPP forcing ───────────────────────────────────────────────────────
+    gpp_arr = np.array(r["forcing_GPP"])
+    # Annual mean GPP
+    yrs_unique = np.arange(int(time_years[0]), int(time_years[-1]) + 1)
+    gpp_annual = []
+    for yr in yrs_unique:
+        mask = (time_years >= yr) & (time_years < yr + 1)
+        if mask.sum() > 10:
+            gpp_annual.append(float(np.nanmean(gpp_arr[mask])))
+        else:
+            gpp_annual.append(np.nan)
+    gpp_annual = np.array(gpp_annual)
+
+    ax_gpp.plot(time_years, gpp_arr, color="0.75", lw=0.5, alpha=0.6, label="daily GPP")
+    ax_gpp.plot(yrs_unique + 0.5, gpp_annual, color="tab:green", lw=2.0, label="annual mean")
+    ax_gpp.set_xlabel("Year")
+    ax_gpp.set_ylabel("GPP (gC m⁻² day⁻¹)")
+    ax_gpp.set_title("(g) GPP forcing (AMF US-Ha1)")
+    ax_gpp.legend(fontsize=8)
+    ax_gpp.set_xlim(time_years[0], time_years[-1])
+
+    # ── (h) C stock time series — prior vs OE3 ────────────────────────────────
+    for i, (pool_name, color, marker) in enumerate(zip(pool_names, pool_colors, pool_markers)):
+        if pool_name not in pool_idx.pool_names:
+            continue
+        pi = pool_idx[pool_name]
+        c_prior = np.array(out_prior.C12)[:, pi]
+        c_oe3   = np.array(out_oe3.C12)[:, pi]
+
+        ax_cstock.plot(time_years, c_prior, color=color, lw=1.0, linestyle="--", alpha=0.5)
+        ax_cstock.plot(time_years, c_oe3,   color=color, lw=1.8,
+                       label=pool_name.replace("soil_", ""))
+
+        if pool_name in c_pools_obs:
+            c_mu, c_sig = c_pools_obs[pool_name]
+            ax_cstock.axhline(c_mu, color=color, lw=1.5, linestyle=":", alpha=0.9)
+            ax_cstock.axhspan(c_mu - c_sig, c_mu + c_sig,
+                              color=color, alpha=0.12,
+                              label=f"{pool_name.replace('soil_','')} obs ±SEM")
+
+    ax_cstock.set_xlabel("Year")
+    ax_cstock.set_ylabel("C stock (gC m⁻²)")
+    ax_cstock.set_title("(h) C stocks: prior (--) vs OE3 (—), obs bands (·)")
+    ax_cstock.legend(fontsize=8, ncol=2)
+    ax_cstock.set_xlim(time_years[0], time_years[-1])
+
     fig.suptitle(
-        "Harvard Forest — 4-Pool Optimal Model  (active + slow + passive + stable)\n"
-        "C-stock obs: hf324-06 Munger organic → active; hf271-07 M horizon → passive (SEM)",
-        fontsize=12, y=0.99,
+        "Harvard Forest — 3-Pool Optimal Model  (active + slow + passive)\n"
+        "Cascade-only inputs; C-stock obs: hf324-06 Munger → active, hf271-07 M horizon → passive",
+        fontsize=12, y=0.995,
     )
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"\nFigure saved → {out_path}")

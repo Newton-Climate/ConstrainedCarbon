@@ -50,10 +50,10 @@ external_inputs:
   optimize_soil_input_fraction: false
 
   partition:
-    soil_active:  0.70
-    soil_slow:    0.25
-    soil_passive: 0.05
-  optimize_partition: true
+    soil_active:  1.00
+    soil_slow:    0.00
+    soil_passive: 0.00
+  optimize_partition: false   # all inputs enter at top of cascade only
 
 parameters:
   alloc: {}
