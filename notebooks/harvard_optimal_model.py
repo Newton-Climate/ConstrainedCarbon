@@ -129,7 +129,9 @@ _HORIZON_TO_HORIZON_LABEL = {
     "A-min": "A-min (min slow)",
 }
 
-_OPT_FIELDS = ("log_tau", "log_external_input_partition", "log_f_transfer")
+_OPT_FIELDS    = ("log_tau", "log_external_input_partition", "log_f_transfer")
+# OE5 adds log_f_hetero so the ER-to-Rh partitioning is jointly estimated.
+_OPT_FIELDS_ER = _OPT_FIELDS + ("log_f_hetero",)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -564,22 +566,32 @@ def run_optimal_inversion():
     _mean_gpp  = float(jnp.nanmean(forcing.GPP_obs))
     _mean_input_val = _mean_gpp * _cue_val
     _n_pools   = len(idx)
+    # Target pool indices for 2-way softmax (active+slow only; passive excluded).
+    _target_names   = list(model.config.external_inputs.partition.keys())
+    _ext_target_idx = [idx[n] for n in _target_names]
     print(f"  Diagnostic SS: mean_modifier={_mean_modifier:.4f}, mean_input={_mean_input_val:.4f} gC/m²/day")
+    print(f"  Input partition targets: {_target_names}  (indices {_ext_target_idx})")
 
     def _make_ss_state(params_opt):
         """Return state0 with C12 replaced by analytical SS for given params."""
-        c12_ss = _analytical_c12_ss(params_opt, _n_pools, _mean_input_val, _mean_modifier)
+        c12_ss = _analytical_c12_ss(params_opt, _n_pools, _mean_input_val, _mean_modifier,
+                                     target_indices=_ext_target_idx)
         return state0._replace(C12=c12_ss)
 
     # ── Sanity checks: prior SS and partition ────────────────────────────────
     params_prior = make_default_params(config)
-    _prior_ss = _analytical_c12_ss(params_prior, _n_pools, _mean_input_val, _mean_modifier)
-    _prior_part = jax.nn.softmax(params_prior.log_external_input_partition)
+    _prior_ss    = _analytical_c12_ss(params_prior, _n_pools, _mean_input_val, _mean_modifier,
+                                       target_indices=_ext_target_idx)
+    _prior_part  = jax.nn.softmax(params_prior.log_external_input_partition)  # (n_targets,)
     print("\nSanity checks (prior):")
     print(f"  Partition sum: {float(_prior_part.sum()):.6f}  (must be 1.000000)")
+    # Build full n_pools input fraction vector for display
+    _f_input_full = np.zeros(_n_pools)
+    for k, ti in enumerate(_ext_target_idx):
+        _f_input_full[ti] = float(_prior_part[k])
     for i, nm in enumerate(idx.pool_names):
         print(f"  SS C_{nm:<14} = {float(_prior_ss[i]):7.1f} gC m⁻²"
-              f"   (f_input={float(_prior_part[i]):.3f})")
+              f"   (f_input={_f_input_full[i]:.3f})")
     _total_prior_ss = float(jnp.sum(_prior_ss))
     print(f"  SS total C12          = {_total_prior_ss:.1f} gC m⁻²")
 
@@ -657,12 +669,12 @@ def run_optimal_inversion():
                         params=result_all.params_opt)
     jax.block_until_ready(out_all.delta14C)
 
-    # ── OE Run 5 — full OE + FluxNet ER annual Rh ────────────────────────────
-    print(f"\nOE 5 — OE4 + FluxNet ER → annual Rh  "
+    # ── OE Run 5 — full OE + FluxNet ER annual Rh + free f_hetero ───────────
+    print(f"\nOE 5 — OE4 + FluxNet ER → annual Rh (free f_hetero)  "
           f"(full Δ¹⁴C + C stocks + ER flux)…")
     t0 = time.perf_counter()
     result_all_er = optimize_oe(model, forcing, obs_all_er, state0=state0,
-                                fields=_OPT_FIELDS)
+                                fields=_OPT_FIELDS_ER)
     dt5 = time.perf_counter() - t0
     ch5 = np.array(result_all_er.cost_history)
     print(f"  Done [{dt5:.0f}s]  J {ch5[0]:.2f} → {ch5[-1]:.2f}"
@@ -696,8 +708,15 @@ def run_optimal_inversion():
     def _softmax(x):
         e = np.exp(x - x.max()); return e / e.sum()
 
-    part_opt   = _softmax(np.array(params_opt.log_external_input_partition))
-    part_prior = _softmax(np.array(params_prior.log_external_input_partition))
+    # Partition arrays have n_target_pools entries (2 for active+slow only).
+    part_opt_vec   = _softmax(np.array(params_opt.log_external_input_partition))
+    part_prior_vec = _softmax(np.array(params_prior.log_external_input_partition))
+    # Map to full n_pools vector for display
+    part_opt_full   = np.zeros(_n_pools)
+    part_prior_full = np.zeros(_n_pools)
+    for k, ti in enumerate(_ext_target_idx):
+        part_opt_full[ti]   = float(part_opt_vec[k])
+        part_prior_full[ti] = float(part_prior_vec[k])
 
     print(f"\n{'Pool':<16}  {'τ prior (yr)':>13}  {'τ opt (yr)':>12}")
     print("  " + "─" * 43)
@@ -707,9 +726,16 @@ def run_optimal_inversion():
     print(f"\n{'Input fractions':<18}  {'prior':>8}  {'optimised':>10}")
     print("  " + "─" * 41)
     for i, name in enumerate(idx.pool_names):
-        print(f"  {name:<18}  {part_prior[i]:>8.3f}  {part_opt[i]:>10.3f}")
-    print(f"  {'sum (sanity)':<18}  {part_prior.sum():>8.3f}  {part_opt.sum():>10.3f}"
+        note = "" if name in _target_names else "  (cascade only)"
+        print(f"  {name:<18}  {part_prior_full[i]:>8.3f}  {part_opt_full[i]:>10.3f}{note}")
+    print(f"  {'sum (sanity)':<18}  {part_prior_vec.sum():>8.3f}  {part_opt_vec.sum():>10.3f}"
           f"  ← must be 1.000")
+
+    # f_hetero posterior (OE5 only)
+    f_het_prior_val = float(jax.nn.sigmoid(params_prior.log_f_hetero))
+    f_het_opt_val   = float(jax.nn.sigmoid(params_opt.log_f_hetero))
+    print(f"\n  f_hetero: prior={f_het_prior_val:.3f}  optimised={f_het_opt_val:.3f}"
+          f"  (ER → Rh fraction)")
 
     # ── Information content from OE averaging kernel ─────────────────────────
     print("\nInformation content (OE averaging kernel, OE5 run)…")
@@ -741,19 +767,26 @@ def run_optimal_inversion():
 
     # ── Annual Rh diagnostics (OE5) ───────────────────────────────────────────
     print("\nAnnual Rh diagnostics (OE5):")
-    er_np    = np.array(er_sliced)
-    time_yrs = np.array(forcing.time)
-    years_np = 1970.0 + time_yrs / 365.25
-    rh5      = np.array(out_all_er.Rh)   # heterotrophic respiration (correct formula)
-    f_het    = float(model.config.inversion.get("f_hetero", 0.55)) if hasattr(model.config, 'inversion') else 0.55
+    er_np      = np.array(er_sliced)
+    gpp_np     = np.array(forcing.GPP_obs)
+    time_yrs   = np.array(forcing.time)
+    years_np   = 1970.0 + time_yrs / 365.25
+    rh5        = np.array(out_all_er.Rh)   # Rh from model (correct formula)
+    # f_hetero posterior from OE5
+    f_het_oe5  = float(jax.nn.sigmoid(params_opt.log_f_hetero))
+    mean_gpp_all = float(np.nanmean(gpp_np))
+    print(f"  f_hetero (OE5 posterior): {f_het_oe5:.3f}  mean_GPP: {mean_gpp_all:.3f} gC m⁻² day⁻¹")
     for yr in range(int(years_np[0]), int(years_np[-1]) + 1):
         mask = (years_np >= yr) & (years_np < yr + 1)
-        er_yr = er_np[mask]; er_yr = er_yr[np.isfinite(er_yr)]
+        er_yr  = er_np[mask]; er_yr  = er_yr[np.isfinite(er_yr)]
+        gpp_yr = gpp_np[mask]; gpp_yr = gpp_yr[np.isfinite(gpp_yr)]
         if len(er_yr) < 30:
             continue
-        rh_obs_yr  = float(np.mean(er_yr)) * f_het
+        rh_obs_yr  = float(np.mean(er_yr)) * f_het_oe5   # Rh_obs using posterior f_hetero
         rh_sim_yr  = float(np.mean(rh5[mask]))
-        print(f"  {yr}: Rh_obs={rh_obs_yr:.3f}  Rh_sim={rh_sim_yr:.3f}  diff={rh_sim_yr-rh_obs_yr:+.3f} gC m⁻² day⁻¹")
+        gpp_yr_mean = float(np.mean(gpp_yr)) if len(gpp_yr) > 10 else np.nan
+        gpp_note   = f"  GPP={gpp_yr_mean:.3f} (Δ={gpp_yr_mean-mean_gpp_all:+.3f})" if np.isfinite(gpp_yr_mean) else ""
+        print(f"  {yr}: Rh_obs={rh_obs_yr:.3f}  Rh_sim={rh_sim_yr:.3f}  diff={rh_sim_yr-rh_obs_yr:+.3f} gC m⁻² day⁻¹{gpp_note}")
 
     # ── Carbon stock diagnostics ──────────────────────────────────────────────
     print("\nCarbon stock constraint diagnostics:")

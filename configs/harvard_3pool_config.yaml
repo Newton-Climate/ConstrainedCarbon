@@ -49,13 +49,13 @@ external_inputs:
   soil_input_fraction: 1.0
   optimize_soil_input_fraction: false
 
-  # Prior input fractions: most litter enters active (55%), some directly to
-  # slow via humification (35%), a small fraction to passive via mineral
-  # association (10%).  σ = 0.30 in log-space (wide; let Δ¹⁴C inform).
+  # Prior input fractions: litter enters active (60%) and slow (40%) only.
+  # Passive receives NO direct external input — it forms exclusively via
+  # cascade transfer from slow (mineral association pathway).
+  # σ = 0.30 in log-space lets Δ¹⁴C inform the active/slow split.
   partition:
-    soil_active:  0.55
-    soil_slow:    0.35
-    soil_passive: 0.10
+    soil_active:  0.60
+    soil_slow:    0.40
   optimize_partition: true
 
 parameters:
@@ -80,12 +80,14 @@ inversion:
                                #  (SEM values from hf324-06 are passed directly)
 
   # FluxNet ER → Rh partitioning (Block 4 obs)
-  # Rh_obs = ER_obs × f_hetero; set f_hetero=0 to disable ER constraint.
+  # ER_obs = Rh_sim / f_hetero; set f_hetero=0 to disable ER constraint.
   # Harvard Forest: ~55% of ER is heterotrophic (Goulden et al. 1996;
-  # Barford et al. 2001). sigma_er_frac captures combined uncertainty in
-  # the partitioning fraction (~10%) and interannual ER variability (~10%).
+  # Barford et al. 2001).  f_hetero is now a FREE parameter in OE5 via
+  # log_f_hetero in the OE state vector; f_hetero here is the prior value.
+  # sigma_er_frac: 15% combined uncertainty on annual ER estimate.
   f_hetero: 0.55
-  sigma_er_frac: 0.15    # 15% combined uncertainty on annual Rh estimate
+  sigma_f_hetero: 0.08   # ±0.08 absolute prior σ on f_hetero (≈ logit σ=0.32)
+  sigma_er_frac: 0.15    # 15% uncertainty on annual ER observation
 
   # Levenberg-Marquardt damping
   lm_lambda0: 0.01

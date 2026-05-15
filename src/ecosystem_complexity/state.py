@@ -115,6 +115,14 @@ class ModelParams(NamedTuple):
     log_soil_input_fraction: jnp.ndarray
     log_external_input_partition: jnp.ndarray
 
+    # ── ER partitioning parameter ─────────────────────────────────────────
+    # log_f_hetero  scalar — logit(f_hetero): fraction of ER that is Rh.
+    # Stored as logit so sigmoid(log_f_hetero) ∈ (0, 1) everywhere.
+    # Prior: logit(0.55) ≈ 0.2007.  σ ≈ 0.32 in logit-space (±0.08 absolute).
+    # Fixed (not optimised) by default; enter OE state vector by including
+    # "log_f_hetero" in the fields tuple passed to optimize_oe.
+    log_f_hetero: jnp.ndarray
+
 
 # ---------------------------------------------------------------------------
 # Factory: initial state
@@ -355,6 +363,15 @@ def make_default_params(config: ModelConfig) -> ModelParams:
         log_soil_input_fraction = jnp.array(-1e6, dtype=jnp.float32)
         log_external_input_partition = jnp.zeros(0, dtype=jnp.float32)
 
+    # ── log_f_hetero (logit of f_hetero ER partitioning fraction) ────────
+    # Read prior from inversion.f_hetero if present; default to 0.55.
+    inv_raw = getattr(config, "inversion_raw", None) or {}
+    f_het_prior = float(inv_raw.get("f_hetero", 0.55))
+    f_het_prior = max(1e-6, min(1.0 - 1e-6, f_het_prior))
+    log_f_hetero = jnp.array(
+        math.log(f_het_prior / (1.0 - f_het_prior)), dtype=jnp.float32
+    )
+
     return ModelParams(
         log_tau=log_tau,
         log_f_transfer=log_f_transfer,
@@ -367,4 +384,5 @@ def make_default_params(config: ModelConfig) -> ModelParams:
         log_CUE=log_CUE,
         log_soil_input_fraction=log_soil_input_fraction,
         log_external_input_partition=log_external_input_partition,
+        log_f_hetero=log_f_hetero,
     )

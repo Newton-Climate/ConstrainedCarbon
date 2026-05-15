@@ -619,12 +619,14 @@ def _build_oe_obs_vector(
             mask = (years_np >= yr) & (years_np < yr + 1) & np.isfinite(er_np)
             if mask.sum() < 30:          # require ≥30 days of valid ER data
                 continue
-            rh_est = float(np.mean(er_np[mask])) * f_hetero
-            sigma  = max(abs(rh_est) * sigma_er_frac, 0.01)
+            er_est = float(np.mean(er_np[mask]))   # raw annual mean ER [gC m⁻² d⁻¹]
+            # σ on ER obs itself (not on Rh): captures ER measurement + partitioning
+            # uncertainty, independent of f_hetero.
+            sigma  = max(abs(er_est) * sigma_er_frac, 0.01)
             row    = np.zeros(T, dtype=np.float32)
             row[mask] = 1.0 / mask.sum()
             rows.append(row)
-            y_er_list.append(rh_est)
+            y_er_list.append(er_est)          # store raw ER (not Rh)
             se_er_list.append(sigma ** 2)
 
         if rows:
@@ -711,6 +713,11 @@ def _build_sa_diag(
         elif f == "log_external_input_partition":
             sa_parts.append(jnp.full(n, 0.30 ** 2))
 
+        elif f == "log_f_hetero":
+            # f_hetero prior ≈ 0.55, σ_f ≈ 0.08 (absolute).
+            # In logit-space: σ_logit = σ_f / (f(1-f)) = 0.08 / (0.55×0.45) ≈ 0.323.
+            sa_parts.append(jnp.full(n, 0.323 ** 2))
+
         else:
             sa_parts.append(jnp.full(n, 0.5 ** 2))
 
@@ -722,6 +729,7 @@ def _analytical_c12_ss(
     n_pools: int,
     mean_input: float,
     mean_modifier: float = 1.0,
+    target_indices: Optional[list] = None,
 ) -> jnp.ndarray:
     """
     Compute analytical steady-state C12 stocks for a general pool system with
@@ -750,6 +758,11 @@ def _analytical_c12_ss(
         Long-term mean total external carbon input [gC m⁻² day⁻¹].
     mean_modifier : float, optional
         Climatological mean decomposition scalar.  Default 1.0.
+    target_indices : list of int, optional
+        Pool indices that receive direct external input, in the same order as
+        ``log_external_input_partition``.  Required when the partition covers
+        fewer pools than n_pools (e.g. 2-way softmax over active+slow only
+        when n_pools=3).  If None, defaults to the first n_lep pools.
 
     Returns
     -------
@@ -759,14 +772,24 @@ def _analytical_c12_ss(
     tau = jnp.exp(params.log_tau)                              # (n_pools,)
     F   = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n_pools, n_pools)
 
-    # External input partition: softmax of log_external_input_partition
-    # If absent (empty array) default to all-to-first-pool (legacy cascade).
-    lep = params.log_external_input_partition
-    if lep.shape[0] == n_pools:
-        f_part = jax.nn.softmax(lep)          # (n_pools,) summing to 1
-    else:
-        # Fallback: all input to pool 0
+    # External input partition: softmax over target pools only.
+    lep     = params.log_external_input_partition
+    n_lep   = lep.shape[0]
+
+    if n_lep == 0:
+        # No partition at all — all input to pool 0 (legacy fallback)
         f_part = jnp.zeros(n_pools).at[0].set(1.0)
+    else:
+        f_soft = jax.nn.softmax(lep)          # (n_lep,) summing to 1
+        if n_lep == n_pools and target_indices is None:
+            # Simple case: one logit per pool
+            f_part = f_soft
+        else:
+            # Sparse case: map n_lep fractions to specific pool indices
+            indices = target_indices if target_indices is not None else list(range(n_lep))
+            f_part = jnp.zeros(n_pools)
+            for k, ti in enumerate(indices):
+                f_part = f_part.at[ti].set(f_soft[k])
 
     # Effective inputs: I_direct + cascade from upstream pools.
     # For a lower-triangular cascade (F[i,j]=0 if j<=i) this is solvable by
@@ -827,8 +850,13 @@ def optimize_oe(
     _ext_cfg    = model.config.external_inputs
     _cue        = float(getattr(_ext_cfg, "CUE", 0.47))
     _mean_gpp   = float(jnp.nanmean(forcing.GPP_obs))
-    _mean_input = _mean_gpp * _cue           # gC m⁻² day⁻¹ entering active pool
+    _mean_input = _mean_gpp * _cue           # gC m⁻² day⁻¹ entering soil
     _n_pools    = len(model.pool_index)
+
+    # Target pool indices for the external input partition (2-way softmax case).
+    # The partition dict keys give the pools that receive direct litter input.
+    _target_names   = list(_ext_cfg.partition.keys()) if _ext_cfg is not None else []
+    _ext_target_idx = [model.pool_index[n] for n in _target_names] or None
 
     # Pre-compute climatological mean decomposition modifier from forcing data.
     # Uses the same NaN fills as _build_forcing_dict so results match the model.
@@ -891,7 +919,8 @@ def optimize_oe(
         # Replace C12 initial conditions with analytical steady-state values.
         # This eliminates the spinup drift when τ_passive >> spinup_years.
         # Δ¹⁴C initial conditions from the spinup are kept as-is.
-        c12_ss   = _analytical_c12_ss(p, _n_pools, _mean_input, _mean_modifier)
+        c12_ss   = _analytical_c12_ss(p, _n_pools, _mean_input, _mean_modifier,
+                                       target_indices=_ext_target_idx)
         state_ss = state0._replace(C12=c12_ss)
 
         out = run_model(model, forcing, state0=state_ss, params=p)
@@ -910,10 +939,12 @@ def optimize_oe(
             parts.append(c12_mean[carbon_col_idx])
 
         if n_er_obs > 0:
-            # Predicted Rh from model output (already includes f_T × f_M × f_freeze
-            # × respiration fraction — same quantity that W_er was built to match).
-            rh_annual = W_er @ out.Rh   # (n_er_obs,)
-            parts.append(rh_annual)
+            # y_er stores raw annual ER.  Model predicts ER = Rh_sim / f_hetero.
+            # f_hetero = sigmoid(p.log_f_hetero) ∈ (0, 1).
+            f_het      = jax.nn.sigmoid(p.log_f_hetero)
+            rh_annual  = W_er @ out.Rh           # (n_er_obs,) annual mean Rh
+            er_predicted = rh_annual / (f_het + 1e-6)   # convert to ER
+            parts.append(er_predicted)
 
         return jnp.concatenate(parts)
 
