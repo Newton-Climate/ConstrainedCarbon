@@ -76,6 +76,14 @@ inversion:
   sigma_carbon_gCm2: 500.0    # gC m⁻²  — fallback if C_pools_obs sigma is missing
                                #  (SEM values from hf324-06 are passed directly)
 
+  # FluxNet ER → Rh partitioning (Block 4 obs)
+  # Rh_obs = ER_obs × f_hetero; set f_hetero=0 to disable ER constraint.
+  # Harvard Forest: ~55% of ER is heterotrophic (Goulden et al. 1996;
+  # Barford et al. 2001). sigma_er_frac captures combined uncertainty in
+  # the partitioning fraction (~10%) and interannual ER variability (~10%).
+  f_hetero: 0.55
+  sigma_er_frac: 0.15    # 15% combined uncertainty on annual Rh estimate
+
   # Levenberg-Marquardt damping
   lm_lambda0: 0.01
   lm_lambda_factor: 10.0

@@ -410,7 +410,7 @@ def run_optimal_inversion():
 
     # ── Forcing ──────────────────────────────────────────────────────────────
     print("Loading flux forcing…")
-    forcing_full, _ = load_harvard_forest(
+    forcing_full, obs_raw = load_harvard_forest(
         hr_path=HF_HR_PATH, config=config, qc_threshold=2,
         include_gpp_forcing=True,
     )
@@ -422,6 +422,12 @@ def run_optimal_inversion():
     start_idx = int(np.searchsorted(years_all, 1996.0))
     forcing   = _slice_forcing(forcing_full, start_idx, len(time_np))
     T         = int(forcing.time.shape[0])
+
+    # Slice ER from raw observations to the same time window
+    er_full = np.array(obs_raw.ER)
+    er_sliced = jnp.array(er_full[start_idx:start_idx + T], dtype=jnp.float32)
+    n_er_valid = int(np.sum(np.isfinite(np.array(er_sliced))))
+    print(f"  FluxNet ER: {n_er_valid} valid daily obs in window")
     time_years = 1970.0 + np.array(forcing.time) / 365.25
     print(f"  Forcing: {T} days  ({time_years[0]:.1f}–{time_years[-1]:.1f})")
 
@@ -469,6 +475,15 @@ def run_optimal_inversion():
     obs_all = ObservationData(
         time=forcing.time,
         NEE=_nan_T, GPP=_nan_T, ER=_nan_T, NEE_unc=_nan_T,
+        delta14C_obs=delta14C_obs,
+        deltaD14C_obs={},
+        C_pools_obs=c_pools_obs,
+        delta14C_resp=delta14C_resp,
+    )
+    # OE5: OE4 + FluxNet ER → annual Rh constraint
+    obs_all_er = ObservationData(
+        time=forcing.time,
+        NEE=_nan_T, GPP=_nan_T, ER=er_sliced, NEE_unc=_nan_T,
         delta14C_obs=delta14C_obs,
         deltaD14C_obs={},
         C_pools_obs=c_pools_obs,
@@ -551,7 +566,26 @@ def run_optimal_inversion():
     out_all = run_model(model, forcing, state0=state0, params=result_all.params_opt)
     jax.block_until_ready(out_all.delta14C)
 
-    params_opt = result_all.params_opt
+    # ── OE Run 5 — full OE + FluxNet ER annual Rh ────────────────────────────
+    print(f"\nOE 5 — OE4 + FluxNet ER → annual Rh  "
+          f"(full Δ¹⁴C + C stocks + ER flux)…")
+    t0 = time.perf_counter()
+    result_all_er = optimize_oe(model, forcing, obs_all_er, state0=state0,
+                                fields=_OPT_FIELDS)
+    dt5 = time.perf_counter() - t0
+    ch5 = np.array(result_all_er.cost_history)
+    print(f"  Done [{dt5:.0f}s]  J {ch5[0]:.2f} → {ch5[-1]:.2f}"
+          f"  ({'converged' if result_all_er.converged else 'max-iter'})")
+    print(f"  Posterior σ (diagonal Sₓ): "
+          + "  ".join(f"{n}={float(np.sqrt(v)):.3f}"
+                      for n, v in zip(result_all_er.state_names[:6],
+                                      np.diag(np.array(result_all_er.Sx))[:6])))
+
+    out_all_er = run_model(model, forcing, state0=state0,
+                           params=result_all_er.params_opt)
+    jax.block_until_ready(out_all_er.delta14C)
+
+    params_opt = result_all_er.params_opt   # best run is OE5
 
     # ── Respired Δ¹⁴C for all runs ───────────────────────────────────────────
     def _resp_d14c(out, params):
@@ -563,6 +597,7 @@ def run_optimal_inversion():
     d14C_resp_oe2 = _resp_d14c(out_carbon_pool,  result_carbon_pool.params_opt)
     d14C_resp_oe3 = _resp_d14c(out_carbon_resp,  result_carbon_resp.params_opt)
     d14C_resp_oe4 = _resp_d14c(out_all,          result_all.params_opt)
+    d14C_resp_oe5 = _resp_d14c(out_all_er,       result_all_er.params_opt)
 
     # ── Parameter summary ─────────────────────────────────────────────────────
     tau_opt = np.exp(np.array(params_opt.log_tau))
@@ -584,17 +619,14 @@ def run_optimal_inversion():
         print(f"  {name:<16}  {part_prior[i]:>10.3f}  {part_opt[i]:>10.3f}")
 
     # ── Information content from OE averaging kernel ─────────────────────────
-    # DFS = trace(A) where A = Sₓ (KᵀSₑ⁻¹K) is the averaging kernel.
-    # This is the standard OE measure; no separate Fisher computation needed.
-    print("\nInformation content (OE averaging kernel, full OE4 run)…")
-    A_full = np.array(result_all.averaging_kernel)
+    print("\nInformation content (OE averaging kernel, OE5 run)…")
+    A_full = np.array(result_all_er.averaging_kernel)
     dfs_oe = float(np.trace(A_full))
     n_params_oe = A_full.shape[0]
     print(f"  n_params={n_params_oe}  DFS=trace(A)={dfs_oe:.3f}"
           f"  DFS/n={dfs_oe/n_params_oe:.3f}")
-    # Per-parameter contribution to DFS (diagonal of A)
-    Sx_diag = np.diag(np.array(result_all.Sx))
-    for name, a_ii, sx_ii in zip(result_all.state_names[:n_params_oe],
+    Sx_diag = np.diag(np.array(result_all_er.Sx))
+    for name, a_ii, sx_ii in zip(result_all_er.state_names[:n_params_oe],
                                   np.diag(A_full), Sx_diag):
         if a_ii > 0.01:
             print(f"    {name}: A_ii={a_ii:.3f}  posterior_σ={np.sqrt(sx_ii):.4f}")
@@ -609,9 +641,27 @@ def run_optimal_inversion():
     for label, res in [("OE1 C-stocks",        result_carbon_only),
                        ("OE2 +pool Δ¹⁴C",      result_carbon_pool),
                        ("OE3 +resp Δ¹⁴C",      result_carbon_resp),
-                       ("OE4 full",             result_all)]:
+                       ("OE4 full",             result_all),
+                       ("OE5 full+ER flux",     result_all_er)]:
         A = np.array(res.averaging_kernel)
-        print(f"  {label:<20} DFS={np.trace(A):.3f} / {A.shape[0]} params")
+        print(f"  {label:<22} DFS={np.trace(A):.3f} / {A.shape[0]} params")
+
+    # ── Annual Rh diagnostics (OE5) ───────────────────────────────────────────
+    print("\nAnnual Rh diagnostics (OE5):")
+    er_np    = np.array(er_sliced)
+    time_yrs = np.array(forcing.time)
+    years_np = 1970.0 + time_yrs / 365.25
+    tau5     = np.exp(np.array(result_all_er.params_opt.log_tau))
+    rh5      = np.sum(np.array(out_all_er.C12) / (tau5[None, :] + 1e-30), axis=-1)
+    f_het    = float(model.config.inversion.get("f_hetero", 0.55)) if hasattr(model.config, 'inversion') else 0.55
+    for yr in range(int(years_np[0]), int(years_np[-1]) + 1):
+        mask = (years_np >= yr) & (years_np < yr + 1)
+        er_yr = er_np[mask]; er_yr = er_yr[np.isfinite(er_yr)]
+        if len(er_yr) < 30:
+            continue
+        rh_obs_yr  = float(np.mean(er_yr)) * f_het
+        rh_sim_yr  = float(np.mean(rh5[mask]))
+        print(f"  {yr}: Rh_obs={rh_obs_yr:.3f}  Rh_sim={rh_sim_yr:.3f}  diff={rh_sim_yr-rh_obs_yr:+.3f} gC m⁻² day⁻¹")
 
     # ── Carbon stock diagnostics ──────────────────────────────────────────────
     print("\nCarbon stock constraint diagnostics:")
@@ -621,11 +671,12 @@ def run_optimal_inversion():
         c2 = float(np.mean(np.array(out_carbon_pool.C12)[:, pi]))
         c3 = float(np.mean(np.array(out_carbon_resp.C12)[:, pi]))
         c4 = float(np.mean(np.array(out_all.C12)[:, pi]))
-        print(f"  {pn}: obs={mu:.0f}±{sig:.0f}  |  OE1={c1:.0f}  OE2={c2:.0f}  OE3={c3:.0f}  OE4={c4:.0f} gC m⁻²")
+        c5 = float(np.mean(np.array(out_all_er.C12)[:, pi]))
+        print(f"  {pn}: obs={mu:.0f}±{sig:.0f}  |  OE1={c1:.0f}  OE2={c2:.0f}  OE3={c3:.0f}  OE4={c4:.0f}  OE5={c5:.0f} gC m⁻²")
 
     # ── Age diagnostics ───────────────────────────────────────────────────────
-    print("\nAge diagnostics (OE4 full run)…")
-    age_diag = compute_age_diagnostics(out_all, params_opt, model)
+    print("\nAge diagnostics (OE5 full+ER run)…")
+    age_diag = compute_age_diagnostics(out_all_er, params_opt, model)
     bulk_d14C_mean = float(np.nanmean(age_diag.bulk_delta14C))
     resp_d14C_mean = float(np.nanmean(age_diag.respired_delta14C))
     print(f"  Stored bulk Δ¹⁴C:  {bulk_d14C_mean:+.1f} ‰")
@@ -635,15 +686,18 @@ def run_optimal_inversion():
     return dict(
         time_years=time_years,
         forcing_GPP=forcing.GPP_obs,
+        forcing_ER=er_sliced,
         out_prior=out_prior,
         out_oe1=out_carbon_only,
         out_oe2=out_carbon_pool,
         out_oe3=out_carbon_resp,
         out_oe4=out_all,
+        out_oe5=out_all_er,
         result_oe1=result_carbon_only,
         result_oe2=result_carbon_pool,
         result_oe3=result_carbon_resp,
         result_oe4=result_all,
+        result_oe5=result_all_er,
         delta14C_obs=delta14C_obs,
         delta14C_resp=delta14C_resp,
         c_pools_obs=c_pools_obs,
@@ -652,6 +706,7 @@ def run_optimal_inversion():
         d14C_resp_oe2=d14C_resp_oe2,
         d14C_resp_oe3=d14C_resp_oe3,
         d14C_resp_oe4=d14C_resp_oe4,
+        d14C_resp_oe5=d14C_resp_oe5,
         params_prior=params_prior,
         params_opt=params_opt,
         pool_idx=idx,
@@ -666,6 +721,7 @@ def run_optimal_inversion():
         lh2=ch2,
         lh3=ch3,
         lh4=ch4,
+        lh5=ch5,
         dfs_oe=dfs_oe,
         n_params_oe=n_params_oe,
     )
@@ -685,6 +741,7 @@ def make_figure(r: dict, out_path: str | None = None):
     C_OE2   = "tomato"
     C_OE3   = "mediumseagreen"
     C_OE4   = "darkorange"
+    C_OE5   = "mediumpurple"
 
     time_years   = r["time_years"]
     out_prior    = r["out_prior"]
@@ -692,15 +749,17 @@ def make_figure(r: dict, out_path: str | None = None):
     out_oe2      = r["out_oe2"]
     out_oe3      = r["out_oe3"]
     out_oe4      = r["out_oe4"]
+    out_oe5      = r["out_oe5"]
     delta14C_obs = r["delta14C_obs"]
     c_pools_obs  = r["c_pools_obs"]
     d14C_resp    = r["delta14C_resp"]
+    er_arr_fig   = np.array(r["forcing_ER"])
     pool_idx     = r["pool_idx"]
     dof_2pool    = r["dof_2pool"]
     age_diag     = r["age_diag"]
     tau_p        = r["tau_p"]
     tau_opt      = r["tau_opt"]
-    lh1, lh2, lh3, lh4 = r["lh1"], r["lh2"], r["lh3"], r["lh4"]
+    lh1, lh2, lh3, lh4, lh5 = r["lh1"], r["lh2"], r["lh3"], r["lh4"], r["lh5"]
 
     pool_names = pool_idx.pool_names
     pool_colors  = ["tab:green", "tab:orange", "tab:brown", "tab:purple"]
@@ -713,10 +772,11 @@ def make_figure(r: dict, out_path: str | None = None):
 
     # ── (a) Loss convergence ─────────────────────────────────────────────────
     for lh, label, color in [
-        (lh1, "OE1: C stocks only",      C_OE1),
-        (lh2, "OE2: +pool Δ¹⁴C",        C_OE2),
-        (lh3, "OE3: +resp Δ¹⁴C",        C_OE3),
-        (lh4, "OE4: full (all 3 types)", C_OE4),
+        (lh1, "OE1: C stocks only",       C_OE1),
+        (lh2, "OE2: +pool Δ¹⁴C",         C_OE2),
+        (lh3, "OE3: +resp Δ¹⁴C",         C_OE3),
+        (lh4, "OE4: full",                C_OE4),
+        (lh5, "OE5: full + ER flux",      C_OE5),
     ]:
         valid = lh[np.isfinite(lh)]
         if len(valid) and valid[0] > 0:
@@ -751,18 +811,18 @@ def make_figure(r: dict, out_path: str | None = None):
         pi = pool_idx[pool_name]
 
         prior_line = np.array(out_prior.delta14C)[:, pi]
-        oe2_line   = np.array(out_oe2.delta14C)[:, pi]   # +pool Δ¹⁴C
-        oe3_line   = np.array(out_oe3.delta14C)[:, pi]   # +resp Δ¹⁴C
-        oe4_line   = np.array(out_oe4.delta14C)[:, pi]   # full
+        oe2_line   = np.array(out_oe2.delta14C)[:, pi]
+        oe4_line   = np.array(out_oe4.delta14C)[:, pi]
+        oe5_line   = np.array(out_oe5.delta14C)[:, pi]
 
         ax_pool14C.plot(time_years, prior_line, color=C_PRIOR, lw=1.0, alpha=0.5,
                         linestyle="--", label="prior" if i == 0 else None)
         ax_pool14C.plot(time_years, oe2_line,  color=color, lw=1.0, alpha=0.6,
                         linestyle=":")
-        ax_pool14C.plot(time_years, oe3_line,  color=color, lw=1.2, alpha=0.75,
+        ax_pool14C.plot(time_years, oe4_line,  color=color, lw=1.4, alpha=0.8,
                         linestyle="-.")
-        ax_pool14C.plot(time_years, oe4_line,  color=color, lw=1.8,
-                        label=f"{pool_name.replace('soil_','')} (OE4)")
+        ax_pool14C.plot(time_years, oe5_line,  color=color, lw=1.8,
+                        label=f"{pool_name.replace('soil_','')} (OE5)")
 
         if pool_name in delta14C_obs:
             obs_arr  = np.array(delta14C_obs[pool_name])
@@ -773,7 +833,7 @@ def make_figure(r: dict, out_path: str | None = None):
 
     ax_pool14C.set_xlabel("Year")
     ax_pool14C.set_ylabel("Δ¹⁴C (‰)")
-    ax_pool14C.set_title("(c) Pool Δ¹⁴C  (prior– OE2··· OE3-·- OE4—)")
+    ax_pool14C.set_title("(c) Pool Δ¹⁴C  (prior– OE2··· OE4-·- OE5—)")
     ax_pool14C.legend(fontsize=8, ncol=2)
 
     # ── (d) Respired CO₂ Δ¹⁴C ───────────────────────────────────────────────
@@ -786,10 +846,12 @@ def make_figure(r: dict, out_path: str | None = None):
                     linestyle=":", label="OE1: C stocks only", alpha=0.8)
     ax_resp14C.plot(time_years, r["d14C_resp_oe2"],   color=C_OE2,  lw=1.2,
                     linestyle="-.", label="OE2: +pool Δ¹⁴C", alpha=0.85)
-    ax_resp14C.plot(time_years, r["d14C_resp_oe3"],   color=C_OE3,  lw=1.6,
-                    linestyle=(0, (3, 1)), label="OE3: +resp Δ¹⁴C", alpha=0.9)
-    ax_resp14C.plot(time_years, r["d14C_resp_oe4"],   color=C_OE4,  lw=1.8,
-                    label="OE4: full (all 3 types)")
+    ax_resp14C.plot(time_years, r["d14C_resp_oe3"],   color=C_OE3,  lw=1.4,
+                    linestyle=(0, (3, 1)), label="OE3: +resp Δ¹⁴C", alpha=0.85)
+    ax_resp14C.plot(time_years, r["d14C_resp_oe4"],   color=C_OE4,  lw=1.6,
+                    linestyle="-.", label="OE4: full", alpha=0.9)
+    ax_resp14C.plot(time_years, r["d14C_resp_oe5"],   color=C_OE5,  lw=2.0,
+                    label="OE5: full + ER flux")
     ax_resp14C.scatter(time_years[resp_mask], resp_arr[resp_mask],
                        color="k", marker="x", s=30, zorder=5,
                        label="obs (hf212-01 NWN)")
@@ -799,9 +861,10 @@ def make_figure(r: dict, out_path: str | None = None):
     ax_resp14C.legend(fontsize=8)
 
     # ── (e) Carbon stock constraints: obs vs. modelled ───────────────────────
-    _bar_labels = ["OE1\nC stocks", "OE2\n+pool Δ¹⁴C", "OE3\n+resp Δ¹⁴C", "OE4\nfull"]
+    _bar_labels = ["OE1\nC stocks", "OE2\n+pool Δ¹⁴C", "OE3\n+resp Δ¹⁴C",
+                   "OE4\nfull", "OE5\n+ER flux"]
     _x_base = np.arange(len(_bar_labels))
-    _bar_w  = 0.22
+    _bar_w  = 0.18
 
     n_pools_fig = len(pool_names)
     for j, (pool_name, color, marker) in enumerate(zip(pool_names, pool_colors, pool_markers)):
@@ -810,7 +873,7 @@ def make_figure(r: dict, out_path: str | None = None):
         pi = pool_idx[pool_name]
         means_sim = [
             float(np.mean(np.array(out.C12)[:, pi]))
-            for out in [out_oe1, out_oe2, out_oe3, out_oe4]
+            for out in [out_oe1, out_oe2, out_oe3, out_oe4, out_oe5]
         ]
         offset = (j - (n_pools_fig - 1) / 2.0) * _bar_w
         ax_info.bar(_x_base + offset, means_sim, width=_bar_w,
@@ -866,12 +929,26 @@ def make_figure(r: dict, out_path: str | None = None):
             gpp_annual.append(np.nan)
     gpp_annual = np.array(gpp_annual)
 
-    ax_gpp.plot(time_years, gpp_arr, color="0.75", lw=0.5, alpha=0.6, label="daily GPP")
-    ax_gpp.plot(yrs_unique + 0.5, gpp_annual, color="tab:green", lw=2.0, label="annual mean")
+    # Annual ER
+    er_annual = []
+    for yr in yrs_unique:
+        mask = (time_years >= yr) & (time_years < yr + 1)
+        er_yr = er_arr_fig[mask]; er_yr = er_yr[np.isfinite(er_yr)]
+        er_annual.append(float(np.mean(er_yr)) if len(er_yr) >= 10 else np.nan)
+    er_annual = np.array(er_annual)
+
+    ax_gpp.plot(time_years, gpp_arr, color="0.75", lw=0.5, alpha=0.5, label="daily GPP")
+    ax_gpp.plot(yrs_unique + 0.5, gpp_annual, color="tab:green", lw=2.0, label="GPP annual")
+    ax_gpp.plot(yrs_unique + 0.5, er_annual,  color="tab:red",   lw=2.0,
+                linestyle="--", label="ER annual")
+    # Annotate implied annual Rh = ER × f_hetero
+    rh_annual_obs = er_annual * 0.55
+    ax_gpp.plot(yrs_unique + 0.5, rh_annual_obs, color="saddlebrown", lw=1.5,
+                linestyle=":", label="Rh est. (ER×0.55)")
     ax_gpp.set_xlabel("Year")
-    ax_gpp.set_ylabel("GPP (gC m⁻² day⁻¹)")
-    ax_gpp.set_title("(g) GPP forcing (AMF US-Ha1)")
-    ax_gpp.legend(fontsize=8)
+    ax_gpp.set_ylabel("gC m⁻² day⁻¹")
+    ax_gpp.set_title("(g) GPP and ER forcing (AMF US-Ha1)")
+    ax_gpp.legend(fontsize=7)
     ax_gpp.set_xlim(time_years[0], time_years[-1])
 
     # ── (h) C stock time series — prior vs OE3 ────────────────────────────────
@@ -880,10 +957,10 @@ def make_figure(r: dict, out_path: str | None = None):
             continue
         pi = pool_idx[pool_name]
         c_prior = np.array(out_prior.C12)[:, pi]
-        c_oe4   = np.array(out_oe4.C12)[:, pi]
+        c_oe5   = np.array(out_oe5.C12)[:, pi]
 
         ax_cstock.plot(time_years, c_prior, color=color, lw=1.0, linestyle="--", alpha=0.5)
-        ax_cstock.plot(time_years, c_oe4,   color=color, lw=1.8,
+        ax_cstock.plot(time_years, c_oe5,   color=color, lw=1.8,
                        label=pool_name.replace("soil_", ""))
 
         if pool_name in c_pools_obs:
@@ -895,13 +972,13 @@ def make_figure(r: dict, out_path: str | None = None):
 
     ax_cstock.set_xlabel("Year")
     ax_cstock.set_ylabel("C stock (gC m⁻²)")
-    ax_cstock.set_title("(h) C stocks: prior (--) vs OE4 (—), obs bands (·)")
+    ax_cstock.set_title("(h) C stocks: prior (--) vs OE5 (—), obs bands (·)")
     ax_cstock.legend(fontsize=8, ncol=2)
     ax_cstock.set_xlim(time_years[0], time_years[-1])
 
     fig.suptitle(
         "Harvard Forest — 3-Pool Optimal Model  (active + slow + passive)\n"
-        "Cascade-only inputs; C-stock obs: hf324-06 Munger → active, hf271-07 M horizon → passive",
+        "OE5 adds FluxNet ER → annual Rh constraint (f_hetero=0.55, σ=15%)",
         fontsize=12, y=0.995,
     )
     plt.savefig(out_path, dpi=150, bbox_inches="tight")

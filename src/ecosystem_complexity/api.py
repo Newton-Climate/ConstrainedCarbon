@@ -523,6 +523,8 @@ def _build_oe_obs_vector(
     sigma_pool: float,
     sigma_resp: float,
     sigma_carbon: Optional[float] = None,
+    f_hetero: float = 0.0,
+    sigma_er_frac: float = 0.15,
 ):
     """
     Flatten ObservationData into a dense (n_obs,) observation vector for OE.
@@ -534,6 +536,13 @@ def _build_oe_obs_vector(
                               σ taken from the (mean, sigma) tuple in
                               C_pools_obs; ``sigma_carbon`` is used as a
                               fallback when the tuple sigma is zero/None.
+      4. Annual Rh flux     — annual mean Rh estimated from FluxNet ER:
+                              Rh_obs = ER_obs × f_hetero  [gC m⁻² day⁻¹]
+                              σ = Rh_obs × sigma_er_frac
+                              Only included when f_hetero > 0 and
+                              observations.ER contains finite values.
+                              W_er (n_er_obs × T) is a precomputed
+                              aggregation weight matrix for use in _forward.
 
     Returns
     -------
@@ -543,7 +552,8 @@ def _build_oe_obs_vector(
     pool_col_idx   : (n_pool_obs,) int32
     t_resp_idx     : (n_resp_obs,) int32
     carbon_col_idx : (n_carbon_obs,) int32 — pool indices for C-stock obs
-    n_pool_obs, n_resp_obs, n_carbon_obs : int
+    W_er           : (n_er_obs, T) float32 — annual aggregation weights
+    n_pool_obs, n_resp_obs, n_carbon_obs, n_er_obs : int
     """
     pool_names_set = set(model.pool_index.pool_names)
 
@@ -589,6 +599,41 @@ def _build_oe_obs_vector(
     y_carbon       = jnp.array(y_c,  dtype=jnp.float32)
     Se_carbon      = jnp.array(se_c, dtype=jnp.float32)
 
+    # ── Block 4: annual Rh from FluxNet ER ───────────────────────────────────
+    T = len(np.array(observations.time))
+    W_er_np   = np.zeros((0, T), dtype=np.float32)
+    y_er_list: list[float] = []
+    se_er_list: list[float] = []
+
+    if f_hetero > 0.0 and observations.ER is not None:
+        er_np    = np.array(observations.ER, dtype=np.float64)
+        time_np  = np.array(observations.time, dtype=np.float64)
+        years_np = 1970.0 + time_np / 365.25
+
+        yr_start = int(np.floor(years_np[0]))
+        yr_end   = int(np.floor(years_np[-1]))
+        rows: list[np.ndarray] = []
+
+        for yr in range(yr_start, yr_end + 1):
+            mask = (years_np >= yr) & (years_np < yr + 1) & np.isfinite(er_np)
+            if mask.sum() < 30:          # require ≥30 days of valid ER data
+                continue
+            rh_est = float(np.mean(er_np[mask])) * f_hetero
+            sigma  = max(abs(rh_est) * sigma_er_frac, 0.01)
+            row    = np.zeros(T, dtype=np.float32)
+            row[mask] = 1.0 / mask.sum()
+            rows.append(row)
+            y_er_list.append(rh_est)
+            se_er_list.append(sigma ** 2)
+
+        if rows:
+            W_er_np = np.stack(rows, axis=0)   # (n_er_obs, T)
+
+    n_er_obs = len(y_er_list)
+    W_er     = jnp.array(W_er_np)
+    y_er     = jnp.array(y_er_list,  dtype=jnp.float32)
+    Se_er    = jnp.array(se_er_list, dtype=jnp.float32)
+
     # ── Assemble full obs vector and Se ──────────────────────────────────────
     y_parts  = [y_pool]
     se_parts = [jnp.full(n_pool_obs, sigma_pool ** 2)]
@@ -601,13 +646,17 @@ def _build_oe_obs_vector(
         y_parts.append(y_carbon)
         se_parts.append(Se_carbon)
 
-    y       = jnp.concatenate(y_parts)      if y_parts  else jnp.zeros(0)
-    Se_diag = jnp.concatenate(se_parts)     if se_parts else jnp.zeros(0)
+    if n_er_obs > 0:
+        y_parts.append(y_er)
+        se_parts.append(Se_er)
+
+    y       = jnp.concatenate(y_parts)  if y_parts  else jnp.zeros(0)
+    Se_diag = jnp.concatenate(se_parts) if se_parts else jnp.zeros(0)
 
     return (y, Se_diag,
             t_pool_idx, pool_col_idx, t_resp_idx,
-            carbon_col_idx,
-            n_pool_obs, n_resp_obs, n_carbon_obs)
+            carbon_col_idx, W_er,
+            n_pool_obs, n_resp_obs, n_carbon_obs, n_er_obs)
 
 
 def _build_sa_diag(
@@ -719,12 +768,16 @@ def optimize_oe(
         for i in range(int(math.prod(val.shape))):
             state_names.append(f"{f}[{i}]")
 
+    f_hetero     = float(inv_cfg.get("f_hetero",      0.0))
+    sigma_er_frac = float(inv_cfg.get("sigma_er_frac", 0.15))
+
     # ── Observation vector ────────────────────────────────────────────────────
     (y, Se_diag,
      t_pool_idx, pool_col_idx, t_resp_idx,
-     carbon_col_idx,
-     n_pool_obs, n_resp_obs, n_carbon_obs) = _build_oe_obs_vector(
-        observations, model, sigma_pool, sigma_resp, sigma_carbon)
+     carbon_col_idx, W_er,
+     n_pool_obs, n_resp_obs, n_carbon_obs, n_er_obs) = _build_oe_obs_vector(
+        observations, model, sigma_pool, sigma_resp, sigma_carbon,
+        f_hetero=f_hetero, sigma_er_frac=sigma_er_frac)
 
     Se_inv_diag = 1.0 / (Se_diag + 1e-30)
     n_obs = int(y.shape[0])
@@ -733,7 +786,7 @@ def optimize_oe(
         raise ValueError("optimize_oe: no observations found in ObservationData")
 
     print(f"  OE obs vector: {n_pool_obs} pool Δ¹⁴C  +  {n_resp_obs} resp Δ¹⁴C"
-          f"  +  {n_carbon_obs} C-stock  =  {n_obs} total")
+          f"  +  {n_carbon_obs} C-stock  +  {n_er_obs} annual ER  =  {n_obs} total")
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
     def _forward(x_vec):
@@ -752,6 +805,13 @@ def optimize_oe(
             # Predicted obs: time-mean C12 for each constrained pool
             c12_mean = jnp.mean(out.C12, axis=0)          # (n_pools,)
             parts.append(c12_mean[carbon_col_idx])
+
+        if n_er_obs > 0:
+            # Predicted Rh: sum(C12_i / tau_i) for all pools [gC m⁻² day⁻¹]
+            tau_v  = jnp.exp(p.log_tau)
+            rh_daily = jnp.sum(out.C12 / (tau_v[None, :] + 1e-30), axis=-1)  # (T,)
+            rh_annual = W_er @ rh_daily   # (n_er_obs,)
+            parts.append(rh_annual)
 
         return jnp.concatenate(parts)
 
