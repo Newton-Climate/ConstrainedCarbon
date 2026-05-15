@@ -1,6 +1,6 @@
 site:
-  id: "US-Ha1-3pool"
-  name: "Harvard Forest – 3-Pool Optimal (active + slow + passive)"
+  id: "US-Ha1-4pool"
+  name: "Harvard Forest – 4-Pool Optimal (active + slow + passive + stable)"
   lat: 42.54
   lon: -72.17
 
@@ -34,11 +34,19 @@ model:
           # Constrained by pre-bomb (low positive) Δ14C in A-min horizon
           tau_prior_days: 36500
           tau_prior_std: 18250
+        - name: stable
+          # Highly recalcitrant / organo-mineral fraction: ~5000 yr turnover
+          # Not directly observed by Δ14C in hf212-03 — constrained by
+          # mineral C-stock budget and very negative Δ14C prior.
+          tau_prior_days: 1825000
+          tau_prior_std: 912500
 
-  # Cascade: active → slow → passive (physical protection / mineral association)
+  # Cascade: active → slow → passive → stable
+  # (physical protection + mineral association + deep stabilisation)
   transfer_rules:
     - [soil_active,  soil_slow,    0.25]
     - [soil_slow,    soil_passive, 0.10]
+    - [soil_passive, soil_stable,  0.03]
 
 external_inputs:
   enabled: true
@@ -53,6 +61,7 @@ external_inputs:
     soil_active:  1.00
     soil_slow:    0.00
     soil_passive: 0.00
+    soil_stable:  0.00
   optimize_partition: false   # all inputs enter at top of cascade only
 
 parameters:
@@ -74,7 +83,7 @@ inversion:
   sigma_pool_14C: 10.0        # ‰  — pool-level Δ¹⁴C (hf212-03; 2 dates × 3 pools)
   sigma_resp_14C: 15.0        # ‰  — respired CO₂ Δ¹⁴C (hf212-01 NWN; 41 obs)
   sigma_carbon_gCm2: 500.0    # gC m⁻²  — fallback if C_pools_obs sigma is missing
-                               #  (SEM values from hf324-06 are passed directly)
+                               #  (SEM values from hf324-06/hf271-07 are passed directly)
 
   # Levenberg-Marquardt damping
   lm_lambda0: 0.01
