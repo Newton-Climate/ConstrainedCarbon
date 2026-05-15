@@ -63,11 +63,20 @@ parameters:
   gamma_moisture: 5.0
 
 inversion:
-  optimizer: adam
-  learning_rate: 0.0003
-  max_iterations: 1000
-  weight_flux: 0.0
-  weight_14C: 1.0
-  weight_resp_14C: 1.0
-  weight_carbon: 1.0
-  grad_clip: 1.0
+  # ── Optimal Estimation (Levenberg-Marquardt) ──────────────────────────────
+  # Minimises J(x) = (y−F(x))ᵀ Sₑ⁻¹(y−F(x)) + (x−xₐ)ᵀ Sₐ⁻¹(x−xₐ)
+  # Sₐ is built per-pool from tau_prior_std/tau_prior_days (log-space).
+  # Sₑ is diagonal with the sigmas below.
+
+  oe_max_iterations: 30
+
+  # Observation error standard deviations
+  sigma_pool_14C: 10.0        # ‰  — pool-level Δ¹⁴C (hf212-03; 2 dates × 3 pools)
+  sigma_resp_14C: 15.0        # ‰  — respired CO₂ Δ¹⁴C (hf212-01 NWN; 41 obs)
+  sigma_carbon_gCm2: 500.0    # gC m⁻²  — fallback if C_pools_obs sigma is missing
+                               #  (SEM values from hf324-06 are passed directly)
+
+  # Levenberg-Marquardt damping
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

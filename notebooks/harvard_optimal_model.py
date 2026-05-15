@@ -72,7 +72,7 @@ _REPO_ROOT = (
 if _SRC_ROOT not in sys.path:
     sys.path.insert(0, _SRC_ROOT)
 
-from ecosystem_complexity.api import build_model, run_model, optimize
+from ecosystem_complexity.api import build_model, run_model, optimize_oe, OEResult
 from ecosystem_complexity.config import load_config
 from ecosystem_complexity.data.parsers import attach_atm14C, load_harvard_forest
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
@@ -410,41 +410,45 @@ def run_optimal_inversion():
     w_prior = np.array(out_prior.C12) / (tau_p[None, :] + 1e-30)
     d14C_resp_prior = (np.array(out_prior.delta14C) * w_prior).sum(-1) / (w_prior.sum(-1) + 1e-30)
 
-    # ── Optimisation 1 — pool Δ¹⁴C only ─────────────────────────────────────
-    print(f"\nOpt 1 — pool Δ¹⁴C only  ({n_pool_obs} obs)…")
+    # ── OE Run 1 — pool Δ¹⁴C only ───────────────────────────────────────────
+    print(f"\nOE 1 — pool Δ¹⁴C only  ({n_pool_obs} obs)…")
     t0 = time.perf_counter()
-    result_pool = optimize(model, forcing, obs_pool_only, state0=state0,
-                           fields=_OPT_FIELDS)
+    result_pool = optimize_oe(model, forcing, obs_pool_only, state0=state0,
+                              fields=_OPT_FIELDS)
     dt1 = time.perf_counter() - t0
-    lh1 = np.array(result_pool.loss_history)
-    vl1 = lh1[np.isfinite(lh1)]
-    print(f"  Done [{dt1:.0f}s]  loss {vl1[0]:.4f} → {vl1[-1]:.4f}")
+    ch1 = np.array(result_pool.cost_history)
+    print(f"  Done [{dt1:.0f}s]  J {ch1[0]:.2f} → {ch1[-1]:.2f}"
+          f"  ({'converged' if result_pool.converged else 'max-iter'})")
 
     out_pool = run_model(model, forcing, state0=state0, params=result_pool.params_opt)
     jax.block_until_ready(out_pool.delta14C)
 
-    # ── Optimisation 2 — pool + resp Δ¹⁴C ───────────────────────────────────
-    print(f"\nOpt 2 — pool + resp Δ¹⁴C  ({n_pool_obs} + {n_resp_obs} obs)…")
+    # ── OE Run 2 — pool + resp Δ¹⁴C ─────────────────────────────────────────
+    print(f"\nOE 2 — pool + resp Δ¹⁴C  ({n_pool_obs} + {n_resp_obs} obs)…")
     t0 = time.perf_counter()
-    result_both = optimize(model, forcing, obs_all, state0=state0,
-                           fields=_OPT_FIELDS)
+    result_both = optimize_oe(model, forcing, obs_all, state0=state0,
+                              fields=_OPT_FIELDS)
     dt2 = time.perf_counter() - t0
-    lh2 = np.array(result_both.loss_history)
-    vl2 = lh2[np.isfinite(lh2)]
-    print(f"  Done [{dt2:.0f}s]  loss {vl2[0]:.4f} → {vl2[-1]:.4f}")
+    ch2 = np.array(result_both.cost_history)
+    print(f"  Done [{dt2:.0f}s]  J {ch2[0]:.2f} → {ch2[-1]:.2f}"
+          f"  ({'converged' if result_both.converged else 'max-iter'})")
 
     out_both = run_model(model, forcing, state0=state0, params=result_both.params_opt)
     jax.block_until_ready(out_both.delta14C)
 
-    # ── Optimisation 3 — pool + resp Δ¹⁴C + carbon stocks ───────────────────
-    print(f"\nOpt 3 — pool + resp Δ¹⁴C + C stocks  ({n_pool_obs} + {n_resp_obs} + {len(c_pools_obs)} pools)…")
+    # ── OE Run 3 — pool + resp Δ¹⁴C + C stocks (full OE) ────────────────────
+    print(f"\nOE 3 — full OE: pool + resp + C stocks  ({n_pool_obs} + {n_resp_obs} + {len(c_pools_obs)} pools)…")
     t0 = time.perf_counter()
-    result_carbon = optimize(model, forcing, obs_with_carbon, state0=state0,
-                             fields=_OPT_FIELDS)
+    result_carbon = optimize_oe(model, forcing, obs_with_carbon, state0=state0,
+                                fields=_OPT_FIELDS)
     dt3 = time.perf_counter() - t0
-    lh3 = np.array(result_carbon.loss_history)
-    vl3 = lh3[np.isfinite(lh3)]
-    print(f"  Done [{dt3:.0f}s]  loss {vl3[0]:.4f} → {vl3[-1]:.4f}")
+    ch3 = np.array(result_carbon.cost_history)
+    print(f"  Done [{dt3:.0f}s]  J {ch3[0]:.2f} → {ch3[-1]:.2f}"
+          f"  ({'converged' if result_carbon.converged else 'max-iter'})")
+    print(f"  Posterior σ (diagonal Sₓ): "
+          + "  ".join(f"{n}={float(np.sqrt(v)):.3f}"
+                      for n, v in zip(result_carbon.state_names[:6],
+                                      np.diag(np.array(result_carbon.Sx))[:6])))
 
     out_carbon = run_model(model, forcing, state0=state0, params=result_carbon.params_opt)
     jax.block_until_ready(out_carbon.delta14C)
@@ -480,29 +484,27 @@ def run_optimal_inversion():
     for i, name in enumerate(idx.pool_names):
         print(f"  {name:<16}  {part_prior[i]:>10.3f}  {part_opt[i]:>10.3f}")
 
-    # ── Information content analysis ──────────────────────────────────────────
-    print("\nInformation content analysis (2-pool model)…")
-    fields_2pool = _OPT_FIELDS
-    prior_sigma = make_prior_covariance(params_opt, fields_2pool, model)
-    param_groups = get_param_groups(params_opt, fields_2pool, model)
+    # ── Information content from OE averaging kernel ─────────────────────────
+    # DFS = trace(A) where A = Sₓ (KᵀSₑ⁻¹K) is the averaging kernel.
+    # This is the standard OE measure; no separate Fisher computation needed.
+    print("\nInformation content (OE averaging kernel, full run)…")
+    A_full = np.array(result_carbon.averaging_kernel)
+    dfs_oe = float(np.trace(A_full))
+    n_params_oe = A_full.shape[0]
+    print(f"  n_params={n_params_oe}  DFS=trace(A)={dfs_oe:.3f}"
+          f"  DFS/n={dfs_oe/n_params_oe:.3f}")
+    # Per-parameter contribution to DFS (diagonal of A)
+    Sx_diag = np.diag(np.array(result_carbon.Sx))
+    for name, a_ii, sx_ii in zip(result_carbon.state_names[:n_params_oe],
+                                  np.diag(A_full), Sx_diag):
+        if a_ii > 0.01:
+            print(f"    {name}: A_ii={a_ii:.3f}  posterior_σ={np.sqrt(sx_ii):.4f}")
 
-    fisher_2pool = compute_fisher(
-        model, forcing, state0, params_opt, obs_all,
-        fields=fields_2pool,
-    )
-    dof_2pool = compute_dof(fisher_2pool, prior_sigma, param_groups=param_groups)
-
-    n_params_2pool = fisher_2pool.FIM_total.shape[0]
-    print(f"  2-pool: n_params={n_params_2pool}  DFS={dof_2pool.dfs_total:.3f}"
-          f"  DFS/n={dof_2pool.dfs_total/n_params_2pool:.3f}")
-    if dof_2pool.dfs_by_group:
-        for grp, dfs in dof_2pool.dfs_by_group.items():
-            print(f"    {grp}: {dfs:.3f}")
-
-    # Reference: 6-pool DFS (approximate — re-run if needed)
-    # Reported from harvard_forest_analysis.py: DFS≈1.029 with 10 params
-    dfs_6pool_ref = 1.029
+    dfs_6pool_ref   = 1.029
     n_params_6pool_ref = 10
+    # Use OE DFS for the figure
+    dof_2pool       = type("_DFS", (), {"dfs_total": dfs_oe, "dfs_by_group": {}})()
+    n_params_2pool  = n_params_oe
 
     # ── Carbon stock diagnostics ──────────────────────────────────────────────
     print("\nCarbon stock constraint diagnostics:")
@@ -513,7 +515,7 @@ def run_optimal_inversion():
         print(f"  {pn}: obs={mu:.0f}±{sig:.0f}  |  opt2={c_sim_mean_both:.0f}  |  opt3={c_sim_mean_carbon:.0f} gC m⁻²")
 
     # ── Age diagnostics ───────────────────────────────────────────────────────
-    print("\nAge diagnostics (optimised 2-pool + C stock constraints)…")
+    print("\nAge diagnostics (OE full run: pool + resp + C stocks)…")
     age_diag = compute_age_diagnostics(out_carbon, params_opt, model)
     bulk_d14C_mean = float(np.nanmean(age_diag.bulk_delta14C))
     resp_d14C_mean = float(np.nanmean(age_diag.respired_delta14C))
@@ -547,9 +549,11 @@ def run_optimal_inversion():
         age_diag=age_diag,
         tau_p=tau_p,
         tau_opt=tau_opt,
-        lh1=lh1,
-        lh2=lh2,
-        lh3=lh3,
+        lh1=ch1,
+        lh2=ch2,
+        lh3=ch3,
+        dfs_oe=dfs_oe,
+        n_params_oe=n_params_oe,
     )
 
 
@@ -594,17 +598,17 @@ def make_figure(r: dict, out_path: str | None = None):
 
     # ── (a) Loss convergence ─────────────────────────────────────────────────
     for lh, label, color in [
-        (lh1, "pool Δ¹⁴C only", C_POOL),
-        (lh2, "pool + resp Δ¹⁴C", C_BOTH),
-        (lh3, "pool + resp + C stocks", C_CARBON),
+        (lh1, "OE1: pool Δ¹⁴C", C_POOL),
+        (lh2, "OE2: +resp Δ¹⁴C", C_BOTH),
+        (lh3, "OE3: +C stocks", C_CARBON),
     ]:
         valid = lh[np.isfinite(lh)]
-        if valid[0] > 0:
+        if len(valid) and valid[0] > 0:
             ax_loss.plot(np.arange(len(valid)), valid / valid[0],
-                         color=color, label=label, lw=1.5)
-    ax_loss.set_xlabel("Iteration")
-    ax_loss.set_ylabel("Normalised loss")
-    ax_loss.set_title("(a) Loss convergence")
+                         color=color, label=label, lw=1.5, marker="o", ms=4)
+    ax_loss.set_xlabel("L-M iteration")
+    ax_loss.set_ylabel("Normalised OE cost J")
+    ax_loss.set_title("(a) OE cost convergence (L-M)")
     ax_loss.legend(fontsize=9)
     ax_loss.set_yscale("log")
 
