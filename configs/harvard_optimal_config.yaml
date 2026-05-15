@@ -1,0 +1,69 @@
+site:
+  id: "US-Ha1-2pool"
+  name: "Harvard Forest – 2-Pool Optimal (active + passive)"
+  lat: 42.54
+  lon: -72.17
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 300
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  # No aboveground pools — all carbon enters via the external_inputs pathway.
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 0.60
+      permafrost_eligible: false
+      som_pools:
+        - name: active
+          # Actively cycling fraction: ~2 yr turnover
+          # Constrained by bomb-14C peak breakthrough timing and pool-level Δ¹⁴C
+          tau_prior_days: 730
+          tau_prior_std: 365
+        - name: passive
+          # Slowly cycling fraction: ~100 yr turnover
+          # Constrained by pre-bomb (negative) Δ¹⁴C signature
+          tau_prior_days: 36500
+          tau_prior_std: 18250
+
+  # Active → passive cascade represents physical protection / mineral association.
+  # A ~25 % transfer fraction is consistent with aggregate formation rates at
+  # temperate forest mineral soil horizons (Cotrufo et al. 2013).
+  transfer_rules:
+    - [soil_active, soil_passive, 0.25]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs          # ForcingData field to use as GPP driver
+  CUE: 0.47               # carbon use efficiency
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  # Initial partition: most fresh litter enters the active pool.
+  partition:
+    soil_active:  0.85
+    soil_passive: 0.15
+  optimize_partition: true
+
+parameters:
+  alloc: {}          # empty — no aboveground pools
+
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  optimizer: adam
+  learning_rate: 0.0003
+  max_iterations: 1000
+  weight_flux: 0.0
+  weight_14C: 1.0
+  weight_resp_14C: 1.0
+  grad_clip: 1.0
