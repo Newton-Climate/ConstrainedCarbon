@@ -338,8 +338,19 @@ def _build_israd_14C_obs(israd_frac_path: str, forcing_time, pool_index) -> list
 
         records[(pool, yr)].append((float(d14c), w))
 
+    # Exclude McFarlane_2013 (2011) soil_passive: the density cutoff used by
+    # McFarlane (<1.85 g cm⁻³ vs. Gaudinski/Savage <1.65 g cm⁻³) retains more
+    # fine-POM in the heavy fraction, biasing its Δ¹⁴C toward younger values
+    # (−16‰ vs. −74‰ from Gaudinski and −86‰ from Savage).  Including it would
+    # pull the passive pool toward an unrealistically young age while the 1996
+    # and 2007 heavy-fraction obs already bracket the passive pool constraint.
+    _EXCLUDE = {("soil_passive", 2011)}
+
     blocks = []
     for (pool, yr), pts in sorted(records.items()):
+        if (pool, yr) in _EXCLUDE:
+            print(f"  ISRaD obs: {pool:<14} yr={yr}  EXCLUDED (density-cutoff inconsistency)")
+            continue
         vals = np.array([v for v, _ in pts])
         wts  = np.array([w for _, w in pts])
         wts  = wts / wts.sum()  # normalise
