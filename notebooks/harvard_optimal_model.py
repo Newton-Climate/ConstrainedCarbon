@@ -490,100 +490,166 @@ def _build_state0(config, pool_index):
 _HF324_CORE_AREA_CM2 = 10.0  # cm² — back-calculated from bulk density × depth × %C
 
 
+def _load_horizon_means(hf324_path: str, hf271_path: str) -> dict:
+    """
+    Load per-horizon carbon stock means and uncertainties from the two EMS datasets.
+
+    Returns a dict with keys:
+      "org_mean", "org_sem", "org_n"   — hf324 Munger organic horizon
+      "min_mean", "min_sem", "min_n"   — hf271 M (mineral) horizon
+
+    Raw values only — no pool-to-horizon assignment is done here.  The caller
+    decides how to combine horizons into pool constraints.
+    """
+    result = {}
+
+    df324 = pd.read_csv(hf324_path, encoding="latin1")
+    munger = df324[
+        (df324["site"] == "ems") &
+        (df324["use.not"] == 1) &
+        (df324["contact"].str.lower().str.strip() == "munger")
+    ].copy()
+    munger["gC_m2"] = munger["c.mass.rocks"] * 10000.0 / _HF324_CORE_AREA_CM2
+    org_vals = munger.loc[munger["horizon"] == "organic", "gC_m2"].dropna()
+    if len(org_vals) >= 2:
+        result["org_mean"] = float(org_vals.mean())
+        result["org_sem"]  = float(org_vals.std(ddof=1) / np.sqrt(len(org_vals)))
+        result["org_n"]    = len(org_vals)
+
+    df271 = pd.read_csv(hf271_path)
+    m_vals = df271.loc[df271["horizon"] == "M", "carbon.gm2"].dropna()
+    if len(m_vals) >= 2:
+        result["min_mean"] = float(m_vals.mean())
+        result["min_sem"]  = float(m_vals.std(ddof=1) / np.sqrt(len(m_vals)))
+        result["min_n"]    = len(m_vals)
+
+    return result
+
+
 def _build_soil_carbon_obs(hf324_path: str, hf271_path: str, pool_names: list) -> dict:
     """
-    Load EMS-site carbon stock observations with correct pool-to-horizon mapping.
+    Load the *individual* carbon stock constraint for soil_active only.
 
-    Pool mapping rationale
-    ----------------------
-    The organic horizon (hf324 Munger) contains BOTH active and slow fractions —
-    assigning its total stock to ``soil_active`` alone would over-constrain active
-    and leave slow unconstrained.  Instead we split the organic total between
-    active and slow using the steady-state pool-fraction implied by the prior τ
-    and the cascade transfer coefficient:
+    The organic horizon (hf324 Munger) contains BOTH active and slow fractions,
+    so assigning a fixed fraction to each pool is physically arbitrary and
+    contradicted by density-fractionation data.  Instead:
 
-        C_active_ss / C_slow_ss = τ_active / (f_as × τ_slow)
+      - soil_active is constrained individually using a prior-τ-ratio split of
+        the organic horizon (f_active ≈ 0.286).  σ is set to 40% relative so the
+        Δ¹⁴C constraints dominate; this is a soft prior, not a hard assignment.
 
-    where τ_active = 730 d, τ_slow = 7300 d, f_as = 0.25 → ratio = 0.40.
-    So active gets 0.40/1.40 ≈ 29% and slow gets 1.00/1.40 ≈ 71% of organic.
+      - soil_slow and soil_passive are NOT constrained individually here.
+        They are constrained by two sum-constraints built in
+        ``_build_carbon_sum_obs``:
+            organic sum  → C_active + C_slow  ≈ org_mean ± org_sem
+            mineral sum  → C_slow  + C_passive ≈ min_mean ± min_σ
 
-    The mineral M horizon (hf271) represents mineral-associated SOM, which is the
-    best available proxy for the passive pool.  A 35% relative uncertainty is
-    applied to account for residual active/slow carbon within the mineral layer.
-
-    In both cases the wide σ (40–35% relative) ensures that the radiocarbon
-    constraints dominate over the stock constraints when they conflict.
+        This correctly reflects that the organic horizon total is known but the
+        active/slow split is uncertain, and that the mineral horizon contains
+        both slow (mineral-associated fast) and passive SOM.
 
     Data sources
     ------------
-    hf324-06-soil-carbon.csv — Munger plots only (contact='munger', EMS site,
-        34 m from tower; organic horizon Oi/Oe; n≈214, 2014).
+    hf324-06-soil-carbon.csv — Munger plots only (EMS site, n≈214, 2014).
     hf271-07-soils.csv — M horizon at EMS tower (n≈135).
 
     Returns
     -------
     {pool_name: (mean_gC_m2, sigma_gC_m2)}
-        σ reflects both measurement uncertainty and the pool-mapping uncertainty.
+        Only ``soil_active`` is returned (and only when present in pool_names).
     """
-    # Prior cascade parameters (must match harvard_3pool_config.yaml)
-    _TAU_ACTIVE = 730.0    # days
-    _TAU_SLOW   = 7300.0   # days
-    _F_AS       = 0.25     # active → slow transfer fraction
-    # SS fraction: C_active : C_slow = τ_active : (f_as × τ_slow)
-    _r_active = _TAU_ACTIVE              # 730
-    _r_slow   = _F_AS * _TAU_SLOW       # 1825
-    _f_active = _r_active / (_r_active + _r_slow)   # ≈ 0.286
-    _f_slow   = _r_slow   / (_r_active + _r_slow)   # ≈ 0.714
-    # Relative σ for the active/slow split (reflects horizon-to-pool mapping error)
-    _SIGMA_REL_ORGANIC  = 0.40   # 40% — dominates over measurement SEM
-    _SIGMA_REL_PASSIVE  = 0.35   # 35% — mineral layer has some active/slow too
+    # Prior-τ fraction for the active pool within the organic horizon.
+    # Used only to anchor the soil_active individual constraint.
+    # τ_active=730d, τ_slow=7300d, f_as=0.25 → C_active:C_slow = 730:1825
+    _TAU_ACTIVE = 730.0
+    _TAU_SLOW   = 7300.0
+    _F_AS       = 0.25
+    _r_act  = _TAU_ACTIVE
+    _r_slw  = _F_AS * _TAU_SLOW
+    _f_act  = _r_act / (_r_act + _r_slw)   # ≈ 0.286
+    _SIGMA_REL = 0.40                        # 40% relative σ on the split
 
     pool_name_set = set(pool_names)
     result = {}
 
-    # ── Load Munger organic plots (hf324) ────────────────────────────────────
-    if "soil_active" in pool_name_set or "soil_slow" in pool_name_set:
-        df324 = pd.read_csv(hf324_path, encoding="latin1")
-        munger = df324[
-            (df324["site"] == "ems") &
-            (df324["use.not"] == 1) &
-            (df324["contact"].str.lower().str.strip() == "munger")
-        ].copy()
-        munger["gC_m2"] = munger["c.mass.rocks"] * 10000.0 / _HF324_CORE_AREA_CM2
-        org_vals = munger.loc[munger["horizon"] == "organic", "gC_m2"].dropna()
-        if len(org_vals) >= 2:
-            org_mean = float(org_vals.mean())
-            org_sem  = float(org_vals.std(ddof=1) / np.sqrt(len(org_vals)))
-            print(f"  hf324 Munger organic: n={len(org_vals)}  "
-                  f"mean={org_mean:.0f}  SEM={org_sem:.0f} gC m⁻²")
+    hz = _load_horizon_means(hf324_path, hf271_path)
 
-            if "soil_active" in pool_name_set:
-                c_act = _f_active * org_mean
-                s_act = max(org_sem * _f_active, _SIGMA_REL_ORGANIC * c_act)
-                result["soil_active"] = (c_act, s_act)
-                print(f"    → soil_active  (f={_f_active:.3f}): "
-                      f"mean={c_act:.0f}  σ={s_act:.0f} gC m⁻²")
-
-            if "soil_slow" in pool_name_set:
-                c_slw = _f_slow * org_mean
-                s_slw = max(org_sem * _f_slow, _SIGMA_REL_ORGANIC * c_slw)
-                result["soil_slow"] = (c_slw, s_slw)
-                print(f"    → soil_slow    (f={_f_slow:.3f}): "
-                      f"mean={c_slw:.0f}  σ={s_slw:.0f} gC m⁻²")
-
-    # ── Load mineral M horizon (hf271) → soil_passive ────────────────────────
-    if "soil_passive" in pool_name_set:
-        df271 = pd.read_csv(hf271_path)
-        m_vals = df271.loc[df271["horizon"] == "M", "carbon.gm2"].dropna()
-        if len(m_vals) >= 2:
-            m_mean = float(m_vals.mean())
-            m_sem  = float(m_vals.std(ddof=1) / np.sqrt(len(m_vals)))
-            s_pass = max(m_sem, _SIGMA_REL_PASSIVE * m_mean)
-            result["soil_passive"] = (m_mean, s_pass)
-            print(f"  hf271 M horizon → soil_passive: "
-                  f"n={len(m_vals)}  mean={m_mean:.0f}  σ={s_pass:.0f} gC m⁻²")
+    if "soil_active" in pool_name_set and "org_mean" in hz:
+        c_act = _f_act * hz["org_mean"]
+        s_act = max(hz["org_sem"] * _f_act, _SIGMA_REL * c_act)
+        result["soil_active"] = (c_act, s_act)
 
     return result
+
+
+def _build_carbon_sum_obs(hf324_path: str, hf271_path: str, pool_index) -> list:
+    """
+    Build two sum-constraint ObsBlocks for carbon stocks.
+
+    SUM CONSTRAINT 1 — organic horizon total (hf324 Munger, n≈214):
+        C_active_sim + C_slow_sim ≈ org_mean ± org_sem
+        Rationale: the organic horizon (Oi/Oe) contains both the active and slow
+        SOM fractions; we know the total horizon stock precisely but not how much
+        belongs to each pool.  Using the sum avoids the arbitrary prior-τ split.
+
+    SUM CONSTRAINT 2 — mineral horizon total (hf271 M horizon, n≈135):
+        C_slow_sim + C_passive_sim ≈ min_mean ± min_σ
+        Rationale: the mineral horizon contains both mineral-associated fast SOM
+        (slow pool) and older mineral-protected SOM (passive pool).  Assigning it
+        entirely to passive over-constrains one pool and leaves slow unconstrained.
+        σ = max(SEM, 35% relative) to account for spatial heterogeneity.
+
+    Returns
+    -------
+    list[ObsBlock]  — two blocks (organic sum, mineral sum); empty if data missing.
+    """
+    from ecosystem_complexity.api import ObsBlock
+
+    _SIGMA_REL_MIN = 0.35   # 35% relative σ on mineral horizon (spatial noise)
+
+    hz = _load_horizon_means(hf324_path, hf271_path)
+    pool_names_set = set(pool_index.pool_names)
+    blocks = []
+
+    # ── Organic sum: C_active + C_slow ──────────────────────────────────────
+    if ("soil_active" in pool_names_set and "soil_slow" in pool_names_set
+            and "org_mean" in hz):
+        org_mean = hz["org_mean"]
+        org_sem  = hz["org_sem"]
+        i_act = pool_index["soil_active"]
+        i_slw = pool_index["soil_slow"]
+        _cols_org = jnp.array([i_act, i_slw], dtype=jnp.int32)
+        blocks.append(ObsBlock(
+            name="c_sum_organic",
+            y=jnp.array([org_mean], dtype=jnp.float32),
+            Se=jnp.array([org_sem ** 2], dtype=jnp.float32),
+            predict=lambda out, p, cols=_cols_org:
+                jnp.sum(jnp.mean(out.C12, axis=0)[cols], keepdims=True),
+        ))
+        print(f"  C stock organic sum  (active+slow):  "
+              f"{org_mean:.0f} ± {org_sem:.0f} gC m⁻²  "
+              f"(n={hz['org_n']})")
+
+    # ── Mineral sum: C_slow + C_passive ──────────────────────────────────────
+    if ("soil_slow" in pool_names_set and "soil_passive" in pool_names_set
+            and "min_mean" in hz):
+        min_mean  = hz["min_mean"]
+        min_sigma = max(hz["min_sem"], _SIGMA_REL_MIN * min_mean)
+        i_slw = pool_index["soil_slow"]
+        i_pas = pool_index["soil_passive"]
+        _cols_min = jnp.array([i_slw, i_pas], dtype=jnp.int32)
+        blocks.append(ObsBlock(
+            name="c_sum_mineral",
+            y=jnp.array([min_mean], dtype=jnp.float32),
+            Se=jnp.array([min_sigma ** 2], dtype=jnp.float32),
+            predict=lambda out, p, cols=_cols_min:
+                jnp.sum(jnp.mean(out.C12, axis=0)[cols], keepdims=True),
+        ))
+        print(f"  C stock mineral sum  (slow+passive): "
+              f"{min_mean:.0f} ± {min_sigma:.0f} gC m⁻²  "
+              f"(n={hz['min_n']})")
+
+    return blocks
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -656,18 +722,30 @@ def run_optimal_inversion():
     print("Building observations…")
     delta14C_obs  = _build_pool_14C_obs_bulk(HF_SOIL_14C_PATH, forcing.time, idx.pool_names)
     delta14C_resp = _build_resp_14C_obs(HF_RESP_14C_PATH, forcing.time)
+
+    # Individual C stock constraint (soil_active only).
+    # soil_slow and soil_passive are handled by sum constraints below.
     c_pools_obs   = _build_soil_carbon_obs(HF_SOIL_C_PATH2, HF_SOIL_C_PATH, idx.pool_names)
 
     n_pool_obs = sum(int(jnp.sum(~jnp.isnan(a))) for a in delta14C_obs.values())
     n_resp_obs = int(jnp.sum(~jnp.isnan(delta14C_resp)))
     print(f"  Pool Δ¹⁴C obs: {n_pool_obs}  |  Resp Δ¹⁴C obs: {n_resp_obs}")
-    for pn, (mu, sig) in c_pools_obs.items():
-        print(f"  C stock {pn}: {mu:.0f} ± {sig:.0f} gC m⁻²")
+    if c_pools_obs:
+        pn, (mu, sig) = next(iter(c_pools_obs.items()))
+        print(f"  C stock {pn} (individual):       {mu:.0f} ± {sig:.0f} gC m⁻²")
+
+    # Sum constraints: organic total (active+slow) and mineral total (slow+passive).
+    print("Building carbon sum constraints…")
+    carbon_sum_blocks = _build_carbon_sum_obs(HF_SOIL_C_PATH2, HF_SOIL_C_PATH, idx)
 
     # ISRaD density-fraction Δ¹⁴C (extra ObsBlocks; per-obs σ 15–138‰)
     print("Building ISRaD fraction Δ¹⁴C obs blocks…")
     israd_blocks = _build_israd_14C_obs(ISRAD_FRAC_PATH, forcing.time, idx)
     print(f"  ISRaD blocks: {len(israd_blocks)} (one per pool×year pair)")
+
+    # All extra blocks: sum constraints first (lower Se → stronger signal),
+    # then ISRaD fraction Δ¹⁴C.
+    extra_blocks = carbon_sum_blocks + israd_blocks
 
     _nan_T = jnp.full(T, jnp.nan)
     # OE1: C stocks only
@@ -780,11 +858,42 @@ def run_optimal_inversion():
     w_prior = np.array(out_prior.C12) / (tau_p[None, :] + 1e-30)
     d14C_resp_prior = (np.array(out_prior.delta14C) * w_prior).sum(-1) / (w_prior.sum(-1) + 1e-30)
 
+    # Count total extra-block obs for header labels
+    _n_extra = len(extra_blocks)
+    _n_csum  = len(carbon_sum_blocks)
+    _n_israd = len(israd_blocks)
+
+    # Helper: print per-OE C-stock constraint diagnostics
+    def _print_cstock_diag(label: str, out):
+        c_sim = np.array(jnp.mean(out.C12, axis=0))
+        act_sim = c_sim[idx["soil_active"]]
+        slw_sim = c_sim[idx["soil_slow"]]
+        pas_sim = c_sim[idx["soil_passive"]]
+        org_sum_sim = act_sim + slw_sim
+        min_sum_sim = slw_sim + pas_sim
+        act_obs, act_sig = c_pools_obs.get("soil_active", (float("nan"), float("nan")))
+        hz = _load_horizon_means(HF_SOIL_C_PATH2, HF_SOIL_C_PATH)
+        org_obs = hz.get("org_mean", float("nan"))
+        org_sig = hz.get("org_sem",  float("nan"))
+        min_obs = hz.get("min_mean", float("nan"))
+        min_sig = max(hz.get("min_sem", float("nan")), 0.35 * min_obs)
+        print(f"  {label} C-stock check:")
+        print(f"    soil_active  (individual):  sim={act_sim:.0f}  obs={act_obs:.0f}±{act_sig:.0f}  "
+              f"resid={(act_sim-act_obs)/act_sig:+.2f}σ")
+        print(f"    organic sum  (active+slow):  sim={org_sum_sim:.0f}  obs={org_obs:.0f}±{org_sig:.0f}  "
+              f"resid={(org_sum_sim-org_obs)/org_sig:+.2f}σ")
+        print(f"    mineral sum  (slow+passive): sim={min_sum_sim:.0f}  obs={min_obs:.0f}±{min_sig:.0f}  "
+              f"resid={(min_sum_sim-min_obs)/min_sig:+.2f}σ")
+        print(f"    pools: active={act_sim:.0f}  slow={slw_sim:.0f}  passive={pas_sim:.0f}  "
+              f"total={act_sim+slw_sim+pas_sim:.0f} gC m⁻²")
+
     # ── OE Run 1 — C stocks only ─────────────────────────────────────────────
-    print(f"\nOE 1 — C stocks only  ({len(c_pools_obs)} pools)…")
+    _n_cstock1 = len(c_pools_obs) + _n_csum
+    print(f"\nOE 1 — C stocks only  "
+          f"({len(c_pools_obs)} individual + {_n_csum} sum = {_n_cstock1} constraints)…")
     t0 = time.perf_counter()
     result_carbon_only = optimize_oe(model, forcing, obs_carbon_only, state0=state0,
-                                     fields=_OPT_FIELDS)
+                                     fields=_OPT_FIELDS, extra_obs_blocks=carbon_sum_blocks)
     dt1 = time.perf_counter() - t0
     ch1 = np.array(result_carbon_only.cost_history)
     print(f"  Done [{dt1:.0f}s]  J {ch1[0]:.2f} → {ch1[-1]:.2f}"
@@ -795,13 +904,14 @@ def run_optimal_inversion():
     out_carbon_only = run_model(model, forcing, state0=_make_ss_state(result_carbon_only.params_opt),
                                 params=result_carbon_only.params_opt)
     jax.block_until_ready(out_carbon_only.delta14C)
+    _print_cstock_diag("OE1", out_carbon_only)
 
     # ── OE Run 2 — C stocks + pool Δ¹⁴C + ISRaD frac Δ¹⁴C ─────────────────
-    print(f"\nOE 2 — C stocks + pool Δ¹⁴C + ISRaD frac  "
-          f"({len(c_pools_obs)} + {n_pool_obs} pool + {len(israd_blocks)} ISRaD obs)…")
+    print(f"\nOE 2 — C stocks + pool Δ¹⁴C + ISRaD + sum constraints  "
+          f"({_n_cstock1} C + {n_pool_obs} pool Δ¹⁴C + {_n_israd} ISRaD obs)…")
     t0 = time.perf_counter()
     result_carbon_pool = optimize_oe(model, forcing, obs_carbon_pool14C, state0=state0,
-                                     fields=_OPT_FIELDS, extra_obs_blocks=israd_blocks)
+                                     fields=_OPT_FIELDS, extra_obs_blocks=extra_blocks)
     dt2 = time.perf_counter() - t0
     ch2 = np.array(result_carbon_pool.cost_history)
     print(f"  Done [{dt2:.0f}s]  J {ch2[0]:.2f} → {ch2[-1]:.2f}"
@@ -810,12 +920,14 @@ def run_optimal_inversion():
     out_carbon_pool = run_model(model, forcing, state0=_make_ss_state(result_carbon_pool.params_opt),
                                 params=result_carbon_pool.params_opt)
     jax.block_until_ready(out_carbon_pool.delta14C)
+    _print_cstock_diag("OE2", out_carbon_pool)
 
     # ── OE Run 3 — C stocks + resp Δ¹⁴C (orthogonality test) ───────────────
-    print(f"\nOE 3 — C stocks + resp Δ¹⁴C  ({len(c_pools_obs)} + {n_resp_obs} obs)…")
+    print(f"\nOE 3 — C stocks + resp Δ¹⁴C  "
+          f"({_n_cstock1} C + {n_resp_obs} resp Δ¹⁴C obs)…")
     t0 = time.perf_counter()
     result_carbon_resp = optimize_oe(model, forcing, obs_carbon_resp14C, state0=state0,
-                                     fields=_OPT_FIELDS)
+                                     fields=_OPT_FIELDS, extra_obs_blocks=carbon_sum_blocks)
     dt3 = time.perf_counter() - t0
     ch3 = np.array(result_carbon_resp.cost_history)
     print(f"  Done [{dt3:.0f}s]  J {ch3[0]:.2f} → {ch3[-1]:.2f}"
@@ -824,13 +936,14 @@ def run_optimal_inversion():
     out_carbon_resp = run_model(model, forcing, state0=_make_ss_state(result_carbon_resp.params_opt),
                                 params=result_carbon_resp.params_opt)
     jax.block_until_ready(out_carbon_resp.delta14C)
+    _print_cstock_diag("OE3", out_carbon_resp)
 
-    # ── OE Run 4 — C stocks + pool Δ¹⁴C + resp Δ¹⁴C + ISRaD frac (full) ────
-    print(f"\nOE 4 — full OE: C stocks + pool + resp Δ¹⁴C + ISRaD frac  "
-          f"({len(c_pools_obs)} + {n_pool_obs} + {n_resp_obs} + {len(israd_blocks)} obs)…")
+    # ── OE Run 4 — full Δ¹⁴C + C stocks + ISRaD frac ────────────────────────
+    print(f"\nOE 4 — full OE: pool + resp Δ¹⁴C + C stocks + ISRaD  "
+          f"({_n_cstock1} C + {n_pool_obs} pool + {n_resp_obs} resp + {_n_israd} ISRaD obs)…")
     t0 = time.perf_counter()
     result_all = optimize_oe(model, forcing, obs_all, state0=state0,
-                             fields=_OPT_FIELDS, extra_obs_blocks=israd_blocks)
+                             fields=_OPT_FIELDS, extra_obs_blocks=extra_blocks)
     dt4 = time.perf_counter() - t0
     ch4 = np.array(result_all.cost_history)
     print(f"  Done [{dt4:.0f}s]  J {ch4[0]:.2f} → {ch4[-1]:.2f}"
@@ -843,13 +956,14 @@ def run_optimal_inversion():
     out_all = run_model(model, forcing, state0=_make_ss_state(result_all.params_opt),
                         params=result_all.params_opt)
     jax.block_until_ready(out_all.delta14C)
+    _print_cstock_diag("OE4", out_all)
 
-    # ── OE Run 5 — full OE + FluxNet ER + ISRaD frac + free f_hetero ────────
-    print(f"\nOE 5 — OE4 + FluxNet ER → annual Rh (free f_hetero) + ISRaD frac  "
+    # ── OE Run 5 — full OE + FluxNet ER + ISRaD + free f_hetero ─────────────
+    print(f"\nOE 5 — OE4 + FluxNet ER (free f_hetero)  "
           f"(full Δ¹⁴C + C stocks + ER + ISRaD)…")
     t0 = time.perf_counter()
     result_all_er = optimize_oe(model, forcing, obs_all_er, state0=state0,
-                                fields=_OPT_FIELDS_ER, extra_obs_blocks=israd_blocks)
+                                fields=_OPT_FIELDS_ER, extra_obs_blocks=extra_blocks)
     dt5 = time.perf_counter() - t0
     ch5 = np.array(result_all_er.cost_history)
     print(f"  Done [{dt5:.0f}s]  J {ch5[0]:.2f} → {ch5[-1]:.2f}"
@@ -862,6 +976,7 @@ def run_optimal_inversion():
     out_all_er = run_model(model, forcing, state0=_make_ss_state(result_all_er.params_opt),
                            params=result_all_er.params_opt)
     jax.block_until_ready(out_all_er.delta14C)
+    _print_cstock_diag("OE5", out_all_er)
 
     params_opt = result_all_er.params_opt   # best run is OE5
 
@@ -965,14 +1080,36 @@ def run_optimal_inversion():
 
     # ── Carbon stock diagnostics ──────────────────────────────────────────────
     print("\nCarbon stock constraint diagnostics:")
-    for pn, (mu, sig) in c_pools_obs.items():
-        pi = idx[pn]
-        c1 = float(np.mean(np.array(out_carbon_only.C12)[:, pi]))
-        c2 = float(np.mean(np.array(out_carbon_pool.C12)[:, pi]))
-        c3 = float(np.mean(np.array(out_carbon_resp.C12)[:, pi]))
-        c4 = float(np.mean(np.array(out_all.C12)[:, pi]))
-        c5 = float(np.mean(np.array(out_all_er.C12)[:, pi]))
-        print(f"  {pn}: obs={mu:.0f}±{sig:.0f}  |  OE1={c1:.0f}  OE2={c2:.0f}  OE3={c3:.0f}  OE4={c4:.0f}  OE5={c5:.0f} gC m⁻²")
+    hz_diag = _load_horizon_means(HF_SOIL_C_PATH2, HF_SOIL_C_PATH)
+    org_obs_diag = hz_diag.get("org_mean", float("nan"))
+    org_sem_diag = hz_diag.get("org_sem",  float("nan"))
+    min_obs_diag = hz_diag.get("min_mean", float("nan"))
+    min_sig_diag = max(hz_diag.get("min_sem", float("nan")), 0.35 * min_obs_diag)
+    act_obs_diag, act_sig_diag = c_pools_obs.get("soil_active", (float("nan"), float("nan")))
+
+    def _pool_means(out):
+        c = np.mean(np.array(out.C12), axis=0)
+        act = c[idx["soil_active"]]; slw = c[idx["soil_slow"]]; pas = c[idx["soil_passive"]]
+        return act, slw, pas
+
+    rows = [("OE1", out_carbon_only), ("OE2", out_carbon_pool),
+            ("OE3", out_carbon_resp), ("OE4", out_all), ("OE5", out_all_er)]
+
+    print(f"  {'Constraint':<28}  {'obs':>7}  {'±σ':>6}  "
+          + "  ".join(f"{lbl:>6}" for lbl, _ in rows))
+    for label, obs_val, sig_val, fn in [
+        ("soil_active (individual)",  act_obs_diag, act_sig_diag, lambda a,s,p: a),
+        ("organic sum (active+slow)", org_obs_diag, org_sem_diag, lambda a,s,p: a+s),
+        ("mineral sum (slow+passive)",min_obs_diag, min_sig_diag, lambda a,s,p: s+p),
+        ("  soil_active",             float("nan"),  float("nan"), lambda a,s,p: a),
+        ("  soil_slow",               float("nan"),  float("nan"), lambda a,s,p: s),
+        ("  soil_passive",            float("nan"),  float("nan"), lambda a,s,p: p),
+    ]:
+        sims = [fn(*_pool_means(out)) for _, out in rows]
+        obs_str = f"{obs_val:.0f}" if np.isfinite(obs_val) else "  —"
+        sig_str = f"{sig_val:.0f}" if np.isfinite(sig_val) else "  —"
+        print(f"  {label:<28}  {obs_str:>7}  {sig_str:>6}  "
+              + "  ".join(f"{s:>6.0f}" for s in sims))
 
     # ── Age diagnostics ───────────────────────────────────────────────────────
     print("\nAge diagnostics (OE5 full+ER run)…")
