@@ -114,6 +114,9 @@ HF_SOIL_14C_PATH = _data("data/harvard_forest/hf212-03-14c-org.csv")
 HF_RESP_14C_PATH = _data("data/harvard_forest/hf212-01-14c-no-treat.csv")
 HF_SOIL_C_PATH   = _data("data/harvard_forest/hf271-07-soils.csv")
 HF_SOIL_C_PATH2  = _data("data/harvard_forest/hf324-06-soil-carbon.csv")
+ISRAD_FRAC_PATH  = _data(
+    "data/shared/israd/ISRaD_extra_flat_fraction_v 2.6.6.2024-01-25.csv"
+)
 HUA_PATH     = _data("data/shared/atm_14C/Hua_2021.csv")
 GRAVEN_PATH  = _data("data/shared/atm_14C/Graven_2017.csv")
 INTCAL_PATH  = _data("data/shared/atm_14C/intcal20.14c")
@@ -233,6 +236,148 @@ def _build_resp_14C_obs(resp_14c_path, forcing_time):
         t_idx = int(np.argmin(np.abs(years_np - float(obs_year))))
         arr[t_idx] = float(d14c_val)
     return jnp.array(arr)
+
+
+def _build_israd_14C_obs(israd_frac_path: str, forcing_time, pool_index) -> list:
+    """
+    Build ISRaD density-fraction Δ¹⁴C observations as a list of ObsBlocks.
+
+    Each (pool, measurement_year) pair becomes one ObsBlock with a per-obs Se
+    derived from the propagated standard deviation across replicate plots.
+    Observation-error variance is σ² = σ_mean² where σ_mean is the standard
+    error of the (possibly mass-weighted) mean across fractionation replicates.
+
+    Using separate ObsBlocks from the standard hf212-03 pool_14C block is
+    deliberate: ISRaD σ values (22–138‰) are much larger than the uniform
+    sigma_pool_14C (10‰) used for horizon observations, so they cannot be
+    merged into the same Se array without biasing the inversion.
+
+    Fraction-to-pool mapping (density fractionation):
+      free light   → soil_active   (labile, unprotected)
+      occluded light → soil_slow   (physically protected)
+      heavy        → soil_passive  (mineral-associated)
+
+    Entries and measurement years (inferred from entry_name):
+      Gaudinski_2000 → 1996  (free light + heavy only; occluded not reported)
+      Savage_unpub   → 2007  (free light + heavy only; occluded not reported)
+      McFarlane_2013 → 2011  (all three fractions; mass-weighted means used)
+
+    Time index uses year + 0.6 offset to avoid collision with the hf212-03
+    horizon obs that are placed at year + 0.5.
+
+    Returns
+    -------
+    list[ObsBlock]
+        One block per (pool, year) pair.  Empty list if the file is missing or
+        contains no usable observations.
+    """
+    from ecosystem_complexity.api import ObsBlock
+    import jax.numpy as jnp
+
+    if not os.path.isfile(israd_frac_path):
+        print(f"  ISRaD frac file not found: {israd_frac_path} — skipping")
+        return []
+
+    df = pd.read_csv(israd_frac_path, low_memory=False)
+
+    # Filter to Harvard Forest site + density fractionation scheme only.
+    # ISRaD 'frc_property' holds the fraction name; 'frc_scheme' is the method.
+    df = df[
+        df["site_name"].str.contains("Harvard", na=False) &
+        (df["frc_scheme"] == "density")
+    ]
+
+    # Map ISRaD frc_property values to model pool names.
+    _FRAC_TO_POOL = {
+        "free light":     "soil_active",
+        "occluded light": "soil_slow",
+        "heavy":          "soil_passive",
+    }
+
+    # Entry name → measurement year (field campaign dates from publications).
+    _ENTRY_YEAR = {
+        "Gaudinski_2000": 1996,
+        "Savage_unpub":   2007,
+        "McFarlane_2013": 2011,
+    }
+
+    pool_names_set = set(pool_index.pool_names)
+    time_np  = np.array(forcing_time, dtype=float)
+    years_np = 1970.0 + time_np / 365.25
+
+    # Collect weighted (Δ¹⁴C mean, σ_mean) per (pool, year).
+    from collections import defaultdict
+    # {(pool_name, year): [(d14c_val, weight), ...]}
+    records: dict = defaultdict(list)
+
+    for _, row in df.iterrows():
+        entry = str(row.get("entry_name", "")).strip()
+        yr = _ENTRY_YEAR.get(entry, None)
+        if yr is None:
+            continue
+
+        frac = str(row.get("frc_property", "")).strip().lower()
+        pool = _FRAC_TO_POOL.get(frac, None)
+        if pool is None or pool not in pool_names_set:
+            continue
+
+        d14c_raw = row.get("frc_14c", np.nan)
+        if d14c_raw is None or (isinstance(d14c_raw, float) and np.isnan(d14c_raw)):
+            continue
+        d14c = float(d14c_raw)
+        if not np.isfinite(d14c):
+            continue
+
+        # Use mass fraction as weight if available (McFarlane_2013); else 1.0.
+        mass_pct_raw = row.get("frc_mass_perc", np.nan)
+        try:
+            mass_pct_f = float(mass_pct_raw)
+            w = mass_pct_f if np.isfinite(mass_pct_f) and mass_pct_f > 0 else 1.0
+        except (TypeError, ValueError):
+            w = 1.0
+
+        records[(pool, yr)].append((float(d14c), w))
+
+    blocks = []
+    for (pool, yr), pts in sorted(records.items()):
+        vals = np.array([v for v, _ in pts])
+        wts  = np.array([w for _, w in pts])
+        wts  = wts / wts.sum()  # normalise
+
+        d14c_mean = float(np.dot(wts, vals))
+
+        # σ_mean: weighted standard deviation / sqrt(n_eff)
+        n = len(vals)
+        if n > 1:
+            var_w = float(np.dot(wts, (vals - d14c_mean) ** 2))
+            # Effective n for weighted stats: 1 / sum(w²) (uses normalised wts)
+            n_eff = 1.0 / float(np.dot(wts, wts))
+            sigma_mean = float(np.sqrt(var_w / max(n_eff, 1.0)))
+        else:
+            # Single obs: fallback σ = 50‰ (conservative)
+            sigma_mean = 50.0
+
+        # Clamp σ_mean to a minimum (measurement precision floor)
+        sigma_mean = max(sigma_mean, 15.0)
+
+        t_idx = int(np.argmin(np.abs(years_np - (float(yr) + 0.6))))
+        pool_col = pool_index[pool]
+
+        _t   = jnp.array([t_idx], dtype=jnp.int32)
+        _col = jnp.array([pool_col], dtype=jnp.int32)
+        _y   = jnp.array([d14c_mean], dtype=jnp.float32)
+        _se  = jnp.array([sigma_mean ** 2], dtype=jnp.float32)
+
+        blocks.append(ObsBlock(
+            name=f"israd_{pool}_{yr}",
+            y=_y,
+            Se=_se,
+            predict=lambda out, p, t=_t, col=_col: out.delta14C[t, col],
+        ))
+        print(f"  ISRaD obs: {pool:<14} yr={yr}  Δ¹⁴C={d14c_mean:+.1f}‰  "
+              f"σ={sigma_mean:.1f}‰  n={n}")
+
+    return blocks
 
 
 def _build_state0(config, pool_index):
@@ -508,6 +653,11 @@ def run_optimal_inversion():
     for pn, (mu, sig) in c_pools_obs.items():
         print(f"  C stock {pn}: {mu:.0f} ± {sig:.0f} gC m⁻²")
 
+    # ISRaD density-fraction Δ¹⁴C (extra ObsBlocks; per-obs σ 15–138‰)
+    print("Building ISRaD fraction Δ¹⁴C obs blocks…")
+    israd_blocks = _build_israd_14C_obs(ISRAD_FRAC_PATH, forcing.time, idx)
+    print(f"  ISRaD blocks: {len(israd_blocks)} (one per pool×year pair)")
+
     _nan_T = jnp.full(T, jnp.nan)
     # OE1: C stocks only
     obs_carbon_only = ObservationData(
@@ -635,11 +785,12 @@ def run_optimal_inversion():
                                 params=result_carbon_only.params_opt)
     jax.block_until_ready(out_carbon_only.delta14C)
 
-    # ── OE Run 2 — C stocks + pool Δ¹⁴C ────────────────────────────────────
-    print(f"\nOE 2 — C stocks + pool Δ¹⁴C  ({len(c_pools_obs)} + {n_pool_obs} obs)…")
+    # ── OE Run 2 — C stocks + pool Δ¹⁴C + ISRaD frac Δ¹⁴C ─────────────────
+    print(f"\nOE 2 — C stocks + pool Δ¹⁴C + ISRaD frac  "
+          f"({len(c_pools_obs)} + {n_pool_obs} pool + {len(israd_blocks)} ISRaD obs)…")
     t0 = time.perf_counter()
     result_carbon_pool = optimize_oe(model, forcing, obs_carbon_pool14C, state0=state0,
-                                     fields=_OPT_FIELDS)
+                                     fields=_OPT_FIELDS, extra_obs_blocks=israd_blocks)
     dt2 = time.perf_counter() - t0
     ch2 = np.array(result_carbon_pool.cost_history)
     print(f"  Done [{dt2:.0f}s]  J {ch2[0]:.2f} → {ch2[-1]:.2f}"
@@ -663,12 +814,12 @@ def run_optimal_inversion():
                                 params=result_carbon_resp.params_opt)
     jax.block_until_ready(out_carbon_resp.delta14C)
 
-    # ── OE Run 4 — C stocks + pool Δ¹⁴C + resp Δ¹⁴C (full) ─────────────────
-    print(f"\nOE 4 — full OE: C stocks + pool + resp Δ¹⁴C  "
-          f"({len(c_pools_obs)} + {n_pool_obs} + {n_resp_obs} obs)…")
+    # ── OE Run 4 — C stocks + pool Δ¹⁴C + resp Δ¹⁴C + ISRaD frac (full) ────
+    print(f"\nOE 4 — full OE: C stocks + pool + resp Δ¹⁴C + ISRaD frac  "
+          f"({len(c_pools_obs)} + {n_pool_obs} + {n_resp_obs} + {len(israd_blocks)} obs)…")
     t0 = time.perf_counter()
     result_all = optimize_oe(model, forcing, obs_all, state0=state0,
-                             fields=_OPT_FIELDS)
+                             fields=_OPT_FIELDS, extra_obs_blocks=israd_blocks)
     dt4 = time.perf_counter() - t0
     ch4 = np.array(result_all.cost_history)
     print(f"  Done [{dt4:.0f}s]  J {ch4[0]:.2f} → {ch4[-1]:.2f}"
@@ -682,12 +833,12 @@ def run_optimal_inversion():
                         params=result_all.params_opt)
     jax.block_until_ready(out_all.delta14C)
 
-    # ── OE Run 5 — full OE + FluxNet ER annual Rh + free f_hetero ───────────
-    print(f"\nOE 5 — OE4 + FluxNet ER → annual Rh (free f_hetero)  "
-          f"(full Δ¹⁴C + C stocks + ER flux)…")
+    # ── OE Run 5 — full OE + FluxNet ER + ISRaD frac + free f_hetero ────────
+    print(f"\nOE 5 — OE4 + FluxNet ER → annual Rh (free f_hetero) + ISRaD frac  "
+          f"(full Δ¹⁴C + C stocks + ER + ISRaD)…")
     t0 = time.perf_counter()
     result_all_er = optimize_oe(model, forcing, obs_all_er, state0=state0,
-                                fields=_OPT_FIELDS_ER)
+                                fields=_OPT_FIELDS_ER, extra_obs_blocks=israd_blocks)
     dt5 = time.perf_counter() - t0
     ch5 = np.array(result_all_er.cost_history)
     print(f"  Done [{dt5:.0f}s]  J {ch5[0]:.2f} → {ch5[-1]:.2f}"

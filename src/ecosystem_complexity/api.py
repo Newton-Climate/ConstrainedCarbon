@@ -893,6 +893,7 @@ def optimize_oe(
     observations: ObservationData,
     state0: Optional[EcosystemState] = None,
     fields: Optional[tuple] = None,
+    extra_obs_blocks: Optional[list] = None,
 ) -> OEResult:
     """
     Optimal Estimation inversion via Levenberg-Marquardt.
@@ -910,6 +911,16 @@ def optimize_oe(
 
     Pass ``fields`` explicitly to override (e.g. to add log_f_hetero for OE5
     without setting optimize_f_hetero in the config).
+
+    Parameters
+    ----------
+    extra_obs_blocks : list[ObsBlock] or None
+        Additional ObsBlocks appended after the standard blocks built from
+        ``observations``.  Each block must supply its own ``y``, ``Se``, and
+        JAX-differentiable ``predict`` callable.  Use this to inject
+        externally-derived observations (e.g. ISRaD fraction Δ¹⁴C means) that
+        have per-observation σ values incompatible with the uniform σ used by
+        the standard pool_14C block.
 
     Returns an OEResult that includes the posterior covariance Sₓ and the
     averaging kernel A = Sₓ (KᵀSₑ⁻¹K), which together quantify information
@@ -1005,6 +1016,10 @@ def optimize_oe(
         observations, model, sigma_pool, sigma_resp, sigma_carbon,
         f_hetero=f_hetero, sigma_er_frac=sigma_er_frac,
     )
+
+    # Append any caller-supplied extra blocks (e.g. ISRaD fraction Δ¹⁴C).
+    if extra_obs_blocks:
+        obs_blocks = obs_blocks + list(extra_obs_blocks)
 
     if not obs_blocks:
         raise ValueError("optimize_oe: no observations found in ObservationData")
