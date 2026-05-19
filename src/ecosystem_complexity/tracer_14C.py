@@ -172,14 +172,14 @@ def step_14C(
         GPP_prescribed = forcing_t[external_input_source_key]
         GPP = jnp.where(
             jnp.isnan(GPP_prescribed),
-            forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI)),
+            8.0 * forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI)),
             GPP_prescribed,
         )
         # Fraction of NPP bypassing AG pools → scale AG ¹⁴C NPP input down
         soil_frac = jax.nn.sigmoid(params.log_soil_input_fraction)
         ag_frac = 1.0 - soil_frac
     else:
-        GPP = forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
+        GPP = 8.0 * forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
         ag_frac = 1.0
 
     F_npp = npp_allocation(GPP, CUE, params.log_alloc, n_ag) * ag_frac  # (n_ag,)
