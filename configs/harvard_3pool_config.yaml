@@ -54,9 +54,9 @@ external_inputs:
   # cascade transfer from slow (mineral association pathway).
   # σ = 0.30 in log-space lets Δ¹⁴C inform the active/slow split.
   partition:
-    soil_active:  0.60
-    soil_slow:    0.40
-  optimize_partition: true
+    soil_active:  1.0
+    soil_slow:    0.0
+  optimize_partition: false
 
 parameters:
   alloc: {}
@@ -71,7 +71,7 @@ inversion:
   # Sₐ is built per-pool from tau_prior_std/tau_prior_days (log-space).
   # Sₑ is diagonal with the sigmas below.
 
-  oe_max_iterations: 30
+  oe_max_iterations: 50
 
   # Observation error standard deviations
   sigma_pool_14C: 10.0        # ‰  — pool-level Δ¹⁴C (hf212-03; 2 dates × 3 pools)
