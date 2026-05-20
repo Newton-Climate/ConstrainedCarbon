@@ -1,0 +1,95 @@
+site:
+  id: "US-Ha1-3pool"
+  name: "Harvard Forest – 3-Pool Optimal (active + slow + passive)"
+  lat: 42.54
+  lon: -72.17
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 300
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 0.60
+      permafrost_eligible: false
+      som_pools:
+        - name: active
+          # Fast-cycling organic fraction (Oi/litter): ~2 yr turnover
+          # Constrained by bomb-14C peak in Oi horizon and respired CO2 Δ14C
+          tau_prior_days: 730
+          tau_prior_std: 365
+        - name: slow
+          # Intermediate fraction (Oe + A-lf): ~20 yr turnover
+          # Constrained by Oe and A-lf horizon Δ14C observations
+          tau_prior_days: 7300
+          tau_prior_std: 3000
+        - name: passive
+          # Mineral-protected fraction (A-min): ~100 yr turnover
+          # Constrained by pre-bomb (low positive) Δ14C in A-min horizon
+          tau_prior_days: 36500
+          tau_prior_std: 18250
+
+  # Cascade: active → slow → passive (physical protection / mineral association)
+  transfer_rules:
+    - [soil_active,  soil_slow,    0.25]
+    - [soil_slow,    soil_passive, 0.10]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  # Prior input fractions: litter enters active (60%) and slow (40%) only.
+  # Passive receives NO direct external input — it forms exclusively via
+  # cascade transfer from slow (mineral association pathway).
+  # σ = 0.30 in log-space lets Δ¹⁴C inform the active/slow split.
+  partition:
+    soil_active:  1.0
+    soil_slow:    0.0
+  optimize_partition: false
+
+parameters:
+  alloc: {}
+
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  # ── Optimal Estimation (Levenberg-Marquardt) ──────────────────────────────
+  # Minimises J(x) = (y−F(x))ᵀ Sₑ⁻¹(y−F(x)) + (x−xₐ)ᵀ Sₐ⁻¹(x−xₐ)
+  # Sₐ is built per-pool from tau_prior_std/tau_prior_days (log-space).
+  # Sₑ is diagonal with the sigmas below.
+
+  oe_max_iterations: 50
+
+  # Observation error standard deviations
+  sigma_pool_14C: 10.0        # ‰  — pool-level Δ¹⁴C (hf212-03; 2 dates × 3 pools)
+  sigma_resp_14C: 15.0        # ‰  — respired CO₂ Δ¹⁴C (hf212-01 NWN; 41 obs)
+  sigma_carbon_gCm2: 500.0    # gC m⁻²  — fallback if C_pools_obs sigma is missing
+                               #  (SEM values from hf324-06 are passed directly)
+
+  # FluxNet ER → Rh partitioning (Block 4 obs)
+  # ER_obs = Rh_sim / f_hetero; set f_hetero=0 to disable ER constraint.
+  # Harvard Forest: ~55% of ER is heterotrophic (Goulden et al. 1996;
+  # Barford et al. 2001).  f_hetero is now a FREE parameter in OE5 via
+  # log_f_hetero in the OE state vector; f_hetero here is the prior value.
+  # sigma_er_frac: 15% combined uncertainty on annual ER estimate.
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08   # ±0.08 absolute prior σ on f_hetero (≈ logit σ=0.32)
+  sigma_er_frac: 0.15    # 15% uncertainty on annual ER observation
+
+  # Levenberg-Marquardt damping
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

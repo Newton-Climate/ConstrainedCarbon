@@ -1,0 +1,155 @@
+site:
+  id: "US-Ha1-Sierra2012"
+  name: "Harvard Forest – Gaudinski/Sierra 2012 7-pool forward simulation"
+  lat: 42.54
+  lon: -72.17
+
+# ── Model structure (Sierra et al. 2012 / Gaudinski et al. 2000) ─────────────
+#
+#   Organic layer (0–0.08 m):
+#     Oi         τ = 547 d   (~1.5 yr)   fresh litter
+#     Oe_a_L     τ = 1460 d  (~4.0 yr)   fragmented / light fraction
+#     Oe_a_H     τ = 12775 d (~35 yr)    humified / heavy fraction
+#
+#   Mineral layer (0.08–0.15 m):
+#     ALF_gt80   τ = 1095 d  (~3 yr)     light fraction >80 µm
+#     ALF_lt80   τ = 27375 d (~75 yr)    light fraction <80 µm
+#     MinAss     τ = 40150 d (~110 yr)   mineral-associated
+#
+#   Aboveground:
+#     dead_roots τ = 2190 d  (~6 yr)     dead fine roots (Gaudinski 2000 / Sierra Table 1)
+#
+#   C stocks (gC m⁻²) and inputs (gC m⁻² yr⁻¹) from Gaudinski 2000 Fig. 1:
+#     Leaf litterfall    150 → Oi
+#     Fine root prod.    270 → dead_roots → 35 to Oi + 30 to ALF_gt80
+#     Total input flux   420 gC m⁻² yr⁻¹
+#
+#   Transfers from Fig. 1 flux arrows:
+#     dead_roots → Oi        f = 35/65  = 0.538   (all dead-root output to soil)
+#     dead_roots → ALF_gt80  f = 30/65  = 0.462
+#     Oi        → Oe_a_L    f = 98/149 = 0.658
+#     Oe_a_L    → Oe_a_H    f =  4/98  = 0.041
+#     Oe_a_H    → ALF_lt80  f = 190/229 = 0.830
+#     ALF_gt80  → ALF_lt80  f = 24/30  = 0.800
+#     ALF_lt80  → MinAss    f =  2.4/24.4 = 0.098
+#
+#   No temperature/moisture scaling (Q10=1.0) — Sierra 2012 uses constant k.
+#
+#   Input budget:
+#     Total NPP = CUE × GPP_syn = 0.47 × 2.447 = 1.150 gC m⁻² day⁻¹ = 420 gC m⁻² yr⁻¹
+#     soil_input_fraction = 150/420 = 0.357  → leaf litter to Oi = 0.411 gC m⁻² day⁻¹
+#     ag_frac              = 270/420 = 0.643  → fine roots to dead_roots = 0.740 gC m⁻² day⁻¹
+#     GPP_syn (constant)   = 2.447 gC m⁻² day⁻¹  (stored as GPP_obs in synthetic forcing)
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 0       # spinup is done manually in replicate_hf.py (1900–run start)
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools:
+    - name: dead_roots
+      is_woody: false
+      litterfall_to: organic_Oi   # metadata only; actual transfer via transfer_rules
+
+  soil_layers:
+    - name: organic
+      depth_top_m: 0.00
+      depth_bot_m: 0.08
+      permafrost_eligible: false
+      som_pools:
+        - name: Oi
+          tau_prior_days: 547
+          tau_prior_std: 183
+        - name: Oe_a_L
+          tau_prior_days: 1460
+          tau_prior_std: 547
+        - name: Oe_a_H
+          tau_prior_days: 12775
+          tau_prior_std: 3650
+
+    - name: mineral
+      depth_top_m: 0.08
+      depth_bot_m: 0.15
+      permafrost_eligible: false
+      som_pools:
+        - name: ALF_gt80
+          tau_prior_days: 1095
+          tau_prior_std: 365
+        - name: ALF_lt80
+          tau_prior_days: 27375
+          tau_prior_std: 9125
+        - name: MinAss
+          tau_prior_days: 40150
+          tau_prior_std: 13150
+
+  transfer_rules:
+    # Dead roots → soil: all output split between Oi and ALF_gt80 (no Rh from dead roots)
+    - [dead_roots,       organic_Oi,       0.538]   # 35/65 of dead-root turnover
+    - [dead_roots,       mineral_ALF_gt80, 0.462]   # 30/65 of dead-root turnover
+    # Organic layer cascade
+    - [organic_Oi,       organic_Oe_a_L,   0.658]   # 98/149 of Oi turnover
+    - [organic_Oe_a_L,   organic_Oe_a_H,   0.041]   # 4/98 of Oe_a_L turnover
+    # Oe_a_H: all outflux goes to Rh (no mineral transfer).
+    # The "190" in Gaudinski Fig. 1 is total organic-layer Rh (51+94+39≈184), not a
+    # transfer to mineral.  Mineral pools receive only from the dead-root cascade.
+    # Mineral cascade
+    - [mineral_ALF_gt80, mineral_ALF_lt80, 0.800]   # 24/30 of ALF_gt80 turnover
+    - [mineral_ALF_lt80, mineral_MinAss,   0.098]   # 2.4/24.4 of ALF_lt80 turnover
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+
+  # soil_input_fraction = 150/215 = 0.698: leaf-litter fraction of model inputs.
+  # Total model inputs = 150 (leaf litter) + 65 (dead fine roots) = 215 gC m⁻² yr⁻¹.
+  # The remaining 270-65=205 gC m⁻² yr⁻¹ of fine-root production stays in live biomass.
+  # GPP_syn = 215/CUE/365 = 1.254 gC m⁻² day⁻¹ (set in replicate_hf.py forcing).
+  # soil_input_fraction = (150 + 2.7) / (150 + 2.7 + 65) = 152.7/217.7 = 0.7015
+  # Direct soil inputs = leaf litter (150) + DOC to MinAss (2.7) = 152.7 gC m⁻² yr⁻¹.
+  soil_input_fraction: 0.7015
+  optimize_soil_input_fraction: false
+
+  # Partition of direct soil input:
+  #   leaf litter → Oi:        150 / 152.7 = 0.9823
+  #   DOC → Mineral-asso:      2.7 / 152.7 = 0.0177  (Fig. 1 DOC leachate)
+  partition:
+    organic_Oi:       0.9823
+    organic_Oe_a_L:   0.00
+    organic_Oe_a_H:   0.00
+    mineral_ALF_gt80: 0.00
+    mineral_ALF_lt80: 0.00
+    mineral_MinAss:   0.0177
+  optimize_partition: false
+
+parameters:
+  alloc:
+    dead_roots: 1.0   # 100 % of NPP allocated aboveground goes to fine roots
+
+  # dead_roots τ override — parser only accepts tau for AG pools via this dict.
+  tau_overrides:
+    dead_roots: 2190   # 6 yr (Gaudinski 2000 Δ¹⁴C estimate)
+
+  # No T/moisture modifier — Sierra 2012 uses constant k values.
+  Q10: 1.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  # ── Optimal Estimation (Levenberg-Marquardt) ──────────────────────────────
+  oe_max_iterations: 30
+
+  # Observation error standard deviations
+  # Organic-fraction Δ¹⁴C has large spatial variability across plots (Sierra
+  # Fig. 3 error bars ≈ ±70 ‰ for Oe/a); use 25 ‰ as representative σ.
+  sigma_pool_14C: 25.0        # ‰ — pool-level Δ¹⁴C (hf212-03; 2 dates × 4 horizons)
+  sigma_resp_14C: 20.0        # ‰ — respired CO₂ Δ¹⁴C (hf212-01 NWN; 41 obs)
+  sigma_carbon_gCm2: 400.0    # gC m⁻² — C-stock uncertainty (Gaudinski Fig. 1)
+
+  # Levenberg-Marquardt damping
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

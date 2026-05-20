@@ -1,38 +1,33 @@
 """
-harvard_forest_inversion.py — Optimize Harvard Forest soil-only model τ values
-against pool-level Δ¹⁴C (hf212-03) and respired CO₂ Δ¹⁴C (hf212-01) observations.
+harvard_forest_inversion.py — Harvard Forest soil Δ¹⁴C inversion via OE.
 
 Run from the repository root:
     python notebooks/harvard_forest_inversion.py
 
-Observations used
------------------
-  hf212-03-14c-org.csv  : 4 soil pools × 2 years (1996, 2007) = 8 Δ¹⁴C values
-    Oi    → organic_litter
-    Oe    → organic_fast
-    A-lf  → mineral_A_fast
-    A-min → mineral_A_slow
+Algorithm
+---------
+  Optimal Estimation (Levenberg-Marquardt) — Rodgers (2000) framework.
+  Minimises:  J(x) = (y−F(x))ᵀ Sₑ⁻¹ (y−F(x)) + (x−xₐ)ᵀ Sₐ⁻¹ (x−xₐ)
+  Returns posterior covariance Sₓ and averaging kernel A in OEResult.
 
-  hf212-01-14c-no-treat.csv  : NWN site, 1996–2010, 41 sampling dates
-    Multiple reps per date → daily mean used.
-    Compared against flux-weighted model respired CO₂ Δ¹⁴C:
-      d14C_resp = Σ(C12_i/τ_i × Δ¹⁴C_i) / Σ(C12_i/τ_i)
+Observations
+------------
+  hf212-03-14c-org.csv  : 4 soil pools × 2 years (1996, 2007) = 8 Δ¹⁴C points
+  hf212-01-14c-no-treat.csv : NWN site, 1996–2010, 41 resp CO₂ Δ¹⁴C dates
 
-Parameters optimized
---------------------
-  log_tau                      (6 pools)  — turnover times
-  log_external_input_partition (4 logits) — carbon input partition
+State vector (52 params)
+------------------------
+  log_tau                      (6)  turnover times
+  log_external_input_partition (4)  carbon input partition logits
+  log_f_transfer               (42) transfer fraction logits
+    — prior σ = 0.5 for 8 real rules, 0.02 for structural zeros
 
-All other parameters (Q10, moisture, transfer fractions) held fixed at their
-analytically-derived prior values (from hf271 C-stock constraint).
-
-Output
-------
-  notebooks/harvard_forest_inversion.png  — 4-panel figure:
-    (a) Loss convergence (total + pool Δ¹⁴C + respired CO₂ components)
-    (b) τ before vs. after (bar chart with ratio annotation)
-    (c) Pool Δ¹⁴C trajectories — prior / optimized / hf212-03 scatter
-    (d) Respired CO₂ Δ¹⁴C — model vs. hf212-01 NWN observations
+Figure output (4 panels)
+------------------------
+  (a) OE cost vs. LM iteration for both runs
+  (b) τ bar chart — prior / OE pool-only / OE pool+resp
+  (c) Pool Δ¹⁴C — 3 lines + hf212-03 scatter
+  (d) Respired CO₂ Δ¹⁴C — 3 lines + hf212-01 NWN obs + posterior σ envelope
 """
 from __future__ import annotations
 
@@ -54,7 +49,7 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, os.path.join(_REPO_ROOT, "src"))
 
 from ecosystem_complexity.api import (
-    build_model, run_model, optimize,
+    build_model, run_model, optimize_oe,
 )
 from ecosystem_complexity.config import load_config
 from ecosystem_complexity.data.parsers import attach_atm14C, load_harvard_forest
@@ -312,31 +307,26 @@ def run_inversion():
     w_prior = np.array(out_prior.C12) / (tau_p[None, :] + 1e-30)
     d14C_resp_prior = (np.array(out_prior.delta14C) * w_prior).sum(-1) / (w_prior.sum(-1) + 1e-30)
 
-    _opt_fields  = ("log_tau", "log_external_input_partition")
-    n_opt_params = sum(
-        int(np.prod(getattr(make_default_params(config), f).shape))
-        for f in _opt_fields
-    )
+    _oe_fields = ("log_tau", "log_external_input_partition", "log_f_transfer")
     n_pool_obs = int(jnp.sum(~jnp.isnan(
         jnp.concatenate([a for a in delta14C_obs.values()]))))
 
-    # ── Optimization 1: pool Δ¹⁴C only (no respiration) ─────────────────────
+    # ── OE Run 1: pool Δ¹⁴C only ─────────────────────────────────────────────
     obs_pool_only = ObservationData(
         time=forcing.time,
         NEE=jnp.full(T, jnp.nan), GPP=jnp.full(T, jnp.nan),
         ER=jnp.full(T, jnp.nan),  NEE_unc=jnp.full(T, jnp.nan),
         delta14C_obs=delta14C_obs, deltaD14C_obs={}, C_pools_obs={},
-        delta14C_resp=None,          # respiration constraint OFF
+        delta14C_resp=None,
     )
-    print(f"\nRun 1 — pool Δ¹⁴C only  ({n_pool_obs} obs, Adam 800 iter)…")
+    print(f"\nOE Run 1 — pool Δ¹⁴C only  ({n_pool_obs} obs, LM ≤20 iter)…")
     t0 = time.perf_counter()
-    result_pool = optimize(model, forcing, obs_pool_only, state0=state0,
-                           fields=_opt_fields)
+    result_pool = optimize_oe(model, forcing, obs_pool_only, state0=state0,
+                              fields=_oe_fields)
     dt1 = time.perf_counter() - t0
-    lh1 = np.array(result_pool.loss_history)
-    vl1 = lh1[np.isfinite(lh1)]
-    print(f"  Done [{dt1:.0f}s]  loss {vl1[0]:.4f} → {vl1[-1]:.4f}"
-          f"  ({vl1[0]/vl1[-1]:.1f}× reduction)")
+    ch1 = np.array(result_pool.cost_history)
+    print(f"  Done [{dt1:.0f}s]  cost {ch1[0]:.2f} → {ch1[-1]:.2f}"
+          f"  ({result_pool.n_iter} iter, converged={result_pool.converged})")
 
     out_pool = run_model(model, forcing, state0=state0, params=result_pool.params_opt)
     jax.block_until_ready(out_pool.delta14C)
@@ -344,23 +334,22 @@ def run_inversion():
     w_pool   = np.array(out_pool.C12) / (tau_pool[None, :] + 1e-30)
     d14C_resp_pool = (np.array(out_pool.delta14C) * w_pool).sum(-1) / (w_pool.sum(-1) + 1e-30)
 
-    # ── Optimization 2: pool Δ¹⁴C + respired CO₂ ────────────────────────────
+    # ── OE Run 2: pool Δ¹⁴C + respired CO₂ ──────────────────────────────────
     obs_both = ObservationData(
         time=forcing.time,
         NEE=jnp.full(T, jnp.nan), GPP=jnp.full(T, jnp.nan),
         ER=jnp.full(T, jnp.nan),  NEE_unc=jnp.full(T, jnp.nan),
         delta14C_obs=delta14C_obs, deltaD14C_obs={}, C_pools_obs={},
-        delta14C_resp=delta14C_resp,   # respiration constraint ON
+        delta14C_resp=delta14C_resp,
     )
-    print(f"\nRun 2 — pool Δ¹⁴C + resp Δ¹⁴C  ({n_pool_obs} + {n_resp_obs} obs, Adam 800 iter)…")
+    print(f"\nOE Run 2 — pool + resp Δ¹⁴C  ({n_pool_obs} + {n_resp_obs} obs, LM ≤20 iter)…")
     t0 = time.perf_counter()
-    result_both = optimize(model, forcing, obs_both, state0=state0,
-                           fields=_opt_fields)
+    result_both = optimize_oe(model, forcing, obs_both, state0=state0,
+                              fields=_oe_fields)
     dt2 = time.perf_counter() - t0
-    lh2 = np.array(result_both.loss_history)
-    vl2 = lh2[np.isfinite(lh2)]
-    print(f"  Done [{dt2:.0f}s]  loss {vl2[0]:.4f} → {vl2[-1]:.4f}"
-          f"  ({vl2[0]/vl2[-1]:.1f}× reduction)")
+    ch2 = np.array(result_both.cost_history)
+    print(f"  Done [{dt2:.0f}s]  cost {ch2[0]:.2f} → {ch2[-1]:.2f}"
+          f"  ({result_both.n_iter} iter, converged={result_both.converged})")
 
     out_both = run_model(model, forcing, state0=state0, params=result_both.params_opt)
     jax.block_until_ready(out_both.delta14C)
@@ -369,25 +358,19 @@ def run_inversion():
     d14C_resp_both = (np.array(out_both.delta14C) * w_both).sum(-1) / (w_both.sum(-1) + 1e-30)
 
     # ── Diagnostics ───────────────────────────────────────────────────────────
-    def _softmax(x):
-        e = np.exp(x - x.max()); return e / e.sum()
-
-    _ext       = load_config(HF_SOIL_CONFIG).external_inputs
-    part_names = list(_ext.partition.keys()) if _ext is not None else []
-
-    print(f"\n{'Pool':<25s}  {'τ prior':>10}  {'τ pool':>10}  {'τ both':>10}")
-    print("  " + "─" * 58)
+    print(f"\n{'Pool':<25s}  {'τ prior (yr)':>12}  {'τ OE pool (yr)':>14}  {'τ OE both (yr)':>14}")
+    print("  " + "─" * 68)
     for i, name in enumerate(idx.pool_names):
-        print(f"  {name:<25s}  {tau_p[i]/365:>10.1f}  "
-              f"{tau_pool[i]/365:>10.1f}  {tau_both[i]/365:>10.1f}")
+        print(f"  {name:<25s}  {tau_p[i]/365:>12.1f}  "
+              f"{tau_pool[i]/365:>14.1f}  {tau_both[i]/365:>14.1f}")
 
-    print(f"\n{'Pool':<25s}  {'part prior':>10}  {'part pool':>10}  {'part both':>10}")
-    print("  " + "─" * 58)
-    pp = _softmax(np.array(params_prior.log_external_input_partition))
-    pp1 = _softmax(np.array(result_pool.params_opt.log_external_input_partition))
-    pp2 = _softmax(np.array(result_both.params_opt.log_external_input_partition))
-    for i, pname in enumerate(part_names):
-        print(f"  {pname:<25s}  {pp[i]:>10.3f}  {pp1[i]:>10.3f}  {pp2[i]:>10.3f}")
+    # Posterior 1-σ on τ (from diagonal of Sₓ in log-space → δτ = τ σ_log_tau)
+    sx_diag = np.array(jnp.diag(result_both.Sx))
+    n_tau   = len(idx.pool_names)
+    tau_sigma_both = tau_both * np.sqrt(sx_diag[:n_tau])
+    print(f"\n  Posterior 1-σ on τ (pool+resp):")
+    for i, name in enumerate(idx.pool_names):
+        print(f"    {name:<25s}  ±{tau_sigma_both[i]/365:.1f} yr")
 
     return (time_years, out_prior, out_pool, out_both,
             result_pool, result_both,
@@ -406,20 +389,18 @@ def make_inversion_figure(time_years, out_prior, out_pool, out_both,
                           d14C_resp_prior, d14C_resp_pool, d14C_resp_both,
                           params_prior, params_pool, params_both, pool_idx):
     """
-    4-panel comparison figure showing 3 runs:
-      Prior  ·  Opt-pool (pool Δ¹⁴C only)  ·  Opt-both (pool Δ¹⁴C + resp Δ¹⁴C)
+    4-panel OE comparison figure (3 runs: Prior / OE pool / OE pool+resp).
 
-    (a) Normalized loss convergence for both optimizations
-    (b) τ bar chart — 3 groups per pool
+    (a) OE cost vs. LM iteration
+    (b) τ bar chart — prior / OE pool-only / OE pool+resp
     (c) Pool Δ¹⁴C trajectories — 3 lines + hf212-03 obs
-    (d) Respired CO₂ Δ¹⁴C — 3 lines + hf212-01 NWN obs
+    (d) Respired CO₂ Δ¹⁴C — 3 lines + posterior σ envelope + hf212-01 NWN obs
     """
     from matplotlib.lines import Line2D
 
-    # Consistent run colours
-    C_PRIOR = "0.55"          # medium gray
-    C_POOL  = "steelblue"     # pool-only opt
-    C_BOTH  = "tomato"        # pool + resp opt
+    C_PRIOR = "0.55"
+    C_POOL  = "steelblue"
+    C_BOTH  = "tomato"
 
     pool_names_set = set(pool_idx.pool_names)
 
@@ -434,23 +415,22 @@ def make_inversion_figure(time_years, out_prior, out_pool, out_both,
     ax_14c  = fig.add_subplot(gs[1, 0])
     ax_resp = fig.add_subplot(gs[1, 1])
 
-    # ── Panel (a): Normalized loss convergence ────────────────────────────────
-    # Normalise each run to its own initial loss so both fit on the same scale.
-    lh1 = np.array(result_pool.loss_history);  lh1 = lh1[np.isfinite(lh1)]
-    lh2 = np.array(result_both.loss_history);  lh2 = lh2[np.isfinite(lh2)]
-    iters1 = np.arange(1, len(lh1) + 1)
-    iters2 = np.arange(1, len(lh2) + 1)
-    ax_loss.plot(iters1, lh1 / lh1[0], lw=1.5, color=C_POOL,
-                 label=f"pool Δ¹⁴C only  ({lh1[0]:.3f} → {lh1[-1]:.3f})")
-    ax_loss.plot(iters2, lh2 / lh2[0], lw=1.5, color=C_BOTH, linestyle="--",
-                 label=f"pool + resp Δ¹⁴C  ({lh2[0]:.3f} → {lh2[-1]:.3f})")
-    ax_loss.set_xlabel("Iteration", fontsize=9)
-    ax_loss.set_ylabel("Loss / initial loss", fontsize=9)
-    ax_loss.set_title("(a) Optimization convergence (normalized)", fontsize=9, loc="left")
+    # ── Panel (a): OE cost vs. LM iteration ──────────────────────────────────
+    ch1 = np.array(result_pool.cost_history)
+    ch2 = np.array(result_both.cost_history)
+    ax_loss.semilogy(np.arange(1, len(ch1) + 1), ch1, lw=2.0, color=C_POOL,
+                     label=f"pool Δ¹⁴C only  "
+                           f"({ch1[0]:.1f} → {ch1[-1]:.1f}, {len(ch1)} iter)")
+    ax_loss.semilogy(np.arange(1, len(ch2) + 1), ch2, lw=2.0, color=C_BOTH,
+                     linestyle="--",
+                     label=f"pool + resp Δ¹⁴C  "
+                           f"({ch2[0]:.1f} → {ch2[-1]:.1f}, {len(ch2)} iter)")
+    ax_loss.set_xlabel("LM iteration", fontsize=9)
+    ax_loss.set_ylabel("OE cost  J(x)", fontsize=9)
+    ax_loss.set_title("(a) OE convergence (Levenberg-Marquardt)", fontsize=9, loc="left")
     ax_loss.legend(fontsize=8, framealpha=0.85)
     ax_loss.tick_params(labelsize=8)
     ax_loss.grid(axis="both", lw=0.4, alpha=0.4)
-    ax_loss.set_ylim(bottom=0)
 
     # ── Panel (b): τ bar chart — 3 groups per pool ───────────────────────────
     tau_prior = np.exp(np.array(params_prior.log_tau)) / 365.0
@@ -462,14 +442,14 @@ def make_inversion_figure(time_years, out_prior, out_pool, out_both,
     w = 0.25
 
     ax_tau.bar(x - w,   tau_prior, w, label="Prior",             color="0.75",  alpha=0.9)
-    ax_tau.bar(x,       tau_pool,  w, label="Pool Δ¹⁴C opt",    color=C_POOL,  alpha=0.75)
-    ax_tau.bar(x + w,   tau_both,  w, label="Pool+resp Δ¹⁴C opt", color=C_BOTH, alpha=0.75)
+    ax_tau.bar(x,       tau_pool,  w, label="OE pool Δ¹⁴C",    color=C_POOL,  alpha=0.75)
+    ax_tau.bar(x + w,   tau_both,  w, label="OE pool+resp Δ¹⁴C", color=C_BOTH, alpha=0.75)
 
     short_names = [n.replace("_", "\n") for n in pool_names]
     ax_tau.set_xticks(x)
     ax_tau.set_xticklabels(short_names, fontsize=7)
     ax_tau.set_ylabel("Turnover time (years)", fontsize=9)
-    ax_tau.set_title("(b) Turnover times — prior vs. constrained", fontsize=9, loc="left")
+    ax_tau.set_title("(b) Turnover times — prior vs. OE constrained", fontsize=9, loc="left")
     ax_tau.legend(fontsize=8, framealpha=0.85)
     ax_tau.tick_params(axis="y", labelsize=8)
     ax_tau.grid(axis="y", lw=0.4, alpha=0.4)
@@ -501,8 +481,8 @@ def make_inversion_figure(time_years, out_prior, out_pool, out_both,
     # Legend: line style = run; colour = pool
     handles_c = [
         Line2D([0], [0], color="0.4", lw=0.9, ls=":",  alpha=0.55, label="Prior"),
-        Line2D([0], [0], color="0.4", lw=1.2, ls="--", alpha=0.75, label="Pool Δ¹⁴C opt"),
-        Line2D([0], [0], color="0.4", lw=1.8,                       label="Pool+resp opt"),
+        Line2D([0], [0], color="0.4", lw=1.2, ls="--", alpha=0.75, label="OE pool Δ¹⁴C"),
+        Line2D([0], [0], color="0.4", lw=1.8,                       label="OE pool+resp"),
     ] + [
         Line2D([0], [0], color=_POOL_STYLES[p][1], lw=1.8,
                marker=_POOL_STYLES[p][2], ms=6,
@@ -513,39 +493,58 @@ def make_inversion_figure(time_years, out_prior, out_pool, out_both,
     ax_14c.set_ylabel("Δ¹⁴C (‰)", fontsize=9)
     ax_14c.set_xlabel("Year", fontsize=9)
     ax_14c.set_title(
-        "(c) Pool Δ¹⁴C  ·  dotted=prior  dashed=pool opt  solid=pool+resp opt"
+        "(c) Pool Δ¹⁴C  ·  dotted=prior  dashed=OE pool  solid=OE pool+resp"
         "  ·  markers=hf212-03 obs", fontsize=8.5, loc="left")
     ax_14c.tick_params(labelsize=8)
     ax_14c.grid(axis="y", lw=0.4, alpha=0.4)
     ax_14c.legend(handles=handles_c, fontsize=7.5, ncol=2, framealpha=0.85)
 
-    # ── Panel (d): Respired CO₂ Δ¹⁴C — 3 lines ──────────────────────────────
+    # ── Panel (d): Respired CO₂ Δ¹⁴C — 3 lines + posterior σ envelope ────────
     resp_obs_arr  = np.array(delta14C_resp)
     valid_resp    = np.where(np.isfinite(resp_obs_arr))[0]
     obs_yrs_resp  = time_years[valid_resp]
     obs_vals_resp = resp_obs_arr[valid_resp]
 
+    # Posterior σ on resp Δ¹⁴C from result_both.Sx — propagate through
+    # d14c_resp = Σ(C12_i/τ_i × Δ¹⁴C_i) / Σ(C12_i/τ_i) w.r.t. log_tau uncertainty.
+    # Approximate: ∂d14c_resp/∂log_tau_i ≈ (d14C_both[:,i] - d14c_resp_both) × w_i/Σw
+    tau_b    = np.exp(np.array(result_both.params_opt.log_tau))
+    C12_b    = np.array(out_both.C12)
+    d14c_b   = np.array(out_both.delta14C)
+    wb       = C12_b / (tau_b[None, :] + 1e-30)
+    wsum_b   = wb.sum(-1, keepdims=True) + 1e-30
+    # ∂d14c_resp/∂log_tau_i = -(d14c_resp[:,i] - d14c_resp_both) * w_i/wsum
+    jac_resp_logtau = -(d14c_b - d14C_resp_both[:, None]) * (wb / wsum_b)  # (T, n_pools)
+    n_tau = len(pool_idx.pool_names)
+    Sx_logtau = np.array(result_both.Sx)[:n_tau, :n_tau]
+    # Var(d14c_resp) ≈ J Sₓ Jᵀ (diagonal) for each timestep
+    resp_var = np.einsum("ti,ij,tj->t", jac_resp_logtau, Sx_logtau, jac_resp_logtau)
+    resp_sigma = np.sqrt(np.maximum(resp_var, 0.0))
+
+    ax_resp.fill_between(time_years,
+                         d14C_resp_both - resp_sigma,
+                         d14C_resp_both + resp_sigma,
+                         color=C_BOTH, alpha=0.15, label="OE pool+resp ±1σ")
     ax_resp.plot(time_years, d14C_resp_prior,
                  lw=0.9, color=C_PRIOR, linestyle=":", alpha=0.7, label="Prior")
     ax_resp.plot(time_years, d14C_resp_pool,
                  lw=1.4, color=C_POOL,  linestyle="--", alpha=0.85,
-                 label="Pool Δ¹⁴C opt")
+                 label="OE pool Δ¹⁴C opt")
     ax_resp.plot(time_years, d14C_resp_both,
                  lw=1.8, color=C_BOTH,  alpha=1.0,
-                 label="Pool+resp Δ¹⁴C opt")
+                 label="OE pool+resp opt")
     ax_resp.scatter(obs_yrs_resp, obs_vals_resp,
                     s=40, color="black", marker="o", alpha=0.7,
                     edgecolors="none", zorder=6, label="hf212-01 NWN obs")
 
-    # RMSE annotation for all 3
     if len(valid_resp) > 0:
         rmse_p = np.sqrt(np.mean((d14C_resp_prior[valid_resp] - obs_vals_resp) ** 2))
         rmse_1 = np.sqrt(np.mean((d14C_resp_pool[valid_resp]  - obs_vals_resp) ** 2))
         rmse_2 = np.sqrt(np.mean((d14C_resp_both[valid_resp]  - obs_vals_resp) ** 2))
         ax_resp.text(0.02, 0.97,
                      f"Prior RMSE:          {rmse_p:.1f} ‰\n"
-                     f"Pool Δ¹⁴C RMSE:     {rmse_1:.1f} ‰\n"
-                     f"Pool+resp RMSE:  {rmse_2:.1f} ‰",
+                     f"OE pool Δ¹⁴C RMSE: {rmse_1:.1f} ‰\n"
+                     f"OE pool+resp RMSE: {rmse_2:.1f} ‰",
                      transform=ax_resp.transAxes, va="top", ha="left",
                      fontsize=8, color="0.2",
                      bbox=dict(boxstyle="round,pad=0.35", fc="white", ec="none", alpha=0.85))
@@ -554,15 +553,16 @@ def make_inversion_figure(time_years, out_prior, out_pool, out_both,
     ax_resp.set_ylabel("Δ¹⁴C of respired CO₂ (‰)", fontsize=9)
     ax_resp.set_xlabel("Year", fontsize=9)
     ax_resp.set_title(
-        "(d) Respired CO₂ Δ¹⁴C (flux-weighted) vs. hf212-01 NWN",
+        "(d) Respired CO₂ Δ¹⁴C (flux-weighted) vs. hf212-01 NWN  ·  shading = OE posterior ±1σ",
         fontsize=9, loc="left")
     ax_resp.tick_params(labelsize=8)
     ax_resp.grid(axis="y", lw=0.4, alpha=0.4)
     ax_resp.legend(fontsize=8, framealpha=0.85)
 
     fig.suptitle(
-        "Harvard Forest Soil-Only Δ¹⁴C Inversion — effect of adding constraints\n"
-        "Prior  →  +pool Δ¹⁴C (hf212-03, 8 obs)  →  +resp CO₂ Δ¹⁴C (hf212-01 NWN, 41 obs)",
+        "Harvard Forest Soil-Only Δ¹⁴C Inversion — Optimal Estimation (Levenberg-Marquardt)\n"
+        "State vector: log_τ (6) + log_partition (4) + log_f_transfer (42)  ·  "
+        "Prior  →  +pool Δ¹⁴C (8 obs)  →  +resp CO₂ Δ¹⁴C (41 obs)",
         fontsize=10,
     )
 

@@ -79,7 +79,7 @@ def _gpp(sw_radiation: jnp.ndarray) -> jnp.ndarray:
 
     This is a placeholder; the inversion will constrain GPP via NEE obs.
     """
-    return 8.0 * sw_radiation * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
+    return sw_radiation * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
 
 
 def _pool_env_vecs(
