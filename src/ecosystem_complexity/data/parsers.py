@@ -270,10 +270,11 @@ def load_barrow_alaska(
     fluxmet["date"] = pd.to_datetime(fluxmet["TIMESTAMP"].astype(str), format="%Y%m%d")
 
     # Apply QC to fluxes.
-    # Barrow FLUXNET uses fraction-measured QC (0=all gap-filled, 1=all measured);
-    # mask rows where the measured fraction is BELOW the threshold (bad quality).
+    # US-A10 FLUXNET DD uses the standard fraction-gap-filled convention
+    # (0=all measured, 1=all gap-filled); mask rows where the gap-filled
+    # fraction EXCEEDS the threshold (bad quality).
     if "NEE_CUT_REF_QC" in fluxmet.columns:
-        bad_qc = fluxmet["NEE_CUT_REF_QC"] < qc_threshold
+        bad_qc = fluxmet["NEE_CUT_REF_QC"] > qc_threshold
         for col in ["NEE_CUT_REF", "GPP_DT_CUT_REF", "RECO_NT_CUT_REF"]:
             if col in fluxmet.columns:
                 fluxmet.loc[bad_qc, col] = np.nan
