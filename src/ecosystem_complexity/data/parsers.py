@@ -235,10 +235,12 @@ def load_barrow_alaska(
     fluxmet = pd.read_csv(fluxmet_path, na_values=[-9999], low_memory=False)
     fluxmet["date"] = pd.to_datetime(fluxmet["TIMESTAMP"].astype(str), format="%Y%m%d")
 
-    # Apply QC to fluxes
+    # Apply QC to fluxes.
+    # Barrow FLUXNET uses fraction-measured QC (0=all gap-filled, 1=all measured);
+    # mask rows where the measured fraction is BELOW the threshold (bad quality).
     if "NEE_CUT_REF_QC" in fluxmet.columns:
-        bad_qc = fluxmet["NEE_CUT_REF_QC"] > qc_threshold
-        for col in ["NEE_CUT_REF", "GPP_NT_VUT_REF", "RECO_NT_VUT_REF"]:
+        bad_qc = fluxmet["NEE_CUT_REF_QC"] < qc_threshold
+        for col in ["NEE_CUT_REF", "GPP_DT_CUT_REF", "RECO_NT_CUT_REF"]:
             if col in fluxmet.columns:
                 fluxmet.loc[bad_qc, col] = np.nan
 
@@ -341,7 +343,8 @@ def load_barrow_alaska(
             return merged[alt].values.astype(np.float64)
         return np.full(T, np.nan)
 
-    GPP_obs_arr = _get_col("GPP_NT_VUT_REF") if include_gpp_forcing else np.full(T, np.nan)
+    # GPP: daytime-partitioned CUT variant (NT variant is absent for US-A10)
+    GPP_obs_arr = _get_col("GPP_DT_CUT_REF") if include_gpp_forcing else np.full(T, np.nan)
 
     forcing = ForcingData(
         time=jnp.array(time_arr, dtype=jnp.float32),
@@ -364,8 +367,8 @@ def load_barrow_alaska(
     obs = ObservationData(
         time=jnp.array(time_arr, dtype=jnp.float32),
         NEE=jnp.array(_get_col("NEE_CUT_REF"), dtype=jnp.float32),
-        GPP=jnp.array(_get_col("GPP_NT_VUT_REF"), dtype=jnp.float32),
-        ER=jnp.array(_get_col("RECO_NT_VUT_REF"), dtype=jnp.float32),
+        GPP=jnp.array(_get_col("GPP_DT_CUT_REF"), dtype=jnp.float32),
+        ER=jnp.array(_get_col("RECO_NT_CUT_REF"), dtype=jnp.float32),
         NEE_unc=jnp.array(nee_unc, dtype=jnp.float32),
         delta14C_obs={},
         deltaD14C_obs={},
