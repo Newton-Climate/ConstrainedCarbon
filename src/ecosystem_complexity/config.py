@@ -62,6 +62,11 @@ class SOMPoolDef:
     name: str
     tau_prior_days: float
     tau_prior_std: float
+    # Optional per-pool depth bounds (m).  When provided, depth-attenuated
+    # soil temperature is used for this pool's thawed_frac rather than the
+    # layer-level temperature.  Enables freeze-thaw gating at permafrost depth.
+    depth_top_m: float | None = None
+    depth_bot_m: float | None = None
 
 
 @dataclass(frozen=True)
@@ -143,6 +148,10 @@ class ModelConfig:
 
     # Optional typed external-inputs config (None when block is absent from YAML)
     external_inputs: Optional[ExternalInputsConfig] = None
+    # Mean annual soil/air temperature (°C).  Used by depth-based freeze-thaw
+    # gating to anchor the temperature at depth (Fourier heat conduction
+    # placeholder).  None → disables depth-gating (uses layer-level T).
+    T_annual_mean_C: float | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +262,8 @@ def _parse_soil_layers(
                 name=str(p["name"]),
                 tau_prior_days=float(p["tau_prior_days"]),
                 tau_prior_std=float(p["tau_prior_std"]),
+                depth_top_m=float(p["depth_top_m"]) if "depth_top_m" in p else None,
+                depth_bot_m=float(p["depth_bot_m"]) if "depth_bot_m" in p else None,
             )
             for p in entry["som_pools"]
         )
@@ -534,6 +545,7 @@ def load_config(path: str) -> ModelConfig:
         site_name=str(site.get("name", "")),
         lat=float(site.get("lat", 0.0)),
         lon=float(site.get("lon", 0.0)),
+        T_annual_mean_C=float(site["T_annual_mean_C"]) if "T_annual_mean_C" in site else None,
         # Model structure
         dt_days=float(model.get("dt_days", 1.0)),
         solver=str(model.get("solver", "euler")),

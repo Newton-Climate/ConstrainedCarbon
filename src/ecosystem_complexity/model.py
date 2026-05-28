@@ -47,6 +47,8 @@ from ecosystem_complexity.fluxes import (
     f_temp,
     het_respiration,
     npp_allocation,
+    soil_temp_at_depth,
+    thawed_frac,
 )
 from ecosystem_complexity.fluxes import (
     nee as nee_flux,
@@ -90,9 +92,19 @@ def _pool_env_vecs(
     log_theta_opt: jnp.ndarray,
     log_gamma_moist: jnp.ndarray,
     pool_to_layer: jnp.ndarray,
+    *,
+    pool_mid_depths: jnp.ndarray | None = None,
+    T_annual_mean: float | None = None,
+    damping_depth_m: float = 2.0,
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """
     Broadcast per-layer environmental scalars to per-pool vectors.
+
+    When ``pool_mid_depths`` and ``T_annual_mean`` are provided, the thawed
+    fraction for each pool is computed from a depth-attenuated temperature
+    (via ``soil_temp_at_depth``) rather than the layer-surface temperature.
+    This implements freeze-thaw gating: deep permafrost pools stay frozen
+    (thawed_frac ≈ 0) even when the surface thaws in summer.
 
     Parameters
     ----------
@@ -101,12 +113,19 @@ def _pool_env_vecs(
     soil_moisture : (n_layers,)
         Volumetric soil moisture (m³ m⁻³), from forcing.
     ff_layers : (n_layers,)
-        Thaw fraction from the current state (1=thawed, 0=frozen).
+        Layer-level thaw fraction from the current state (used when
+        ``pool_mid_depths`` is None).
     log_Q10, log_theta_opt, log_gamma_moist : (n_layers,)
         Log-space environmental parameters from ``ModelParams``.
     pool_to_layer : (n_pools,) int
         Static index: ``pool_to_layer[i]`` is the layer index for pool *i*.
-        Aboveground pools are mapped to layer 0 (surface conditions).
+    pool_mid_depths : (n_pools,) float or None
+        Mid-depth of each pool in metres.  When provided, enables per-pool
+        depth-attenuated freeze-thaw gating.
+    T_annual_mean : float or None
+        Mean annual surface temperature (°C); asymptotic deep temperature.
+    damping_depth_m : float
+        Thermal damping depth for the ``soil_temp_at_depth`` placeholder.
 
     Returns
     -------
@@ -117,7 +136,18 @@ def _pool_env_vecs(
     fm_layers = f_moisture(soil_moisture, log_theta_opt, log_gamma_moist)
     ft_vec = ft_layers[pool_to_layer]                            # (n_pools,)
     fm_vec = fm_layers[pool_to_layer]
-    ff_vec = ff_layers[pool_to_layer]
+
+    if pool_mid_depths is not None and T_annual_mean is not None:
+        # Per-pool depth-attenuated temperature → per-pool thawed_frac.
+        # T_surface for each pool: use the layer-mean soil temperature.
+        T_surface_per_pool = soil_temp[pool_to_layer]            # (n_pools,)
+        T_depth_per_pool = soil_temp_at_depth(
+            T_surface_per_pool, pool_mid_depths, T_annual_mean, damping_depth_m
+        )
+        ff_vec = thawed_frac(T_depth_per_pool)                   # (n_pools,)
+    else:
+        ff_vec = ff_layers[pool_to_layer]                        # (n_pools,)
+
     return ft_vec, fm_vec, ff_vec
 
 
@@ -135,6 +165,10 @@ def _step_12C_pure(
     external_input_source_key: str = "GPP_obs",
     external_input_is_npp: bool = False,
     external_input_target_indices: jnp.ndarray | None = None,
+    # Freeze-thaw gating at depth (optional; None = use layer-level thawed_frac)
+    pool_mid_depths: jnp.ndarray | None = None,
+    T_annual_mean: float | None = None,
+    damping_depth_m: float = 2.0,
 ) -> EcosystemState:
     """
     One Euler step of ¹²C pool dynamics — pure function, no ``self``.
@@ -209,6 +243,9 @@ def _step_12C_pure(
         params.log_theta_opt,
         params.log_gamma_moist,
         pool_to_layer,
+        pool_mid_depths=pool_mid_depths,
+        T_annual_mean=T_annual_mean,
+        damping_depth_m=damping_depth_m,
     )
 
     # ── NPP allocation to aboveground pools ───────────────────────────────
@@ -285,6 +322,9 @@ class EcosystemModel:
     # Private fields initialised in __post_init__ — not part of __init__.
     _step_fn: Callable | None = field(default=None, init=False, repr=False)
     _pool_to_layer: jnp.ndarray | None = field(default=None, init=False, repr=False)
+    _pool_mid_depths: jnp.ndarray | None = field(default=None, init=False, repr=False)
+    _T_annual_mean: float | None = field(default=None, init=False, repr=False)
+    _damping_depth_m: float = field(default=2.0, init=False, repr=False)
     _n_pools: int = field(default=0, init=False, repr=False)
     _n_ag_pools: int = field(default=0, init=False, repr=False)
     # External-inputs static config (resolved at construction time)
@@ -314,6 +354,27 @@ class EcosystemModel:
         pool_to_layer = jnp.array(ptl)
 
         self._pool_to_layer = pool_to_layer
+
+        # ── Per-pool mid-depths for freeze-thaw gating ────────────────
+        # Use per-pool depth_top/bot if specified in config; otherwise fall
+        # back to the enclosing layer's bounds.
+        T_annual_mean = getattr(self.config, "T_annual_mean_C", None)
+        if T_annual_mean is not None:
+            mid_depths: list[float] = []
+            n_ag_pools_depth = len(self.config.aboveground_pools)
+            for _ in range(n_ag_pools_depth):
+                mid_depths.append(0.0)   # aboveground pools at surface
+            for layer in self.config.soil_layers:
+                for pool in layer.som_pools:
+                    top = pool.depth_top_m if pool.depth_top_m is not None else layer.depth_top_m
+                    bot = pool.depth_bot_m if pool.depth_bot_m is not None else layer.depth_bot_m
+                    mid_depths.append((top + bot) / 2.0)
+            self._pool_mid_depths = jnp.array(mid_depths, dtype=jnp.float32)
+            self._T_annual_mean = float(T_annual_mean)
+        else:
+            self._pool_mid_depths = None
+            self._T_annual_mean = None
+
         self._n_pools = n_pools
         self._n_ag_pools = n_ag
 
@@ -342,6 +403,8 @@ class EcosystemModel:
         # (state, forcing_t) as arguments.
         params = self.params
         dt = float(self.config.dt_days)
+        pool_mid_depths = self._pool_mid_depths
+        T_annual_mean_val = self._T_annual_mean
 
         @jax.jit
         def _compiled_step(
@@ -360,6 +423,8 @@ class EcosystemModel:
                 external_input_source_key=ext_source_key,
                 external_input_is_npp=ext_is_npp,
                 external_input_target_indices=ext_target_indices,
+                pool_mid_depths=pool_mid_depths,
+                T_annual_mean=T_annual_mean_val,
             )
             return new_state, None
 
@@ -410,6 +475,9 @@ class EcosystemModel:
             external_input_source_key=self._ext_source_key,
             external_input_is_npp=self._ext_is_npp,
             external_input_target_indices=self._ext_target_indices,
+            pool_mid_depths=self._pool_mid_depths,
+            T_annual_mean=self._T_annual_mean,
+            damping_depth_m=self._damping_depth_m,
         )
 
     def step_14C(
@@ -504,6 +572,9 @@ class EcosystemModel:
             params.log_theta_opt,
             params.log_gamma_moist,
             self._pool_to_layer,  # type: ignore[arg-type]
+            pool_mid_depths=self._pool_mid_depths,
+            T_annual_mean=self._T_annual_mean,
+            damping_depth_m=self._damping_depth_m,
         )
 
         Rh = het_respiration(

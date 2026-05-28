@@ -127,6 +127,55 @@ def thawed_frac(
     return jax.nn.sigmoid(steepness * soil_temp)
 
 
+def soil_temp_at_depth(
+    T_surface: jnp.ndarray,
+    z_m: float,
+    T_annual_mean: float,
+    damping_depth_m: float = 2.0,
+) -> jnp.ndarray:
+    """
+    Temperature at depth z_m given surface temperature T_surface.
+
+    **Placeholder for Fourier's law heat conduction.**  A full implementation
+    will solve the 1-D heat diffusion equation
+
+        ∂T/∂t = κ(z) ∂²T/∂z²
+
+    with depth-dependent thermal conductivity κ(z) (W m⁻¹ K⁻¹), yielding the
+    classic sinusoidal solution for a periodic surface boundary condition:
+
+        T(z, t) = T_mean + A₀ exp(−z/d) cos(ωt − z/d − φ)
+
+    where d = √(2κ/ω) is the thermal damping depth and ω = 2π/P (P = 1 yr).
+
+    Current approximation: exponential amplitude attenuation only (phase lag
+    ignored, steady-state mean used).  This is exact for the annual-mean
+    component and a reasonable first approximation for the amplitude envelope.
+
+        T(z) ≈ T_mean + (T_surface − T_mean) × exp(−z / damping_depth_m)
+
+    Parameters
+    ----------
+    T_surface :
+        Current surface (shallow) soil temperature in °C.
+    z_m :
+        Depth in metres (positive downward).
+    T_annual_mean :
+        Mean annual surface temperature in °C.  Sets the asymptotic deep value.
+    damping_depth_m :
+        Thermal damping depth d (m).  Typical values: 1–3 m for mineral soil,
+        0.5–1.5 m for organic-rich tundra.  Replace with κ-based calculation
+        when Fourier's law is fully implemented.
+
+    Returns
+    -------
+    jnp.ndarray
+        Estimated soil temperature at depth z_m, same dtype as T_surface.
+    """
+    amplitude_factor = jnp.exp(jnp.array(-z_m / damping_depth_m, dtype=jnp.float32))
+    return T_annual_mean + (T_surface - T_annual_mean) * amplitude_factor
+
+
 # ---------------------------------------------------------------------------
 # Per-pool decomposition
 # ---------------------------------------------------------------------------
