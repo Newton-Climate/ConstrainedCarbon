@@ -1,6 +1,7 @@
 """
 Site-specific data loaders for the ecosystem-complexity carbon model.
 
+slice_forcing()         — slice all fields of a ForcingData to a time window
 load_harvard_forest()   — AmeriFlux HR FULLSET → ForcingData + ObservationData
 load_barrow_alaska()    — ERA5_DD + FLUXMET_DD → ForcingData + ObservationData
 attach_atm14C()         — attach interpolated atmospheric Δ¹⁴C to ForcingData
@@ -27,6 +28,39 @@ _EPOCH = pd.Timestamp("1970-01-01")
 # Half-hourly μmol CO₂ m⁻² s⁻¹ → gC m⁻² per half-hour
 # = 1e-6 mol × 12 g/mol × 1800 s
 _HH_TO_GC = 1e-6 * 12.0 * 1800.0  # = 0.02160
+
+
+def slice_forcing(forcing: ForcingData, start: int, end: int) -> ForcingData:
+    """
+    Slice all time-axis fields of a ``ForcingData`` to ``[start:end]``.
+
+    Parameters
+    ----------
+    forcing :
+        Source ``ForcingData`` (all fields shape ``(T, ...)``).
+    start, end :
+        Integer indices into the time axis.  Follows standard Python slice
+        semantics: ``end`` is exclusive, negative indices are supported.
+
+    Returns
+    -------
+    ForcingData
+        New object with every field sliced; same dtype as input.
+    """
+    return ForcingData(
+        time=forcing.time[start:end],
+        air_temp=forcing.air_temp[start:end],
+        sw_radiation=forcing.sw_radiation[start:end],
+        precip=forcing.precip[start:end],
+        vpd=forcing.vpd[start:end],
+        soil_temp=forcing.soil_temp[start:end],
+        soil_moisture=forcing.soil_moisture[start:end],
+        snow_depth=forcing.snow_depth[start:end],
+        active_layer=forcing.active_layer[start:end],
+        delta14C_atm=forcing.delta14C_atm[start:end],
+        GPP_obs=forcing.GPP_obs[start:end],
+        NPP_obs=forcing.NPP_obs[start:end],
+    )
 
 
 def _days_since_epoch(dates: pd.DatetimeIndex) -> np.ndarray:
