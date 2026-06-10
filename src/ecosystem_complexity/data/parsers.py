@@ -1,6 +1,7 @@
 """
 Site-specific data loaders for the ecosystem-complexity carbon model.
 
+slice_forcing()         — slice all fields of a ForcingData to a time window
 load_harvard_forest()   — AmeriFlux HR FULLSET → ForcingData + ObservationData
 load_barrow_alaska()    — ERA5_DD + FLUXMET_DD → ForcingData + ObservationData
 attach_atm14C()         — attach interpolated atmospheric Δ¹⁴C to ForcingData
@@ -27,6 +28,39 @@ _EPOCH = pd.Timestamp("1970-01-01")
 # Half-hourly μmol CO₂ m⁻² s⁻¹ → gC m⁻² per half-hour
 # = 1e-6 mol × 12 g/mol × 1800 s
 _HH_TO_GC = 1e-6 * 12.0 * 1800.0  # = 0.02160
+
+
+def slice_forcing(forcing: ForcingData, start: int, end: int) -> ForcingData:
+    """
+    Slice all time-axis fields of a ``ForcingData`` to ``[start:end]``.
+
+    Parameters
+    ----------
+    forcing :
+        Source ``ForcingData`` (all fields shape ``(T, ...)``).
+    start, end :
+        Integer indices into the time axis.  Follows standard Python slice
+        semantics: ``end`` is exclusive, negative indices are supported.
+
+    Returns
+    -------
+    ForcingData
+        New object with every field sliced; same dtype as input.
+    """
+    return ForcingData(
+        time=forcing.time[start:end],
+        air_temp=forcing.air_temp[start:end],
+        sw_radiation=forcing.sw_radiation[start:end],
+        precip=forcing.precip[start:end],
+        vpd=forcing.vpd[start:end],
+        soil_temp=forcing.soil_temp[start:end],
+        soil_moisture=forcing.soil_moisture[start:end],
+        snow_depth=forcing.snow_depth[start:end],
+        active_layer=forcing.active_layer[start:end],
+        delta14C_atm=forcing.delta14C_atm[start:end],
+        GPP_obs=forcing.GPP_obs[start:end],
+        NPP_obs=forcing.NPP_obs[start:end],
+    )
 
 
 def _days_since_epoch(dates: pd.DatetimeIndex) -> np.ndarray:
@@ -235,10 +269,13 @@ def load_barrow_alaska(
     fluxmet = pd.read_csv(fluxmet_path, na_values=[-9999], low_memory=False)
     fluxmet["date"] = pd.to_datetime(fluxmet["TIMESTAMP"].astype(str), format="%Y%m%d")
 
-    # Apply QC to fluxes
+    # Apply QC to fluxes.
+    # US-A10 FLUXNET DD uses the standard fraction-gap-filled convention
+    # (0=all measured, 1=all gap-filled); mask rows where the gap-filled
+    # fraction EXCEEDS the threshold (bad quality).
     if "NEE_CUT_REF_QC" in fluxmet.columns:
         bad_qc = fluxmet["NEE_CUT_REF_QC"] > qc_threshold
-        for col in ["NEE_CUT_REF", "GPP_NT_VUT_REF", "RECO_NT_VUT_REF"]:
+        for col in ["NEE_CUT_REF", "GPP_DT_CUT_REF", "RECO_NT_CUT_REF"]:
             if col in fluxmet.columns:
                 fluxmet.loc[bad_qc, col] = np.nan
 
@@ -341,7 +378,8 @@ def load_barrow_alaska(
             return merged[alt].values.astype(np.float64)
         return np.full(T, np.nan)
 
-    GPP_obs_arr = _get_col("GPP_NT_VUT_REF") if include_gpp_forcing else np.full(T, np.nan)
+    # GPP: daytime-partitioned CUT variant (NT variant is absent for US-A10)
+    GPP_obs_arr = _get_col("GPP_DT_CUT_REF") if include_gpp_forcing else np.full(T, np.nan)
 
     forcing = ForcingData(
         time=jnp.array(time_arr, dtype=jnp.float32),
@@ -364,8 +402,8 @@ def load_barrow_alaska(
     obs = ObservationData(
         time=jnp.array(time_arr, dtype=jnp.float32),
         NEE=jnp.array(_get_col("NEE_CUT_REF"), dtype=jnp.float32),
-        GPP=jnp.array(_get_col("GPP_NT_VUT_REF"), dtype=jnp.float32),
-        ER=jnp.array(_get_col("RECO_NT_VUT_REF"), dtype=jnp.float32),
+        GPP=jnp.array(_get_col("GPP_DT_CUT_REF"), dtype=jnp.float32),
+        ER=jnp.array(_get_col("RECO_NT_CUT_REF"), dtype=jnp.float32),
         NEE_unc=jnp.array(nee_unc, dtype=jnp.float32),
         delta14C_obs={},
         deltaD14C_obs={},

@@ -1,0 +1,107 @@
+site:
+  id: "US-A10-3pool"
+  name: "Barrow Alaska – 3-Pool Optimal (active + slow + passive)"
+  lat: 71.28
+  lon: -156.61
+  # Mean annual soil temperature at Barrow (≈ MAT; used for depth-attenuated
+  # freeze-thaw gating via soil_temp_at_depth placeholder for Fourier's law).
+  # ERA5 reanalysis 1981–2022 mean: ~−11.5 °C.
+  T_annual_mean_C: -11.5
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 500
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 1.00
+      permafrost_eligible: true
+      som_pools:
+        - name: active
+          # Upper organic horizon (0–14 cm): fibric peat / live moss / sedge litter
+          # Constrained by pore-gas Δ¹⁴C at 10 cm and surface emission Δ¹⁴C
+          depth_top_m: 0.00
+          depth_bot_m: 0.14
+          tau_prior_days: 730
+          tau_prior_std: 365
+        - name: slow
+          # Lower organic horizon (14–30 cm): hemic/sapric peat, physically protected
+          # Constrained by pore-gas Δ¹⁴C at 20 cm
+          depth_top_m: 0.14
+          depth_bot_m: 0.30
+          tau_prior_days: 18250
+          tau_prior_std: 9125
+        - name: passive
+          # Permafrost organic/mineral (30–100 cm): frozen, pre-bomb depleted.
+          # Freeze-thaw gate (soil_temp_at_depth) keeps thawed_frac ≈ 0 here,
+          # preventing passive-pool decomposition from inflating C_passive.
+          depth_top_m: 0.30
+          depth_bot_m: 1.00
+          tau_prior_days: 365000
+          tau_prior_std: 182500
+
+  # Cascade: active → slow → passive (physical protection / permafrost sequestration)
+  # Barrow tundra: cryogenic stabilisation of SOM into "passive" permafrost C is a
+  # smaller flux than mineral-sorption in temperate soils.  4% transfer fraction
+  # (vs 10% at Harvard) gives a prior passive SS ≈ 12 000 gC m⁻², physically consistent
+  # with Hugelius et al. 2014 polygon-tundra inventory (30–100 cm ≈ 10–15 kgC m⁻²).
+  # This prior-SS target is C_passive_SS = C_slow_SS/τ_slow × f_transfer × τ_passive
+  #   = 14886/18250 × 0.04 × 365000 ≈ 11 940 gC m⁻²
+  transfer_rules:
+    - [soil_active,  soil_slow,    0.25]
+    - [soil_slow,    soil_passive, 0.04]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.40
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  # Prior input fractions: litter enters active (80%) and slow (20%) only.
+  # Passive receives NO direct external input — forms exclusively via cascade
+  # from slow (physical protection / cryogenic mixing pathway).
+  # Barrow tundra: most litter is sedge/moss root → predominantly active pool.
+  partition:
+    soil_active:  1.0
+    soil_slow:    0.0
+  optimize_partition: false
+
+parameters:
+  alloc: {}
+
+  # Arctic tundra: higher Q10 than temperate forests (stronger thermal sensitivity
+  # near freezing), higher optimal moisture (water-saturated tundra).
+  Q10: 2.5
+  theta_opt: 0.50
+  gamma_moisture: 3.0
+
+inversion:
+  # ── Optimal Estimation (Levenberg-Marquardt) ──────────────────────────────
+  oe_max_iterations: 50
+
+  # Observation error standard deviations
+  sigma_pool_14C: 15.0        # ‰  — pore-gas Δ¹⁴C at depth (larger than pool obs)
+  sigma_resp_14C: 20.0        # ‰  — surface emission Δ¹⁴C (Vaughn 2012–2014)
+  sigma_carbon_gCm2: 1500.0   # gC m⁻²  — fallback for C_pools_obs
+
+  # FluxNet ER → Rh partitioning
+  # Barrow tundra: ~80% of ER is heterotrophic (sedge/moss autotrophic respiration
+  # is very small relative to SOM decomposition; Shaver et al. 2007).
+  # f_hetero is a FREE parameter in OE5 via log_f_hetero; this is the prior.
+  f_hetero: 0.80
+  sigma_f_hetero: 0.10   # ±0.10 absolute prior σ on f_hetero (≈ logit σ=0.40)
+  sigma_er_frac: 0.20    # 20% uncertainty on annual ER observation (tundra noisy)
+
+  # Levenberg-Marquardt damping
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

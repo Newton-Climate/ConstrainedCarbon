@@ -418,6 +418,45 @@ def compute_age_diagnostics(
     )
 
 
+def compute_resp_delta14C(
+    output,
+    params,
+) -> np.ndarray:
+    """
+    Flux-weighted respired Δ¹⁴C time series from a model forward run.
+
+    Each pool's contribution to Rh is proportional to C₁₂ᵢ / τᵢ.  The
+    respired signal is the turnover-weighted mean:
+
+    .. math::
+
+        \\Delta^{14}C_{resp}(t) =
+            \\frac{\\sum_i (C_{12,i}(t) / \\tau_i) \\cdot \\Delta^{14}C_i(t)}
+                 {\\sum_i (C_{12,i}(t) / \\tau_i)}
+
+    This is the same quantity used internally by ``compute_age_diagnostics``
+    and is exposed here as a convenience for notebooks that need only the
+    respired signal without the full ``AgeDiagnostics`` dataclass.
+
+    Parameters
+    ----------
+    output :
+        ``ModelOutput`` from ``run_model``.
+    params :
+        ``ModelParams`` used for the run (provides ``log_tau``).
+
+    Returns
+    -------
+    np.ndarray
+        Shape ``(T,)``, Δ¹⁴C in ‰.  NaN where all pool weights are zero.
+    """
+    tau = np.exp(np.array(params.log_tau))              # (n_pools,)
+    C12 = np.array(output.C12)                          # (T, n_pools)
+    d14C = np.array(output.delta14C)                    # (T, n_pools)
+    w = C12 / (tau[None, :] + 1e-30)                   # (T, n_pools)
+    return (d14C * w).sum(axis=-1) / (w.sum(axis=-1) + 1e-30)
+
+
 def age_diagnostics_summary(
     diag: AgeDiagnostics,
     percentiles: tuple[float, ...] = (5.0, 50.0, 95.0),

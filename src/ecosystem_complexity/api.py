@@ -894,6 +894,7 @@ def optimize_oe(
     state0: Optional[EcosystemState] = None,
     fields: Optional[tuple] = None,
     extra_obs_blocks: Optional[list] = None,
+    sa_override_diag: Optional[jnp.ndarray] = None,
 ) -> OEResult:
     """
     Optimal Estimation inversion via Levenberg-Marquardt.
@@ -1005,7 +1006,9 @@ def optimize_oe(
             f"non-zero prior fractions in the partition dict."
         )
 
-    Sa_diag     = _build_sa_diag(model.config, params0, opt_fields)
+    Sa_diag = _build_sa_diag(model.config, params0, opt_fields)
+    if sa_override_diag is not None:
+        Sa_diag = jnp.array(sa_override_diag, dtype=jnp.float32)
     Sa_inv_diag = 1.0 / (Sa_diag + 1e-30)
 
     f_hetero      = float(inv_cfg.get("f_hetero",      0.0))
