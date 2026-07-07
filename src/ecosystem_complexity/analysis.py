@@ -35,6 +35,13 @@ from .information import (
     FisherResult,
     DofResult,
     PosteriorResult,
+    analyze_information_content,
+    compute_fisher,
+    compute_dof,
+    compute_posterior,
+    _default_fields,
+)
+from .sensitivity import (
     OBS_C_STOCKS,
     OBS_POOL_D14C,
     OBS_RESP_D14C,
@@ -47,13 +54,8 @@ from .information import (
     _DEFAULT_C_SIGMA_REL,
     _DEFAULT_D14C_SIGMA,
     _DEFAULT_RESP_SIGMA,
-    analyze_information_content,
-    compute_fisher,
-    compute_dof,
-    compute_posterior,
     get_param_groups,
     make_prior_covariance,
-    _default_fields,
 )
 
 

@@ -86,10 +86,14 @@ parameters:
 
 inversion:
   # ── Optimal Estimation (Levenberg-Marquardt) ──────────────────────────────
-  oe_max_iterations: 50
+  oe_max_iterations: 200
 
   # Observation error standard deviations
-  sigma_pool_14C: 15.0        # ‰  — pore-gas Δ¹⁴C at depth (larger than pool obs)
+  # σ_pool_14C widened from 15 → 30 ‰ to acknowledge depth-attribution
+  # uncertainty: pore-gas CO₂ Δ¹⁴C at 10/20/30 cm measures *local respiration*
+  # at depth, which mixes contributions from multiple pools.  A single-pool
+  # mapping (10 cm → soil_active) cannot strictly hold.
+  sigma_pool_14C: 30.0        # ‰  — pore-gas Δ¹⁴C at depth (depth-attribution noise)
   sigma_resp_14C: 20.0        # ‰  — surface emission Δ¹⁴C (Vaughn 2012–2014)
   sigma_carbon_gCm2: 1500.0   # gC m⁻²  — fallback for C_pools_obs
 

@@ -62,7 +62,7 @@ def load_full_14C_record(
         comment="#",
         header=None,
         names=["cal_BP", "age14C", "sigma_age", "Delta14C", "sigma_D14C"],
-        sep=r"\s+",
+        sep=",",
         engine="python",
     )
     intcal = intcal.dropna(subset=["cal_BP", "Delta14C"])

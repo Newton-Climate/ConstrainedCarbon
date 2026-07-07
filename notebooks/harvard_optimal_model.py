@@ -10,7 +10,7 @@ Run
 
 Output
 ------
-  notebooks/harvard_optimal_model.png  — 8-panel OE comparison figure
+  notebooks/harvard_forest_three_pool_oe_summary.png  — 8-panel OE comparison figure
 """
 import sys
 import os

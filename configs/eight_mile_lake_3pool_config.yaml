@@ -1,0 +1,83 @@
+# Eight-mile Lake / US-EML 3-pool optimized soil carbon configuration.
+# This simulation is constrained with the nearest ISRaD EML records at the
+# site coordinates. EML “fraction” 14C observations are macrofossil
+# measurements, not density fractions, so pool constraints use a depth-based
+# observational mapping rather than Harvard-style density-fraction mapping.
+# The optimized run combines bulk soil layer 14C, macrofossil 14C,
+# soil-respiration 14C, and soil C stocks.
+site:
+  id: "US-EML-3pool"
+  name: "Eight-mile Lake, Alaska – 3-Pool Optimal"
+  lat: 63.8784
+  lon: -149.2536
+  T_annual_mean_C: -2.0
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 500
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 1.00
+      permafrost_eligible: true
+      som_pools:
+        - name: active
+          # Upper organic horizon constrained by bulk-layer and macrofossil 14C.
+          depth_top_m: 0.00
+          depth_bot_m: 0.20
+          tau_prior_days: 1095
+          tau_prior_std: 547
+        - name: slow
+          # Transition zone near the thaw front.
+          depth_top_m: 0.20
+          depth_bot_m: 0.50
+          tau_prior_days: 18250
+          tau_prior_std: 9125
+        - name: passive
+          # Deep mineral / permafrost-associated carbon.
+          depth_top_m: 0.50
+          depth_bot_m: 1.00
+          tau_prior_days: 292000
+          tau_prior_std: 146000
+
+  transfer_rules:
+    - [soil_active, soil_slow, 0.20]
+    - [soil_slow, soil_passive, 0.05]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.35
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  partition:
+    soil_active: 1.0
+    soil_slow: 0.0
+  optimize_partition: false
+
+parameters:
+  alloc: {}
+  Q10: 2.5
+  theta_opt: 0.45
+  gamma_moisture: 3.0
+
+inversion:
+  oe_max_iterations: 200
+  sigma_pool_14C: 35.0
+  sigma_resp_14C: 20.0
+  sigma_carbon_gCm2: 4000.0
+  f_hetero: 0.80
+  sigma_f_hetero: 0.10
+  sigma_er_frac: 0.20
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

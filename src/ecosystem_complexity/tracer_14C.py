@@ -27,13 +27,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ecosystem_complexity.above_ground import compute_external_soil_inputs, npp_allocation
+from ecosystem_complexity.climate import f_moisture, f_temp
 from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.fluxes import (
-    compute_external_soil_inputs,
-    f_moisture,
-    f_temp,
-    npp_allocation,
-)
 from ecosystem_complexity.state import EcosystemState, ModelParams
 from ecosystem_complexity.transfer import get_transfer_matrix
 
