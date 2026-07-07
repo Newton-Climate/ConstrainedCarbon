@@ -18,6 +18,7 @@ import optax
 
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
+from .model import EcosystemModel
 from .optimizer import (
     get_opt_fields as _get_opt_fields,
 )
@@ -43,7 +44,7 @@ class OptimizationResult(NamedTuple):
 
 
 def optimize(  # noqa: C901
-    model,
+    model: EcosystemModel,
     forcing: ForcingData,
     observations: ObservationData,
     state0: Optional[EcosystemState] = None,
@@ -76,9 +77,8 @@ def optimize(  # noqa: C901
 
     params0 = make_default_params(model.config)
     if state0 is None:
-        state0 = make_initial_state(
-            model.config, model._site_config
-        )  # type: ignore[attr-defined]
+        assert model._site_config is not None
+        state0 = make_initial_state(model.config, model._site_config)
 
     # Allow caller to restrict which fields enter the optimisation vector.
     if fields is not None:
@@ -95,7 +95,9 @@ def optimize(  # noqa: C901
     valid_GPP = ~jnp.isnan(obs_GPP)
     valid_ER = ~jnp.isnan(obs_ER)
 
-    def _loss_and_components(vec: jnp.ndarray):
+    def _loss_and_components(
+        vec: jnp.ndarray,
+    ) -> tuple[jnp.ndarray, tuple[jnp.ndarray, ...]]:
         p = _vector_to_params(vec, params0, opt_fields)
         out = run_model(model, forcing, state0=state0, params=p)
 
@@ -103,7 +105,7 @@ def optimize(  # noqa: C901
         # Use the "double-where" pattern: replace obs NaN with sim so the
         # squared difference is 0 at masked timesteps in BOTH forward and
         # backward passes (avoids NaN gradients from jnp.where branch eval).
-        def _mse(sim, obs, mask):
+        def _mse(sim: jnp.ndarray, obs: jnp.ndarray, mask: jnp.ndarray) -> jnp.ndarray:
             obs_safe = jnp.where(mask, obs, sim)
             diff = sim - obs_safe
             return jnp.where(

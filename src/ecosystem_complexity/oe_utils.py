@@ -2,20 +2,24 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 import jax.numpy as jnp
 import numpy as np
 
 from ._oe_helpers import _analytical_c12_ss
-from .api import run_model
+from .api import ModelOutput, run_model
 from .climate import f_moisture as _f_moisture
 from .climate import f_temp as _f_temp
 from .climate import thawed_frac as _ff
-from .data.schemas import ObservationData
+from .data.schemas import ForcingData, ObservationData
+from .model import EcosystemModel
+from .state import EcosystemState, ModelParams
 
 
 def build_mean_ss_modifier(
-    forcing,
-    params0,
+    forcing: ForcingData,
+    params0: ModelParams,
     t_nan_fill: float = 5.0,
     theta_nan_fill: float = 0.3,
 ) -> tuple[float, float]:
@@ -43,13 +47,20 @@ def build_mean_ss_modifier(
     return mean_modifier, mean_gpp
 
 
-def ss_state_for_params(model, forcing, state0, params):
+def ss_state_for_params(
+    model: EcosystemModel,
+    forcing: ForcingData,
+    state0: EcosystemState,
+    params: ModelParams,
+) -> EcosystemState:
     """Replace ``state0.C12`` with the analytical steady-state C12 at ``params``."""
+    ext = model.config.external_inputs
+    assert ext is not None, "ss_state_for_params requires external_inputs config"
     n_pools = len(model.pool_index)
-    cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
+    cue = float(getattr(ext, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params)
     mean_input = mean_gpp * cue
-    target_names = list(model.config.external_inputs.partition.keys())
+    target_names = list(ext.partition.keys())
     target_idx = [model.pool_index[n] for n in target_names] or None
     c12_ss = _analytical_c12_ss(
         params, n_pools, mean_input, mean_mod, target_indices=target_idx
@@ -58,8 +69,12 @@ def ss_state_for_params(model, forcing, state0, params):
 
 
 def build_oe_observation_sets(
-    forcing, delta14C_obs: dict, delta14C_resp, c_pools_obs: dict, er_sliced
-):
+    forcing: ForcingData,
+    delta14C_obs: dict[str, tuple[float, ...]],
+    delta14C_resp: Optional[jnp.ndarray],
+    c_pools_obs: dict[str, tuple[float, ...]],
+    er_sliced: jnp.ndarray,
+) -> tuple[ObservationData, ...]:
     """Build the five ObservationData variants used in OE1–OE5 workflows."""
     t_len = int(forcing.time.shape[0])
     nan_t = jnp.full(t_len, jnp.nan)
@@ -128,7 +143,12 @@ def build_oe_observation_sets(
     )
 
 
-def run_forward_ss(model, forcing, state0, params):
+def run_forward_ss(
+    model: EcosystemModel,
+    forcing: ForcingData,
+    state0: EcosystemState,
+    params: ModelParams,
+) -> ModelOutput:
     """Forward run using the analytical steady-state C12 initial condition."""
     state_ss = ss_state_for_params(model, forcing, state0, params)
     return run_model(model, forcing, state0=state_ss, params=params)

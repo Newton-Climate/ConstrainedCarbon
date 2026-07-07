@@ -21,7 +21,7 @@ hypothesis quantitatively using the Fisher/DFS framework.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 
@@ -48,7 +48,7 @@ from .sensitivity import (
     get_param_groups,
     make_prior_covariance,
 )
-from .state import ModelParams
+from .state import EcosystemState, ModelParams
 
 # ── Ablation analysis ──────────────────────────────────────────────────────────
 
@@ -81,7 +81,7 @@ class AblationResult:
 def run_ablation_study(
     model: EcosystemModel,
     forcing: ForcingData,
-    state0,
+    state0: EcosystemState,
     params: ModelParams,
     observations: ObservationData,
     fields: Sequence[str] | None = None,
@@ -159,7 +159,7 @@ def run_ablation_study(
 
 def summarize_ablation(
     ablation: dict[str, AblationResult],
-) -> dict[str, dict]:
+) -> dict[str, dict[str, Any]]:
     """Return a compact comparison table from an ablation study.
 
     Returns
@@ -174,7 +174,7 @@ def summarize_ablation(
                 "uncertainty_reduction_mean": float,
             }
     """
-    table: dict[str, dict] = {}
+    table: dict[str, dict[str, Any]] = {}
     for key, res in ablation.items():
         ur = res.posterior.uncertainty_reduction
         table[key] = {
@@ -249,7 +249,7 @@ class ComplexityRung:
 def run_complexity_ladder(
     ladder: list[tuple[EcosystemModel, str]],
     forcing: ForcingData,
-    state0_by_model: dict[str, object],
+    state0_by_model: dict[str, EcosystemState],
     params_by_model: dict[str, ModelParams],
     observations: ObservationData,
     fields_by_model: dict[str, Sequence[str]] | None = None,
@@ -419,8 +419,8 @@ def compute_age_diagnostics(
 
 
 def compute_resp_delta14C(
-    output,
-    params,
+    output: ModelOutput,
+    params: ModelParams,
 ) -> np.ndarray:
     """
     Flux-weighted respired Δ¹⁴C time series from a model forward run.
@@ -454,13 +454,13 @@ def compute_resp_delta14C(
     C12 = np.array(output.C12)  # (T, n_pools)
     d14C = np.array(output.delta14C)  # (T, n_pools)
     w = C12 / (tau[None, :] + 1e-30)  # (T, n_pools)
-    return (d14C * w).sum(axis=-1) / (w.sum(axis=-1) + 1e-30)
+    return np.asarray((d14C * w).sum(axis=-1) / (w.sum(axis=-1) + 1e-30))
 
 
 def age_diagnostics_summary(
     diag: AgeDiagnostics,
     percentiles: tuple[float, ...] = (5.0, 50.0, 95.0),
-) -> dict[str, dict]:
+) -> dict[str, dict[str, Any]]:
     """Return time-mean and percentile statistics for each age diagnostic.
 
     Returns
@@ -468,9 +468,9 @@ def age_diagnostics_summary(
     dict with keys "bulk_delta14C", "respired_delta14C", "reco_delta14C",
     and per-pool entries "stored_delta14C[pool_name]".
     """
-    summary: dict[str, dict] = {}
+    summary: dict[str, dict[str, Any]] = {}
 
-    def _stats(arr: np.ndarray) -> dict:
+    def _stats(arr: np.ndarray) -> dict[str, Any]:
         valid = arr[~np.isnan(arr)]
         if valid.size == 0:
             return {"mean": np.nan, "percentiles": dict.fromkeys(percentiles, np.nan)}

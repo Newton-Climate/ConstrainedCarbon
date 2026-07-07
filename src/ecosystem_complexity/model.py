@@ -34,7 +34,7 @@ Mass balance (Euler step, dt = 1 day)
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Any, Callable
 
 import jax
 import jax.numpy as jnp
@@ -79,7 +79,7 @@ class EcosystemModel:
     pool_index: PoolIndex
 
     # Private fields initialised in __post_init__ — not part of __init__.
-    _step_fn: Callable | None = field(default=None, init=False, repr=False)
+    _step_fn: Callable[..., Any] | None = field(default=None, init=False, repr=False)
     _pool_to_layer: jnp.ndarray | None = field(default=None, init=False, repr=False)
     _pool_mid_depths: jnp.ndarray | None = field(default=None, init=False, repr=False)
     _T_annual_mean: float | None = field(default=None, init=False, repr=False)
@@ -93,6 +93,8 @@ class EcosystemModel:
     _ext_target_indices: jnp.ndarray | None = field(
         default=None, init=False, repr=False
     )
+    # Raw site-config dict, attached by api.build_model for spinup/init helpers.
+    _site_config: dict[str, Any] | None = field(default=None, init=False, repr=False)
 
     # ------------------------------------------------------------------
     # Initialisation
@@ -148,7 +150,7 @@ class EcosystemModel:
         # ── External-inputs static config ─────────────────────────────
         ext = self.config.external_inputs
         ext_active = ext is not None and ext.enabled
-        if ext_active:
+        if ext is not None and ext.enabled:
             ext_source_key = ext.source
             ext_is_npp = ext.source == "NPP_obs"
             ext_target_indices = jnp.array(
@@ -176,7 +178,7 @@ class EcosystemModel:
         @jax.jit
         def _compiled_step(
             state: EcosystemState,
-            forcing_t: dict,
+            forcing_t: dict[str, jnp.ndarray],
         ) -> tuple[EcosystemState, None]:
             new_state = _step_12C_pure(
                 state,
@@ -205,7 +207,7 @@ class EcosystemModel:
         self,
         state: EcosystemState,
         params: ModelParams,
-        forcing_t: dict,
+        forcing_t: dict[str, jnp.ndarray],
     ) -> EcosystemState:
         """
         One Euler timestep of bulk ¹²C pool dynamics.
@@ -251,7 +253,7 @@ class EcosystemModel:
         self,
         state: EcosystemState,
         params: ModelParams,
-        forcing_t: dict,
+        forcing_t: dict[str, jnp.ndarray],
     ) -> EcosystemState:
         """
         One Euler timestep of ¹⁴C tracer dynamics.
@@ -296,8 +298,8 @@ class EcosystemModel:
         self,
         state: EcosystemState,
         params: ModelParams,
-        forcing_t: dict,
-    ) -> dict:
+        forcing_t: dict[str, jnp.ndarray],
+    ) -> dict[str, jnp.ndarray]:
         """
         Compute diagnostic carbon flux scalars for the current state.
 
@@ -376,7 +378,7 @@ class EcosystemModel:
                 target_pool_indices=self._ext_target_indices,  # type: ignore[arg-type]
             )
             ext_total = jnp.sum(ext_inputs)
-            ext_by_pool = ext_inputs[self._ext_target_indices]  # type: ignore[index]
+            ext_by_pool = ext_inputs[self._ext_target_indices]
         else:
             ext_total = jnp.array(0.0)
             ext_by_pool = jnp.zeros(n_targets)

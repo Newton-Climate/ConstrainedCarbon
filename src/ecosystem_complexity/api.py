@@ -16,6 +16,23 @@ from .model import EcosystemModel
 from .state import EcosystemState, ModelParams, make_default_params, make_initial_state
 from .tracer_14C import compute_delta14C
 
+# Public API surface.  ``optimize``/``optimize_oe``/``ObsBlock`` and the result
+# types are defined in dedicated modules (inversion, optimal_estimation,
+# _oe_helpers) and re-exported here so that ``ecosystem_complexity.api`` stays
+# the single stable import path for notebooks and site modules.  Listing them in
+# ``__all__`` also marks the re-exports as used for linters.
+__all__ = [
+    "ModelOutput",
+    "build_model",
+    "run_model",
+    "spinup",
+    "optimize",
+    "OptimizationResult",
+    "optimize_oe",
+    "OEResult",
+    "ObsBlock",
+]
+
 # ── Output containers ─────────────────────────────────────────────────────────
 
 
@@ -31,7 +48,7 @@ class ModelOutput(NamedTuple):
     final_state: EcosystemState
 
 
-def _build_forcing_dict(forcing: ForcingData) -> dict:
+def _build_forcing_dict(forcing: ForcingData) -> dict[str, jnp.ndarray]:
     """
     Convert ForcingData to a plain dict, NaN-filling optional fields.
 
@@ -91,7 +108,7 @@ def build_model(config_path: str) -> EcosystemModel:
 
     with open(config_path) as fh:
         raw_yaml = yaml.safe_load(fh)
-    model._site_config = raw_yaml  # type: ignore[attr-defined]
+    model._site_config = raw_yaml
 
     return model
 
@@ -118,13 +135,15 @@ def run_model(
     if params is None:
         params = make_default_params(model.config)
     if state0 is None:
-        state0 = make_initial_state(
-            model.config, model._site_config
-        )  # type: ignore[attr-defined]
+        assert model._site_config is not None
+        state0 = make_initial_state(model.config, model._site_config)
 
     forcing_dict = _build_forcing_dict(forcing)
 
-    def _scan_body(carry, t):
+    ScanCarry = tuple[EcosystemState, ModelParams]
+    ScanOut = tuple[jnp.ndarray, ...]
+
+    def _scan_body(carry: ScanCarry, t: jnp.ndarray) -> tuple[ScanCarry, ScanOut]:
         state, p = carry
         ft = jax.tree_util.tree_map(lambda x: x[t], forcing_dict)
         # Re-derive thawed_frac from the current forcing soil temperature.
@@ -173,7 +192,7 @@ def spinup(
     forcing: ForcingData,
     n_years: Optional[int] = None,
     convergence_tol: float = 1e-4,
-    permafrost_14C_init: Optional[dict] = None,
+    permafrost_14C_init: Optional[dict[str, float]] = None,
 ) -> EcosystemState:
     """Spin up the model to a quasi-steady carbon state.
 
@@ -182,9 +201,8 @@ def spinup(
     Phase 3 (optional) — initialise permafrost-layer 14C from observations.
     """
     params = make_default_params(model.config)
-    state = make_initial_state(
-        model.config, model._site_config
-    )  # type: ignore[attr-defined]
+    assert model._site_config is not None
+    state = make_initial_state(model.config, model._site_config)
 
     # Build annual-mean forcing for a single representative year.
     # Use the first full calendar year present in the forcing record.
@@ -211,7 +229,7 @@ def spinup(
     # Phase 3: optionally overwrite permafrost layer 14C from observations.
     if permafrost_14C_init is not None:
         for pool_name, delta14C_obs in permafrost_14C_init.items():
-            idx = model.pool_index.index(pool_name)
+            idx = model.pool_index[pool_name]
             fm = delta14C_obs / 1000.0 + 1.0
             C14_new = state.C14.at[idx].set(fm * state.C12[idx] * params.lambda_14C)
             state = state._replace(C14=C14_new)
@@ -221,8 +239,8 @@ def spinup(
 
 # ── Re-exports for backward compatibility with notebooks / site modules ──────
 from ._oe_helpers import ObsBlock, _analytical_c12_ss  # noqa: E402,F401
-from .inversion import OptimizationResult, optimize  # noqa: E402,F401
-from .optimal_estimation import OEResult, optimize_oe  # noqa: E402,F401
+from .inversion import OptimizationResult, optimize  # noqa: E402
+from .optimal_estimation import OEResult, optimize_oe  # noqa: E402
 from .optimizer import (  # noqa: E402
     get_oe_fields,
     get_opt_fields,

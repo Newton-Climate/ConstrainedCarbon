@@ -3,17 +3,25 @@
 from __future__ import annotations
 
 import time
+from typing import Any, Optional
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ._oe_helpers import _analytical_c12_ss, _build_obs_blocks, _build_sa_diag
+from ._oe_helpers import (
+    ObsBlock,
+    _analytical_c12_ss,
+    _build_obs_blocks,
+    _build_sa_diag,
+)
 from .api import run_model
+from .data.schemas import ForcingData, ObservationData
+from .model import EcosystemModel
 from .oe_utils import build_mean_ss_modifier
 from .optimizer import params_to_vector, vector_to_params
 from .sensitivity import OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C
-from .state import make_default_params
+from .state import EcosystemState, ModelParams, make_default_params
 
 _BLOCK_TO_OBSTYPE = {
     "pool_14C": OBS_POOL_D14C,
@@ -33,14 +41,14 @@ def classify_block(block_name: str) -> str:
 
 
 def oe_style_ablation(
-    model,
-    forcing,
-    state0,
-    params_opt,
-    observations,
-    opt_fields: tuple,
-    extra_obs_blocks: list | None = None,
-) -> dict:
+    model: EcosystemModel,
+    forcing: ForcingData,
+    state0: EcosystemState,
+    params_opt: ModelParams,
+    observations: ObservationData,
+    opt_fields: tuple[str, ...],
+    extra_obs_blocks: Optional[list[ObsBlock]] = None,
+) -> dict[str, Any]:
     """OE-style DFS-by-observation-type ablation at the MAP estimate."""
     inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
     sigma_pool = float(inv_cfg.get("sigma_pool_14C", 5.0))
@@ -70,10 +78,12 @@ def oe_style_ablation(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
-    target_names = list(model.config.external_inputs.partition.keys())
+    ext_cfg = model.config.external_inputs
+    assert ext_cfg is not None
+    target_names = list(ext_cfg.partition.keys())
     target_idx = [model.pool_index[n] for n in target_names] or None
 
-    def _forward(x_vec):
+    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = vector_to_params(x_vec, params0, tuple(opt_fields))
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
@@ -122,14 +132,14 @@ def oe_style_ablation(
 
 
 def oe_constraint_ladder(
-    model,
-    forcing,
-    state0,
-    params_opt,
-    observations,
-    opt_fields: tuple,
-    extra_obs_blocks: list | None = None,
-) -> list[dict]:
+    model: EcosystemModel,
+    forcing: ForcingData,
+    state0: EcosystemState,
+    params_opt: ModelParams,
+    observations: ObservationData,
+    opt_fields: tuple[str, ...],
+    extra_obs_blocks: Optional[list[ObsBlock]] = None,
+) -> list[dict[str, Any]]:
     """One-constraint-at-a-time OE ladder at the MAP estimate."""
     inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
     sigma_pool = float(inv_cfg.get("sigma_pool_14C", 5.0))
@@ -159,10 +169,12 @@ def oe_constraint_ladder(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
-    target_names = list(model.config.external_inputs.partition.keys())
+    ext_cfg = model.config.external_inputs
+    assert ext_cfg is not None
+    target_names = list(ext_cfg.partition.keys())
     target_idx = [model.pool_index[n] for n in target_names] or None
 
-    def _forward(x_vec):
+    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = vector_to_params(x_vec, params0, tuple(opt_fields))
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx

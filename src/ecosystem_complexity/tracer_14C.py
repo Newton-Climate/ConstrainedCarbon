@@ -87,7 +87,7 @@ def _build_pool_to_layer(
 def step_14C(
     state: EcosystemState,
     params: ModelParams,
-    forcing_t: dict,
+    forcing_t: dict[str, jnp.ndarray],
     config: ModelConfig,
     pool_index: PoolIndex,
     *,
@@ -180,7 +180,7 @@ def step_14C(
         ag_frac = 1.0 - soil_frac
     else:
         GPP = forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
-        ag_frac = 1.0
+        ag_frac = jnp.asarray(1.0)
 
     F_npp = npp_allocation(GPP, CUE, params.log_alloc, n_ag) * ag_frac  # (n_ag,)
 
@@ -193,6 +193,7 @@ def step_14C(
     # ── External direct soil ¹⁴C inputs ──────────────────────────────────
     # Mirror the ¹²C external inputs, weighted by the atmospheric ¹⁴C ratio.
     if external_inputs_active:
+        assert external_input_target_indices is not None
         GPP_or_NPP = GPP if not external_input_is_npp else GPP * CUE
         ext_inputs_12C = compute_external_soil_inputs(
             GPP_or_NPP=GPP_or_NPP,
@@ -224,7 +225,7 @@ def step_14C(
 
     # ── Euler update ──────────────────────────────────────────────────────
     dC14 = F14_npp + F14_ext + F14_in - F14_out - decay
-    return state.C14 + dC14 * dt
+    return jnp.asarray(state.C14 + dC14 * dt)
 
 
 # ---------------------------------------------------------------------------
@@ -274,7 +275,7 @@ def compute_delta14C(
 def spinup_14C(
     model: EcosystemModel,
     C12_ss: jnp.ndarray,
-    forcing_historical: dict,
+    forcing_historical: dict[str, jnp.ndarray],
     params: ModelParams,
 ) -> jnp.ndarray:
     """
@@ -329,7 +330,7 @@ def spinup_14C(
     # ── Phase 2: scan through historical atmospheric record ───────────────
     def _scan_body(
         C14: jnp.ndarray,
-        forcing_t: dict,
+        forcing_t: dict[str, jnp.ndarray],
     ) -> tuple[jnp.ndarray, None]:
         state = EcosystemState(
             C12=C12_ss,

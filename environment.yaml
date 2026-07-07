@@ -20,5 +20,6 @@ dependencies:
   - black
   - ruff
   - mypy
+  - types-pyyaml
   - pip:
       - -r requirements.txt

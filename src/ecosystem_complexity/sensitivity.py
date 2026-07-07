@@ -15,17 +15,21 @@ Provides:
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Callable, Sequence
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
 from .data.schemas import ForcingData, ObservationData
-from .state import ModelParams, make_default_params
+from .state import EcosystemState, ModelParams, make_default_params
 
 if TYPE_CHECKING:
     from .model import EcosystemModel
+
+# Observation config: maps an OBS_* key to a list of
+# (pool_name | None, value, sigma) entries.
+ObsConfig = dict[str, list[tuple[str | None, float, float]]]
 
 # ── Observation type constants ─────────────────────────────────────────────────
 
@@ -55,7 +59,8 @@ _DEFAULT_PRIOR_SIGMA: float = 1.0
 
 
 def _get_field_shape(params: ModelParams, field_name: str) -> tuple[int, ...]:
-    return getattr(params, field_name).shape
+    shape: tuple[int, ...] = getattr(params, field_name).shape
+    return shape
 
 
 def flatten_params(params: ModelParams, fields: Sequence[str]) -> np.ndarray:
@@ -280,7 +285,7 @@ def _build_obs_config(  # noqa: C901
     obs_sigma_C: float = _DEFAULT_C_SIGMA_REL,
     obs_sigma_d14C: float = _DEFAULT_D14C_SIGMA,
     obs_sigma_resp: float = _DEFAULT_RESP_SIGMA,
-) -> dict[str, list[tuple[str, float, float]]]:
+) -> ObsConfig:
     """Extract observations into a structured config.
 
     Returns
@@ -293,7 +298,7 @@ def _build_obs_config(  # noqa: C901
     obs_config: dict[str, list[tuple[str | None, float, float]]] = {}
 
     # C stocks
-    c_entries = []
+    c_entries: list[tuple[str | None, float, float]] = []
     for pool_name, raw in (observations.C_pools_obs or {}).items():
         if pool_name not in pool_name_set:
             continue
@@ -308,7 +313,7 @@ def _build_obs_config(  # noqa: C901
         obs_config[OBS_C_STOCKS] = c_entries
 
     # Pool Δ¹⁴C
-    d14C_entries = []
+    d14C_entries: list[tuple[str | None, float, float]] = []
     for pool_name, raw in (observations.delta14C_obs or {}).items():
         if pool_name not in pool_name_set:
             continue
@@ -339,10 +344,10 @@ def _build_obs_config(  # noqa: C901
 def _build_obs_fn(
     model: EcosystemModel,
     forcing: ForcingData,
-    state0,
+    state0: EcosystemState,
     fields: Sequence[str],
-    obs_config: dict,
-):
+    obs_config: ObsConfig,
+) -> Callable[[jnp.ndarray], jnp.ndarray]:
     """Build a JAX-differentiable function: flat_params → flat_obs_summaries.
 
     The output vector is the concatenation of time-mean scalar summaries for
@@ -359,14 +364,21 @@ def _build_obs_fn(
     template = make_default_params(model.config)
     fields_tuple = tuple(fields)
 
-    # Pre-compute pool indices for efficiency inside JIT
-    c_indices = []
+    # Pre-compute pool indices for efficiency inside JIT.
+    # C-stock and pool-Δ14C entries always carry a pool name (None only for resp).
+    c_indices: list[int] = []
     if OBS_C_STOCKS in obs_config:
-        c_indices = [model.pool_index[p] for p, _, _ in obs_config[OBS_C_STOCKS]]
+        c_indices = [
+            model.pool_index[p] for p, _, _ in obs_config[OBS_C_STOCKS] if p is not None
+        ]
 
-    d14C_indices = []
+    d14C_indices: list[int] = []
     if OBS_POOL_D14C in obs_config:
-        d14C_indices = [model.pool_index[p] for p, _, _ in obs_config[OBS_POOL_D14C]]
+        d14C_indices = [
+            model.pool_index[p]
+            for p, _, _ in obs_config[OBS_POOL_D14C]
+            if p is not None
+        ]
 
     has_resp = OBS_RESP_D14C in obs_config
 
@@ -402,10 +414,10 @@ def _build_obs_fn(
 def compute_jacobian(
     model: EcosystemModel,
     forcing: ForcingData,
-    state0,
+    state0: EcosystemState,
     params: ModelParams,
     fields: Sequence[str],
-    obs_config: dict,
+    obs_config: ObsConfig,
 ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
     """Compute the Jacobian H = ∂h/∂θ at the given parameters.
 

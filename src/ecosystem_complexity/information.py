@@ -47,13 +47,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 
 from .data.schemas import ForcingData, ObservationData
 from .model import EcosystemModel
-from .state import ModelParams
+from .state import EcosystemState, ModelParams
 
 # ── Result dataclasses ─────────────────────────────────────────────────────────
 
@@ -190,10 +190,10 @@ def _fim_from_jacobian(
 ) -> np.ndarray:
     """Compute FIM = Hᵀ diag(1/σ²) H from Jacobian H (n_obs, n_params)."""
     S_inv = 1.0 / (obs_sigma**2 + 1e-300)
-    return (H * S_inv[:, None]).T @ H
+    return np.asarray((H * S_inv[:, None]).T @ H)
 
 
-def _obs_sigma_vector(obs_config: dict) -> np.ndarray:
+def _obs_sigma_vector(obs_config: dict[str, Any]) -> np.ndarray:
     """Build the observation error σ vector in observation-type order."""
     sigmas: list[float] = []
     for obs_type in ALL_OBS_TYPES:
@@ -207,7 +207,7 @@ def _obs_sigma_vector(obs_config: dict) -> np.ndarray:
 def compute_fisher(
     model: EcosystemModel,
     forcing: ForcingData,
-    state0,
+    state0: EcosystemState,
     params: ModelParams,
     observations: ObservationData,
     fields: Sequence[str] | None = None,
@@ -414,7 +414,7 @@ def compute_posterior(
 def analyze_information_content(
     model: EcosystemModel,
     forcing: ForcingData,
-    state0,
+    state0: EcosystemState,
     params: ModelParams,
     observations: ObservationData,
     fields: Sequence[str] | None = None,
