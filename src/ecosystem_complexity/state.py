@@ -268,7 +268,7 @@ def _build_log_f_transfer(
     return jnp.log(f_norm)
 
 
-def _yaml_prior(params_raw: dict, key: str, default: float) -> float:
+def _yaml_prior(params_raw: dict[str, Any], key: str, default: float) -> float:
     """Extract a scalar prior value from the YAML parameters dict."""
     entry = params_raw.get(key, {})
     if isinstance(entry, dict):

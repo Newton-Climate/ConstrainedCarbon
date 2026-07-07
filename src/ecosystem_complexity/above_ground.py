@@ -42,7 +42,7 @@ def _gpp(sw_radiation: jnp.ndarray) -> jnp.ndarray:
 
 def npp_allocation(
     GPP: jnp.ndarray,
-    CUE: float,
+    CUE: float | jnp.ndarray,
     log_alloc: jnp.ndarray,
     n_ag_pools: int,
 ) -> jnp.ndarray:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Optional
+from typing import Any, Optional
 
 import jax.numpy as jnp
 
@@ -41,7 +41,7 @@ def get_opt_fields(config: ModelConfig) -> tuple[str, ...]:
 
 
 def get_oe_fields(
-    config: ModelConfig, inv_cfg: Optional[dict] = None
+    config: ModelConfig, inv_cfg: Optional[dict[str, Any]] = None
 ) -> tuple[str, ...]:
     """Fields for the OE Levenberg-Marquardt inversion."""
     fields = list(_OE_CORE_FIELDS)

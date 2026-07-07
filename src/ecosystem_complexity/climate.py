@@ -124,7 +124,7 @@ def thawed_frac(
 
 def soil_temp_at_depth(
     T_surface: jnp.ndarray,
-    z_m: float,
+    z_m: float | jnp.ndarray,
     T_annual_mean: float,
     damping_depth_m: float = 2.0,
 ) -> jnp.ndarray:

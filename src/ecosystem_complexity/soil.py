@@ -14,6 +14,8 @@ _step_12C_pure      — one Euler step of ¹²C pool dynamics (full system)
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import jax
 import jax.nn
 import jax.numpy as jnp
@@ -25,6 +27,9 @@ from ecosystem_complexity.above_ground import (
 )
 from ecosystem_complexity.climate import _pool_env_vecs
 from ecosystem_complexity.transfer import get_transfer_matrix
+
+if TYPE_CHECKING:
+    from ecosystem_complexity.state import EcosystemState, ModelParams
 
 
 def decomp_flux(
@@ -157,9 +162,9 @@ def nee(
 
 
 def _step_12C_pure(
-    state,
-    params,
-    forcing_t: dict,
+    state: EcosystemState,
+    params: ModelParams,
+    forcing_t: dict[str, jnp.ndarray],
     *,
     n_pools: int,
     n_ag_pools: int,
@@ -174,7 +179,7 @@ def _step_12C_pure(
     pool_mid_depths: jnp.ndarray | None = None,
     T_annual_mean: float | None = None,
     damping_depth_m: float = 2.0,
-):
+) -> EcosystemState:
     """
     One Euler step of ¹²C pool dynamics — pure function, no ``self``.
 
@@ -237,7 +242,7 @@ def _step_12C_pure(
         ag_frac = 1.0 - soil_frac
     else:
         GPP = _gpp(forcing_t["sw_radiation"])
-        ag_frac = 1.0
+        ag_frac = jnp.asarray(1.0)
 
     # ── Environmental scalars (per pool) ─────────────────────────────────
     ft_vec, fm_vec, ff_vec = _pool_env_vecs(
@@ -259,6 +264,8 @@ def _step_12C_pure(
 
     # ── External soil inputs (non-zero when external_inputs_active=True) ──
     if external_inputs_active:
+        # When external inputs are active, target indices are always resolved.
+        assert external_input_target_indices is not None
         ext_inputs = compute_external_soil_inputs(
             GPP_or_NPP=GPP if not external_input_is_npp else GPP * CUE,
             is_npp=external_input_is_npp,

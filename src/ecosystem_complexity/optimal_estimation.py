@@ -30,6 +30,7 @@ from ._oe_helpers import (
 )
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
+from .model import EcosystemModel
 from .optimizer import (
     get_oe_fields as _get_oe_fields,
 )
@@ -39,7 +40,12 @@ from .optimizer import (
 from .optimizer import (
     vector_to_params as _vector_to_params,
 )
-from .state import ModelParams, make_default_params, make_initial_state
+from .state import (
+    EcosystemState,
+    ModelParams,
+    make_default_params,
+    make_initial_state,
+)
 
 # Re-export ObsBlock so users can do: from .optimal_estimation import ObsBlock
 __all__ = ["ObsBlock", "OEResult", "optimize_oe"]
@@ -59,16 +65,16 @@ class OEResult(NamedTuple):
     cost_history: jnp.ndarray  # (n_iter,) total OE cost per LM step
     converged: bool
     n_iter: int
-    state_names: list  # length n_state — labels for diagnostics
+    state_names: list[str]  # length n_state — labels for diagnostics
 
 
 def optimize_oe(  # noqa: C901
-    model,
+    model: EcosystemModel,
     forcing: ForcingData,
     observations: ObservationData,
-    state0=None,
-    fields: Optional[tuple] = None,
-    extra_obs_blocks: Optional[list] = None,
+    state0: Optional[EcosystemState] = None,
+    fields: Optional[tuple[str, ...]] = None,
+    extra_obs_blocks: Optional[list[ObsBlock]] = None,
     sa_override_diag: Optional[jnp.ndarray] = None,
 ) -> OEResult:
     """
@@ -113,6 +119,7 @@ def optimize_oe(  # noqa: C901
 
     params0 = make_default_params(model.config)
     if state0 is None:
+        assert model._site_config is not None
         state0 = make_initial_state(model.config, model._site_config)
 
     # Use caller-supplied fields; fall back to the config-derived default.
@@ -217,7 +224,7 @@ def optimize_oe(  # noqa: C901
     Se_inv_diag = 1.0 / (Se_diag + 1e-30)
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
-    def _forward(x_vec):
+    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = _vector_to_params(x_vec, params0, opt_fields)
 
         # Replace C12 with analytical steady-state to eliminate spinup drift.

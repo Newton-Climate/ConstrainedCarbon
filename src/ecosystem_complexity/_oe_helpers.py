@@ -24,10 +24,13 @@ from .state import ModelParams
 from .transfer import get_transfer_matrix
 
 if TYPE_CHECKING:
-    # Imported lazily to avoid a circular import: ``data.israd_observations``
-    # imports ``ObsBlock`` from this module.  ``ObservationData`` is used only
-    # in annotations, which are strings under ``from __future__ import annotations``.
+    # Imported lazily to avoid circular imports (``data.israd_observations``
+    # imports ``ObsBlock`` from here; ``api`` re-exports from here).  These names
+    # are used only in annotations, which are strings under
+    # ``from __future__ import annotations``.
+    from .api import ModelOutput
     from .data.schemas import ObservationData
+    from .model import EcosystemModel
 
 
 @dataclass
@@ -56,12 +59,12 @@ class ObsBlock:
     name: str
     y: jnp.ndarray
     Se: jnp.ndarray
-    predict: Callable  # (ModelOutput, ModelParams) -> jnp.ndarray (n_i,)
+    predict: Callable[..., jnp.ndarray]  # (ModelOutput, ModelParams) -> (n_i,)
 
 
 def _build_obs_blocks(  # noqa: C901
     observations: ObservationData,
-    model,
+    model: EcosystemModel,
     sigma_pool: float,
     sigma_resp: float,
     sigma_carbon: Optional[float] = None,
@@ -141,7 +144,9 @@ def _build_obs_blocks(  # noqa: C901
     if t_r:
         _t_r = jnp.array(t_r, dtype=jnp.int32)
 
-        def _predict_resp(out, p, t_r=_t_r):
+        def _predict_resp(
+            out: ModelOutput, p: ModelParams, t_r: jnp.ndarray = _t_r
+        ) -> jnp.ndarray:
             tau_v = jnp.exp(p.log_tau)
             w = out.C12 / (tau_v[None, :] + 1e-30)  # (T, n_pools)
             d14c = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)  # (T,)
@@ -207,7 +212,9 @@ def _build_obs_blocks(  # noqa: C901
         if rows:
             _W = jnp.array(np.stack(rows, axis=0))  # (n_er_obs, T)
 
-            def _predict_er(out, p, W=_W):
+            def _predict_er(
+                out: ModelOutput, p: ModelParams, W: jnp.ndarray = _W
+            ) -> jnp.ndarray:
                 f_het = jax.nn.sigmoid(p.log_f_hetero)
                 return (W @ out.Rh) / (f_het + 1e-6)
 
@@ -226,7 +233,7 @@ def _build_obs_blocks(  # noqa: C901
 def _build_sa_diag(
     config: ModelConfig,
     params0: ModelParams,
-    opt_fields: tuple,
+    opt_fields: tuple[str, ...],
 ) -> jnp.ndarray:
     """
     Build the diagonal of Sₐ (prior error variances) for the OE state vector.
@@ -307,7 +314,7 @@ def _analytical_c12_ss(
     n_pools: int,
     mean_input: float,
     mean_modifier: float = 1.0,
-    target_indices: Optional[list] = None,
+    target_indices: Optional[list[int]] = None,
 ) -> jnp.ndarray:
     """
     Compute analytical steady-state C12 stocks for a general pool system with
