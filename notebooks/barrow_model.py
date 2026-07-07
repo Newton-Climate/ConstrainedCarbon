@@ -1,6 +1,7 @@
 """
-barrow_model.py — 3-pool OE inversion for Barrow, Alaska (US-A10).
+barrow_model.py — canonical 3-pool OE inversion for Barrow, Alaska (US-A10).
 
+Pool Δ¹⁴C comes from ISRaD bulk soil layers (Vaughn 2018 + Nave 2021).
 All data helpers, obs builders, and the full OE5 workflow live in
 ``sites/barrow.py``.  This script is the entry point only.
 
@@ -10,7 +11,7 @@ Run
 
 Output
 ------
-  notebooks/barrow_model.png  — 8-panel OE comparison figure
+  notebooks/barrow_three_pool_canonical_oe_summary.png  — 8-panel OE comparison figure
 """
 import sys
 import os

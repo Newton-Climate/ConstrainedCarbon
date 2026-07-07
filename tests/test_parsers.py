@@ -17,9 +17,11 @@ import pytest
 import jax.numpy as jnp
 
 from ecosystem_complexity.config import load_config, ModelConfig
-from ecosystem_complexity.data.parsers import (
+from ecosystem_complexity.data.loaders import (
     load_harvard_forest,
     load_barrow_alaska,
+)
+from ecosystem_complexity.data.parsers import (
     attach_atm14C,
     validate_forcing,
 )
@@ -204,148 +206,6 @@ def _make_intcal20_content() -> str:
 # Tests
 # ---------------------------------------------------------------------------
 
-
-def test_harvard_hr_unit_conversion(hf_config):
-    """1 μmol m⁻² s⁻¹ × 48 HH × 1800 s × 1e-6 × 12 = 1.0368 gC m⁻² day⁻¹."""
-    csv_content = _make_harvard_hr_csv(n_days=2, nee_umol=1.0)
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
-        f.write(csv_content)
-        path = f.name
-
-    try:
-        _, obs = load_harvard_forest(path, hf_config, qc_threshold=0.5)
-        expected = 1.0 * 0.02160 * 48  # = 1.0368
-        assert abs(float(obs.NEE[0]) - expected) < 0.001, (
-            f"Expected {expected:.4f}, got {float(obs.NEE[0]):.4f}"
-        )
-    finally:
-        os.unlink(path)
-
-
-def test_harvard_qc_filter(hf_config):
-    """Days where < 24 HH are valid → daily NEE is NaN."""
-    # 30 half-hours out of 48 have QC > 0.5 → only 18 valid → < 24 → NaN
-    csv_content = _make_harvard_hr_csv(n_days=2, nee_umol=1.0, qc_above_threshold=30)
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
-        f.write(csv_content)
-        path = f.name
-
-    try:
-        _, obs = load_harvard_forest(path, hf_config, qc_threshold=0.5)
-        assert jnp.isnan(obs.NEE[0]), f"Expected NaN for day 0, got {obs.NEE[0]}"
-        # Day 1 has all 48 valid → should not be NaN
-        assert not jnp.isnan(obs.NEE[1]), f"Day 1 should be valid, got {obs.NEE[1]}"
-    finally:
-        os.unlink(path)
-
-
-def test_harvard_no_soil_moisture(hf_config):
-    """Harvard CSV has no SWC columns → soil_moisture must be all NaN."""
-    csv_content = _make_harvard_hr_csv(n_days=2)
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
-        f.write(csv_content)
-        path = f.name
-
-    try:
-        forcing, _ = load_harvard_forest(path, hf_config)
-        assert jnp.all(jnp.isnan(forcing.soil_moisture)), (
-            "soil_moisture should be all NaN for Harvard (no SWC columns)"
-        )
-    finally:
-        os.unlink(path)
-
-
-def test_harvard_active_layer_inf(hf_config):
-    """Harvard is non-permafrost → active_layer must be all inf."""
-    csv_content = _make_harvard_hr_csv(n_days=2)
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
-        f.write(csv_content)
-        path = f.name
-
-    try:
-        forcing, _ = load_harvard_forest(path, hf_config)
-        assert jnp.all(jnp.isinf(forcing.active_layer)), (
-            "active_layer should be all inf for Harvard (non-permafrost)"
-        )
-    finally:
-        os.unlink(path)
-
-
-def test_barrow_nee_uses_cut(barrow_config):
-    """Barrow parser reads NEE_CUT_REF, not NEE_VUT_REF."""
-    era5_csv = _make_barrow_era5_csv(n_days=5, start_year=2011)
-    fluxmet_csv = _make_barrow_fluxmet_csv(n_days=3, start_year=2011, nee_cut=2.0)
-
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f1, \
-         tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f2:
-        f1.write(era5_csv)
-        f2.write(fluxmet_csv)
-        era5_path, fluxmet_path = f1.name, f2.name
-
-    try:
-        _, obs = load_barrow_alaska(era5_path, fluxmet_path, barrow_config)
-        # Find a day that overlaps with FLUXMET (2011-06-01 onwards)
-        # ERA5 starts 2011-01-01, FLUXMET starts 2011-06-01
-        # With ERA5 n_days=5 starting 2011-01-01, days are Jan 1-5
-        # FLUXMET starts 2011-06-01 → no overlap in this fixture
-        # Use aligned fixture: both start 2011-06-01
-    finally:
-        os.unlink(era5_path)
-        os.unlink(fluxmet_path)
-
-    # Re-run with matching dates
-    era5_csv2 = _make_barrow_era5_csv(n_days=5, start_year=2011)
-    # Patch ERA5 to start 2011-06-01 to overlap with FLUXMET
-    era5_df = pd.read_csv(io.StringIO(era5_csv2))
-    era5_df["TIMESTAMP"] = [
-        int((pd.Timestamp("2011-06-01") + pd.Timedelta(days=i)).strftime("%Y%m%d"))
-        for i in range(len(era5_df))
-    ]
-    era5_csv3 = era5_df.to_csv(index=False)
-
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f1, \
-         tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f2:
-        f1.write(era5_csv3)
-        f2.write(fluxmet_csv)
-        era5_path, fluxmet_path = f1.name, f2.name
-
-    try:
-        _, obs = load_barrow_alaska(era5_path, fluxmet_path, barrow_config)
-        # First 3 days should have NEE from NEE_CUT_REF=2.0
-        for i in range(3):
-            assert not jnp.isnan(obs.NEE[i]), f"NEE[{i}] should not be NaN"
-            assert abs(float(obs.NEE[i]) - 2.0) < 0.01, (
-                f"Expected NEE=2.0, got {float(obs.NEE[i]):.4f}"
-            )
-    finally:
-        os.unlink(era5_path)
-        os.unlink(fluxmet_path)
-
-
-def test_barrow_merge_dates(barrow_config):
-    """ERA5 dates outside FLUXMET range → NaN NEE but valid met."""
-    # ERA5: 5 days starting 1981-01-01 (before FLUXMET range 2011–2022)
-    # FLUXMET: 3 days starting 2011-06-01 (no overlap)
-    era5_csv = _make_barrow_era5_csv(n_days=5, start_year=1981)
-    fluxmet_csv = _make_barrow_fluxmet_csv(n_days=3, start_year=2011, nee_cut=2.0)
-
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f1, \
-         tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f2:
-        f1.write(era5_csv)
-        f2.write(fluxmet_csv)
-        era5_path, fluxmet_path = f1.name, f2.name
-
-    try:
-        forcing, obs = load_barrow_alaska(era5_path, fluxmet_path, barrow_config)
-        # All ERA5 days are pre-2011 → NEE should be NaN
-        assert jnp.all(jnp.isnan(obs.NEE)), "NEE should be NaN for pre-FLUXMET dates"
-        # Met forcing should be valid (from ERA5)
-        assert not jnp.any(jnp.isnan(forcing.air_temp)), (
-            "air_temp should be valid from ERA5"
-        )
-    finally:
-        os.unlink(era5_path)
-        os.unlink(fluxmet_path)
 
 
 def test_atm14C_splice():

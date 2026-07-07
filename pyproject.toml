@@ -16,6 +16,8 @@ dependencies = [
     "pandas>=2.2",
     "matplotlib>=3.8",
     "pyyaml>=6.0",
+    "jax>=0.4.30",
+    "optax>=0.2.2",
 ]
 
 [project.optional-dependencies]

@@ -43,8 +43,22 @@ coverage.xml
 *.swo
 
 # Data / outputs (tracked separately if needed)
-data/raw/
+data/
 results/
+# Stray duplicate of data/harvard_forest/hf324-06-soil-carbon.csv
+/hf324-06-soil-carbon.csv
 
-# Local agent instructions
+# Generated presentation decks (built from notebooks/)
+*.pptx
+
+# Node / JS presentation build
+node_modules/
+package-lock.json
+
+# R
+.Rhistory
+
+# Local agent / tooling config
 agents.md
+.claude/
+**.png

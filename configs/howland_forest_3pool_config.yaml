@@ -1,0 +1,80 @@
+# Howland Forest / US-Ho1 3-pool optimized soil carbon configuration.
+# Uses FLUXNET FULLSET daily forcing from the main tower package, including
+# observed GPP for external soil-input forcing.
+# Radiocarbon constraints come from nearby control Howland ISRaD profiles:
+# multi-year bulk layer 14C, density fractions, and soil-respiration 14C.
+site:
+  id: "US-Ho1-3pool"
+  name: "Howland Forest (main tower) – 3-Pool Optimal"
+  lat: 45.2040
+  lon: -68.7402
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 1.30
+      permafrost_eligible: false
+      som_pools:
+        - name: active
+          # Organic surface horizon.
+          depth_top_m: 0.00
+          depth_bot_m: 0.10
+          tau_prior_days: 730
+          tau_prior_std: 365
+        - name: slow
+          # Upper mineral / mixed horizon.
+          depth_top_m: 0.10
+          depth_bot_m: 0.30
+          tau_prior_days: 7300
+          tau_prior_std: 3650
+        - name: passive
+          # Deeper mineral-protected pool.
+          depth_top_m: 0.30
+          depth_bot_m: 1.30
+          tau_prior_days: 73000
+          tau_prior_std: 36500
+
+  transfer_rules:
+    - [soil_active, soil_slow, 0.25]
+    - [soil_slow, soil_passive, 0.10]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  partition:
+    soil_active: 1.0
+    soil_slow: 0.0
+  optimize_partition: false
+
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

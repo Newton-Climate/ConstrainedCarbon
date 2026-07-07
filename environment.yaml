@@ -11,6 +11,9 @@ dependencies:
   - pandas
   - matplotlib
   - pyyaml
+  # Differentiable modelling / inversion
+  - jax
+  - optax
   # Dev tools
   - pytest
   - pytest-cov
