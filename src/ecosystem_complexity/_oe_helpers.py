@@ -8,11 +8,12 @@ Contains:
   _build_sa_diag           — prior error variances for the OE state vector
   _analytical_c12_ss       — analytical steady-state C12 stocks
 """
+
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 import jax
 import jax.numpy as jnp
@@ -21,7 +22,12 @@ import numpy as np
 from .config import ModelConfig, PoolIndex
 from .state import ModelParams
 from .transfer import get_transfer_matrix
-from .data.schemas import ObservationData
+
+if TYPE_CHECKING:
+    # Imported lazily to avoid a circular import: ``data.israd_observations``
+    # imports ``ObsBlock`` from this module.  ``ObservationData`` is used only
+    # in annotations, which are strings under ``from __future__ import annotations``.
+    from .data.schemas import ObservationData
 
 
 @dataclass
@@ -46,13 +52,14 @@ class ObsBlock:
         parameters and returns the simulated counterpart of y, shape (n_i,).
         Must be differentiable via jax.jacobian.
     """
+
     name: str
     y: jnp.ndarray
     Se: jnp.ndarray
     predict: Callable  # (ModelOutput, ModelParams) -> jnp.ndarray (n_i,)
 
 
-def _build_obs_blocks(
+def _build_obs_blocks(  # noqa: C901
     observations: ObservationData,
     model,
     sigma_pool: float,
@@ -104,87 +111,98 @@ def _build_obs_blocks(
         if pool_name not in pool_names_set:
             continue
         obs_arr = np.array(observations.delta14C_obs[pool_name])
-        valid   = np.where(np.isfinite(obs_arr))[0]
-        pcol    = model.pool_index[pool_name]
+        valid = np.where(np.isfinite(obs_arr))[0]
+        pcol = model.pool_index[pool_name]
         for t in valid:
-            t_p.append(int(t)); col_p.append(pcol); y_p.append(float(obs_arr[t]))
+            t_p.append(int(t))
+            col_p.append(pcol)
+            y_p.append(float(obs_arr[t]))
 
     if t_p:
-        _t   = jnp.array(t_p,   dtype=jnp.int32)
+        _t = jnp.array(t_p, dtype=jnp.int32)
         _col = jnp.array(col_p, dtype=jnp.int32)
-        blocks.append(ObsBlock(
-            name="pool_14C",
-            y=jnp.array(y_p, dtype=jnp.float32),
-            Se=jnp.full(len(y_p), sigma_pool ** 2),
-            predict=lambda out, p, t=_t, col=_col: out.delta14C[t, col],
-        ))
+        blocks.append(
+            ObsBlock(
+                name="pool_14C",
+                y=jnp.array(y_p, dtype=jnp.float32),
+                Se=jnp.full(len(y_p), sigma_pool**2),
+                predict=lambda out, p, t=_t, col=_col: out.delta14C[t, col],
+            )
+        )
 
     # ── Block 2: respired CO₂ Δ¹⁴C ─────────────────────────────────────────
     t_r, y_r = [], []
     if observations.delta14C_resp is not None:
         resp_np = np.array(observations.delta14C_resp)
         for t in np.where(np.isfinite(resp_np))[0]:
-            t_r.append(int(t)); y_r.append(float(resp_np[t]))
+            t_r.append(int(t))
+            y_r.append(float(resp_np[t]))
 
     if t_r:
         _t_r = jnp.array(t_r, dtype=jnp.int32)
 
         def _predict_resp(out, p, t_r=_t_r):
             tau_v = jnp.exp(p.log_tau)
-            w     = out.C12 / (tau_v[None, :] + 1e-30)          # (T, n_pools)
-            d14c  = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)  # (T,)
+            w = out.C12 / (tau_v[None, :] + 1e-30)  # (T, n_pools)
+            d14c = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)  # (T,)
             return d14c[t_r]
 
-        blocks.append(ObsBlock(
-            name="resp_14C",
-            y=jnp.array(y_r, dtype=jnp.float32),
-            Se=jnp.full(len(y_r), sigma_resp ** 2),
-            predict=_predict_resp,
-        ))
+        blocks.append(
+            ObsBlock(
+                name="resp_14C",
+                y=jnp.array(y_r, dtype=jnp.float32),
+                Se=jnp.full(len(y_r), sigma_resp**2),
+                predict=_predict_resp,
+            )
+        )
 
     # ── Block 3: carbon stocks ───────────────────────────────────────────────
     c_col, y_c, se_c = [], [], []
     for pool_name, (c_mean, c_sigma) in (observations.C_pools_obs or {}).items():
         if pool_name not in pool_names_set:
             continue
-        sigma_c = float(c_sigma) if (c_sigma and c_sigma > 0) else (sigma_carbon or 1000.0)
+        sigma_c = (
+            float(c_sigma) if (c_sigma and c_sigma > 0) else (sigma_carbon or 1000.0)
+        )
         c_col.append(model.pool_index[pool_name])
         y_c.append(float(c_mean))
-        se_c.append(sigma_c ** 2)
+        se_c.append(sigma_c**2)
 
     if c_col:
         _c_col = jnp.array(c_col, dtype=jnp.int32)
-        blocks.append(ObsBlock(
-            name="c_stock",
-            y=jnp.array(y_c, dtype=jnp.float32),
-            Se=jnp.array(se_c, dtype=jnp.float32),
-            predict=lambda out, p, col=_c_col: jnp.mean(out.C12, axis=0)[col],
-        ))
+        blocks.append(
+            ObsBlock(
+                name="c_stock",
+                y=jnp.array(y_c, dtype=jnp.float32),
+                Se=jnp.array(se_c, dtype=jnp.float32),
+                predict=lambda out, p, col=_c_col: jnp.mean(out.C12, axis=0)[col],
+            )
+        )
 
     # ── Block 4: annual ER from FluxNet (model predicts ER = Rh / f_hetero) ─
     if f_hetero > 0.0 and observations.ER is not None:
-        T        = len(np.array(observations.time))
-        er_np    = np.array(observations.ER,   dtype=np.float64)
-        time_np  = np.array(observations.time, dtype=np.float64)
+        T = len(np.array(observations.time))
+        er_np = np.array(observations.ER, dtype=np.float64)
+        time_np = np.array(observations.time, dtype=np.float64)
         years_np = 1970.0 + time_np / 365.25
         yr_start = int(np.floor(years_np[0]))
-        yr_end   = int(np.floor(years_np[-1]))
+        yr_end = int(np.floor(years_np[-1]))
 
-        rows:     list[np.ndarray] = []
-        y_er:     list[float]      = []
-        se_er:    list[float]      = []
+        rows: list[np.ndarray] = []
+        y_er: list[float] = []
+        se_er: list[float] = []
 
         for yr in range(yr_start, yr_end + 1):
             mask = (years_np >= yr) & (years_np < yr + 1) & np.isfinite(er_np)
             if mask.sum() < 30:
                 continue
             er_est = float(np.mean(er_np[mask]))
-            sigma  = max(abs(er_est) * sigma_er_frac, 0.01)
-            row    = np.zeros(T, dtype=np.float32)
+            sigma = max(abs(er_est) * sigma_er_frac, 0.01)
+            row = np.zeros(T, dtype=np.float32)
             row[mask] = 1.0 / mask.sum()
             rows.append(row)
             y_er.append(er_est)
-            se_er.append(sigma ** 2)
+            se_er.append(sigma**2)
 
         if rows:
             _W = jnp.array(np.stack(rows, axis=0))  # (n_er_obs, T)
@@ -193,12 +211,14 @@ def _build_obs_blocks(
                 f_het = jax.nn.sigmoid(p.log_f_hetero)
                 return (W @ out.Rh) / (f_het + 1e-6)
 
-            blocks.append(ObsBlock(
-                name="er_annual",
-                y=jnp.array(y_er,  dtype=jnp.float32),
-                Se=jnp.array(se_er, dtype=jnp.float32),
-                predict=_predict_er,
-            ))
+            blocks.append(
+                ObsBlock(
+                    name="er_annual",
+                    y=jnp.array(y_er, dtype=jnp.float32),
+                    Se=jnp.array(se_er, dtype=jnp.float32),
+                    predict=_predict_er,
+                )
+            )
 
     return blocks
 
@@ -217,7 +237,7 @@ def _build_sa_diag(
     everything else        : σ = 0.5
     """
     sigma = build_oe_prior_sigma(config, params0, opt_fields)
-    return sigma ** 2
+    return sigma**2
 
 
 def build_oe_prior_sigma(
@@ -251,16 +271,19 @@ def build_oe_prior_sigma(
         n = int(math.prod(val.shape))
 
         if f == "log_tau":
-            sigma = np.array([
-                tau_info.get(name, (1000.0, 1000.0))[1]
-                / max(tau_info.get(name, (1000.0, 1000.0))[0], 1.0)
-                for name in pool_idx.pool_names
-            ], dtype=np.float32)
+            sigma = np.array(
+                [
+                    tau_info.get(name, (1000.0, 1000.0))[1]
+                    / max(tau_info.get(name, (1000.0, 1000.0))[0], 1.0)
+                    for name in pool_idx.pool_names
+                ],
+                dtype=np.float32,
+            )
             sigma_parts.append(jnp.array(sigma))
 
         elif f == "log_f_transfer":
             sigma = np.full(n, 0.02, dtype=np.float32)
-            for (si, dj) in real_transfer_pairs:
+            for si, dj in real_transfer_pairs:
                 flat_i = si * (n_pools + 1) + dj
                 sigma[flat_i] = 0.5
             sigma_parts.append(jnp.array(sigma))
@@ -324,24 +347,26 @@ def _analytical_c12_ss(
     jnp.ndarray
         Shape ``(n_pools,)`` steady-state C12 stocks [gC m⁻²].
     """
-    tau = jnp.exp(params.log_tau)                              # (n_pools,)
-    F   = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n_pools, n_pools)
+    tau = jnp.exp(params.log_tau)  # (n_pools,)
+    F = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n_pools, n_pools)
 
     # External input partition: softmax over target pools only.
-    lep     = params.log_external_input_partition
-    n_lep   = lep.shape[0]
+    lep = params.log_external_input_partition
+    n_lep = lep.shape[0]
 
     if n_lep == 0:
         # No partition at all — all input to pool 0 (legacy fallback)
         f_part = jnp.zeros(n_pools).at[0].set(1.0)
     else:
-        f_soft = jax.nn.softmax(lep)          # (n_lep,) summing to 1
+        f_soft = jax.nn.softmax(lep)  # (n_lep,) summing to 1
         if n_lep == n_pools and target_indices is None:
             # Simple case: one logit per pool
             f_part = f_soft
         else:
             # Sparse case: map n_lep fractions to specific pool indices
-            indices = target_indices if target_indices is not None else list(range(n_lep))
+            indices = (
+                target_indices if target_indices is not None else list(range(n_lep))
+            )
             f_part = jnp.zeros(n_pools)
             for k, ti in enumerate(indices):
                 f_part = f_part.at[ti].set(f_soft[k])
@@ -349,10 +374,10 @@ def _analytical_c12_ss(
     # Effective inputs: I_direct + cascade from upstream pools.
     # For a lower-triangular cascade (F[i,j]=0 if j<=i) this is solvable by
     # forward substitution in pool order.
-    I = f_part * float(mean_input)   # direct external to each pool (n_pools,)
+    inp = f_part * float(mean_input)  # direct external to each pool (n_pools,)
     for j in range(1, n_pools):
         # Add cascade inflows from all upstream pools i < j
-        I = I.at[j].add(jnp.dot(F[:j, j], I[:j]))
+        inp = inp.at[j].add(jnp.dot(F[:j, j], inp[:j]))
 
     # Correct for decomposition modifier (true SS has longer effective τ)
-    return I * tau / float(mean_modifier)
+    return inp * tau / float(mean_modifier)

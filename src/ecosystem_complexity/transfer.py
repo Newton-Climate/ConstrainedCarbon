@@ -19,6 +19,7 @@ validate_transfer_rules  (diagnostic, build-time)
     Returns a list of human-readable warning strings without raising, so the
     caller can decide whether to surface or suppress them.
 """
+
 from __future__ import annotations
 
 import jax.nn
@@ -99,9 +100,7 @@ def build_transfer_matrix(config: ModelConfig) -> jnp.ndarray:
 # ---------------------------------------------------------------------------
 
 
-def get_transfer_matrix(
-    log_f_transfer: jnp.ndarray, n_pools: int
-) -> jnp.ndarray:
+def get_transfer_matrix(log_f_transfer: jnp.ndarray, n_pools: int) -> jnp.ndarray:
     """
     Convert ``ModelParams.log_f_transfer`` logits to transfer fractions.
 
@@ -130,7 +129,7 @@ def get_transfer_matrix(
     # softmax normalises each row across all n_pools+1 destinations
     # (last column = fraction respired).
     f_full = jax.nn.softmax(log_f_transfer, axis=-1)  # (n_pools, n_pools+1)
-    return f_full[:, :n_pools]                         # (n_pools, n_pools)
+    return f_full[:, :n_pools]  # (n_pools, n_pools)
 
 
 # ---------------------------------------------------------------------------

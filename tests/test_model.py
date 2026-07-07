@@ -29,6 +29,7 @@ _step_fn (scan compatibility)
   - _step_fn(state, forcing_t) returns (new_state, None).
   - Output state C12 shape is unchanged.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -38,8 +39,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.config import PoolIndex, load_config
 from ecosystem_complexity.above_ground import _CUE
+from ecosystem_complexity.config import PoolIndex, load_config
 from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import make_default_params, make_initial_state
 
@@ -84,7 +85,7 @@ def dummy_forcing(harvard_config):
     n_layers = len(harvard_config.soil_layers)
     return {
         "air_temp": jnp.array(20.0),
-        "sw_radiation": jnp.array(100.0),    # MJ m⁻² day⁻¹
+        "sw_radiation": jnp.array(100.0),  # MJ m⁻² day⁻¹
         "soil_temp": jnp.full(n_layers, 15.0),
         "soil_moisture": jnp.full(n_layers, 0.3),
         "delta14C_atm": jnp.array(0.0),
@@ -134,9 +135,7 @@ def test_step_12C_other_fields_unchanged(
 ):
     """Only C12 is modified; all other state fields pass through."""
     new_state = harvard_model.step_12C(initial_state, harvard_params, dummy_forcing)
-    np.testing.assert_array_equal(
-        np.array(new_state.C14), np.array(initial_state.C14)
-    )
+    np.testing.assert_array_equal(np.array(new_state.C14), np.array(initial_state.C14))
     np.testing.assert_array_equal(
         np.array(new_state.soil_temp), np.array(initial_state.soil_temp)
     )
@@ -205,9 +204,9 @@ def test_step_12C_grad_params_finite(
     grads = jax.grad(loss)(harvard_params)
     leaves = jax.tree.leaves(grads)
     for leaf in leaves:
-        assert jnp.all(jnp.isfinite(leaf)), (
-            f"Non-finite gradient in a ModelParams leaf: {leaf}"
-        )
+        assert jnp.all(
+            jnp.isfinite(leaf)
+        ), f"Non-finite gradient in a ModelParams leaf: {leaf}"
 
 
 # ---------------------------------------------------------------------------
@@ -235,9 +234,16 @@ def test_step_14C_no_longer_raises(
 
 
 _EXPECTED_DIAG_KEYS = {
-    "GPP", "Ra", "NPP", "Rh", "ER", "NEE",
+    "GPP",
+    "Ra",
+    "NPP",
+    "Rh",
+    "ER",
+    "NEE",
     # external_inputs diagnostics (always present; zero when feature disabled)
-    "GPP_forcing_used", "external_C_input_total", "external_C_input_by_pool",
+    "GPP_forcing_used",
+    "external_C_input_total",
+    "external_C_input_by_pool",
 }
 
 
@@ -291,9 +297,7 @@ def test_diagnose_npp_equals_gpp_times_cue(
 ):
     """NPP = GPP × CUE."""
     diag = harvard_model.diagnose(initial_state, harvard_params, dummy_forcing)
-    assert float(diag["NPP"]) == pytest.approx(
-        float(diag["GPP"]) * _CUE, rel=1e-6
-    )
+    assert float(diag["NPP"]) == pytest.approx(float(diag["GPP"]) * _CUE, rel=1e-6)
 
 
 def test_diagnose_zero_radiation_zero_gpp(
@@ -317,9 +321,7 @@ def test_diagnose_zero_radiation_zero_gpp(
 # ---------------------------------------------------------------------------
 
 
-def test_step_fn_returns_tuple(
-    harvard_model, initial_state, dummy_forcing
-):
+def test_step_fn_returns_tuple(harvard_model, initial_state, dummy_forcing):
     """_step_fn(state, forcing_t) returns (new_state, None)."""
     result = harvard_model._step_fn(initial_state, dummy_forcing)
     assert isinstance(result, tuple) and len(result) == 2
@@ -373,8 +375,8 @@ def _sinusoidal_forcing_seq(
     t = jnp.arange(n_steps, dtype=jnp.float32)
     phase = 2.0 * jnp.pi * t / 365.0
     sw_seq = jnp.maximum(sw_mean + sw_amp * jnp.sin(phase), 0.0)  # (n,)
-    temp_1d = temp_mean + temp_amp * jnp.sin(phase)                # (n,)
-    temp_seq = jnp.outer(temp_1d, jnp.ones(n_layers))             # (n, L)
+    temp_1d = temp_mean + temp_amp * jnp.sin(phase)  # (n,)
+    temp_seq = jnp.outer(temp_1d, jnp.ones(n_layers))  # (n, L)
     moisture_seq = jnp.full((n_steps, n_layers), 0.3)
     return {
         "air_temp": jnp.zeros(n_steps),

@@ -24,18 +24,18 @@ Public API
     PoolIndex(config)  -> PoolIndex
     ConfigValidationError
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Optional
 
 import yaml
 
-from ecosystem_complexity._config_validation import (
-    ConfigValidationError,
+from ecosystem_complexity._config_validation import (  # noqa: F401
+    ConfigValidationError,  # re-exported as public API
     _validate,
 )
-
 
 # ---------------------------------------------------------------------------
 # Frozen dataclasses
@@ -90,14 +90,14 @@ class ExternalInputsConfig:
     """
 
     enabled: bool
-    source: str                          # ForcingData field name: "GPP_obs" or "NPP_obs"
-    CUE: float                           # carbon use efficiency (0 < CUE ≤ 1)
+    source: str  # ForcingData field name: "GPP_obs" or "NPP_obs"
+    CUE: float  # carbon use efficiency (0 < CUE ≤ 1)
     optimize_CUE: bool
-    soil_input_fraction: float           # fraction of NPP bypassing AG pools [0, 1]
+    soil_input_fraction: float  # fraction of NPP bypassing AG pools [0, 1]
     optimize_soil_input_fraction: bool
-    partition: dict[str, float]          # {pool_name: prior_fraction}; priors sum ≤ 1
+    partition: dict[str, float]  # {pool_name: prior_fraction}; priors sum ≤ 1
     optimize_partition: bool
-    target_pool_names: tuple[str, ...]   # ordered keys from partition (for ModelParams)
+    target_pool_names: tuple[str, ...]  # ordered keys from partition (for ModelParams)
 
 
 @dataclass(frozen=True)
@@ -382,7 +382,9 @@ def load_config(path: str) -> ModelConfig:
         site_name=str(site.get("name", "")),
         lat=float(site.get("lat", 0.0)),
         lon=float(site.get("lon", 0.0)),
-        T_annual_mean_C=float(site["T_annual_mean_C"]) if "T_annual_mean_C" in site else None,
+        T_annual_mean_C=(
+            float(site["T_annual_mean_C"]) if "T_annual_mean_C" in site else None
+        ),
         # Model structure
         dt_days=float(model.get("dt_days", 1.0)),
         solver=str(model.get("solver", "euler")),

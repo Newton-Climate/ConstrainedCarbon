@@ -36,6 +36,7 @@ Integration
     - model.step_14C no longer raises NotImplementedError; returns updated
       EcosystemState with C14 changed and all other fields unchanged.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -46,8 +47,6 @@ import numpy as np
 import pytest
 
 from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.climate import f_moisture, f_temp
-from ecosystem_complexity.above_ground import npp_allocation
 from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import (
     EcosystemState,
@@ -62,7 +61,6 @@ from ecosystem_complexity.tracer_14C import (
     _R_STD,
     compute_delta14C,
     initialize_permafrost_14C,
-    spinup_14C,
     step_14C,
 )
 from ecosystem_complexity.transfer import get_transfer_matrix
@@ -193,7 +191,7 @@ def _steady_state_c12(config, params, index, sw=100.0, soil_temp=15.0):
 
     # (I − F^T) · f_ss = npp_vec,  where f_ss = C12/τ
     A = np.eye(n_pools) - F_mat_np.T
-    f_ss = np.linalg.solve(A, npp_vec)   # decomposition fluxes at SS
+    f_ss = np.linalg.solve(A, npp_vec)  # decomposition fluxes at SS
     C12_ss_np = np.maximum(tau_np * f_ss, 0.0)
 
     return jnp.array(C12_ss_np, dtype=jnp.float32)
@@ -202,7 +200,6 @@ def _steady_state_c12(config, params, index, sw=100.0, soil_temp=15.0):
 # ---------------------------------------------------------------------------
 # step_14C — shape, finiteness, zero state
 # ---------------------------------------------------------------------------
-
 
 
 def test_initialize_permafrost_14C_matches_obs(barrow_config, barrow_index):
@@ -216,7 +213,10 @@ def test_initialize_permafrost_14C_matches_obs(barrow_config, barrow_index):
 
     obs_delta14C = -500.0  # ‰ — old permafrost carbon
     C14_new = initialize_permafrost_14C(
-        C14, C12, barrow_config, barrow_index,
+        C14,
+        C12,
+        barrow_config,
+        barrow_index,
         {"permafrost_slow": obs_delta14C},
     )
     delta14C_out = compute_delta14C(C14_new, C12)
@@ -235,7 +235,10 @@ def test_initialize_permafrost_14C_unspecified_unchanged(barrow_config, barrow_i
     C14_orig = C12 * _R_STD
 
     C14_new = initialize_permafrost_14C(
-        C14_orig, C12, barrow_config, barrow_index,
+        C14_orig,
+        C12,
+        barrow_config,
+        barrow_index,
         {"permafrost_slow": -500.0},
     )
 
@@ -243,9 +246,9 @@ def test_initialize_permafrost_14C_unspecified_unchanged(barrow_config, barrow_i
     for i in range(n_pools):
         if i == pf_idx:
             continue
-        assert float(C14_new[i]) == pytest.approx(float(C14_orig[i]), rel=1e-6), (
-            f"Pool index {i} was unexpectedly modified"
-        )
+        assert float(C14_new[i]) == pytest.approx(
+            float(C14_orig[i]), rel=1e-6
+        ), f"Pool index {i} was unexpectedly modified"
 
 
 def test_initialize_permafrost_14C_multiple_pools(barrow_config, barrow_index):
@@ -276,9 +279,7 @@ def test_initialize_permafrost_14C_multiple_pools(barrow_config, barrow_index):
 # ---------------------------------------------------------------------------
 
 
-def test_step_14C_grad_log_tau_finite(
-    harvard_config, harvard_params, harvard_index
-):
+def test_step_14C_grad_log_tau_finite(harvard_config, harvard_params, harvard_index):
     """
     jax.grad of sum(step_14C) w.r.t. params.log_tau is finite and non-zero.
 
@@ -294,17 +295,15 @@ def test_step_14C_grad_log_tau_finite(
 
     grads = jax.grad(loss)(harvard_params)
 
-    assert jnp.all(jnp.isfinite(grads.log_tau)), (
-        f"Non-finite gradient in log_tau: {grads.log_tau}"
-    )
-    assert not jnp.all(grads.log_tau == 0.0), (
-        "log_tau gradient is identically zero — C14/τ outflux path not differentiated"
-    )
+    assert jnp.all(
+        jnp.isfinite(grads.log_tau)
+    ), f"Non-finite gradient in log_tau: {grads.log_tau}"
+    assert not jnp.all(
+        grads.log_tau == 0.0
+    ), "log_tau gradient is identically zero — C14/τ outflux path not differentiated"
 
 
-def test_step_14C_grad_log_alloc_finite(
-    harvard_config, harvard_params, harvard_index
-):
+def test_step_14C_grad_log_alloc_finite(harvard_config, harvard_params, harvard_index):
     """
     jax.grad w.r.t. log_alloc is finite and non-zero when GPP > 0.
 
@@ -320,12 +319,12 @@ def test_step_14C_grad_log_alloc_finite(
 
     grads = jax.grad(loss)(harvard_params)
 
-    assert jnp.all(jnp.isfinite(grads.log_alloc)), (
-        f"Non-finite gradient in log_alloc: {grads.log_alloc}"
-    )
-    assert not jnp.all(grads.log_alloc == 0.0), (
-        "log_alloc gradient is identically zero — F14_npp path not differentiated"
-    )
+    assert jnp.all(
+        jnp.isfinite(grads.log_alloc)
+    ), f"Non-finite gradient in log_alloc: {grads.log_alloc}"
+    assert not jnp.all(
+        grads.log_alloc == 0.0
+    ), "log_alloc gradient is identically zero — F14_npp path not differentiated"
 
 
 # ---------------------------------------------------------------------------

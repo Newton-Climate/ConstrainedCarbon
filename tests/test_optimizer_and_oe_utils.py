@@ -8,18 +8,18 @@ import pytest
 
 from ecosystem_complexity.api import build_model
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.optimizer import (
-    get_opt_fields,
-    get_oe_fields,
-    params_to_vector,
-    vector_to_params,
-)
+from ecosystem_complexity.oe_diagnostics import oe_constraint_ladder, oe_style_ablation
 from ecosystem_complexity.oe_utils import (
     build_mean_ss_modifier,
     build_oe_observation_sets,
     ss_state_for_params,
 )
-from ecosystem_complexity.oe_diagnostics import oe_style_ablation, oe_constraint_ladder
+from ecosystem_complexity.optimizer import (
+    get_oe_fields,
+    get_opt_fields,
+    params_to_vector,
+    vector_to_params,
+)
 from ecosystem_complexity.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
@@ -130,7 +130,9 @@ def test_build_mean_ss_modifier_and_ss_state_for_params(hf_3pool_model, short_fo
 def test_oe_diagnostics_outputs(hf_3pool_model, short_forcing):
     params = make_default_params(hf_3pool_model.config)
     state0 = make_initial_state(hf_3pool_model.config, {})
-    obs = _make_obs(int(short_forcing.time.shape[0]), hf_3pool_model.pool_index.pool_names)
+    obs = _make_obs(
+        int(short_forcing.time.shape[0]), hf_3pool_model.pool_index.pool_names
+    )
 
     ablation = oe_style_ablation(
         hf_3pool_model, short_forcing, state0, params, obs, opt_fields=("log_tau",)

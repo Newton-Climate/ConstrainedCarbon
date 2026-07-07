@@ -9,31 +9,25 @@ import jax.numpy as jnp
 import numpy as np
 import yaml
 
-from .config import load_config, ModelConfig, PoolIndex
-from .state import EcosystemState, ModelParams, make_initial_state, make_default_params
-from .model import EcosystemModel
 from .climate import thawed_frac as compute_thawed_frac
+from .config import PoolIndex, load_config
+from .data.schemas import ForcingData
+from .model import EcosystemModel
+from .state import EcosystemState, ModelParams, make_default_params, make_initial_state
 from .tracer_14C import compute_delta14C
-from .data.schemas import ForcingData, ObservationData
-from .optimizer import (
-    get_opt_fields as _get_opt_fields,
-    get_oe_fields as _get_oe_fields,
-    params_to_vector as _params_to_vector,
-    vector_to_params as _vector_to_params,
-)
-
 
 # ── Output containers ─────────────────────────────────────────────────────────
 
+
 class ModelOutput(NamedTuple):
-    C12: jnp.ndarray        # (T, n_pools)
-    C14: jnp.ndarray        # (T, n_pools)
-    delta14C: jnp.ndarray   # (T, n_pools)
-    NEE: jnp.ndarray        # (T,)
-    GPP: jnp.ndarray        # (T,)
-    ER: jnp.ndarray         # (T,)
-    Rh: jnp.ndarray         # (T,)
-    Ra: jnp.ndarray         # (T,)
+    C12: jnp.ndarray  # (T, n_pools)
+    C14: jnp.ndarray  # (T, n_pools)
+    delta14C: jnp.ndarray  # (T, n_pools)
+    NEE: jnp.ndarray  # (T,)
+    GPP: jnp.ndarray  # (T,)
+    ER: jnp.ndarray  # (T,)
+    Rh: jnp.ndarray  # (T,)
+    Ra: jnp.ndarray  # (T,)
     final_state: EcosystemState
 
 
@@ -46,7 +40,7 @@ def _build_forcing_dict(forcing: ForcingData) -> dict:
     """
     # ── Primary met variables: NaN → safe scalar defaults ─────────────────
     sw_rad = jnp.nan_to_num(forcing.sw_radiation, nan=0.0)
-    air_t  = jnp.nan_to_num(forcing.air_temp,     nan=5.0)
+    air_t = jnp.nan_to_num(forcing.air_temp, nan=5.0)
 
     # ── Soil temperature: NaN → air temperature (already filled above) ────
     soil_temp = jnp.where(
@@ -67,21 +61,22 @@ def _build_forcing_dict(forcing: ForcingData) -> dict:
         forcing.delta14C_atm,
     )
 
-    return dict(
-        time=forcing.time,
-        air_temp=air_t,
-        sw_radiation=sw_rad,
-        precip=forcing.precip,
-        vpd=forcing.vpd,
-        soil_temp=soil_temp,
-        soil_moisture=soil_moisture,
-        snow_depth=forcing.snow_depth,
-        active_layer=forcing.active_layer,
-        delta14C_atm=delta14C_atm,
+    return {
+        "time": forcing.time,
+        "air_temp": air_t,
+        "sw_radiation": sw_rad,
+        "precip": forcing.precip,
+        "vpd": forcing.vpd,
+        "soil_temp": soil_temp,
+        "soil_moisture": soil_moisture,
+        "snow_depth": forcing.snow_depth,
+        "active_layer": forcing.active_layer,
+        "delta14C_atm": delta14C_atm,
         # External-inputs forcing fields (NaN = not available; model handles)
-        GPP_obs=forcing.GPP_obs,
-        NPP_obs=forcing.NPP_obs,
-    )
+        "GPP_obs": forcing.GPP_obs,
+        "NPP_obs": forcing.NPP_obs,
+    }
+
 
 def build_model(config_path: str) -> EcosystemModel:
     """Load a YAML config and return a ready-to-use EcosystemModel.
@@ -124,7 +119,8 @@ def run_model(
         params = make_default_params(model.config)
     if state0 is None:
         state0 = make_initial_state(
-            model.config, model._site_config)  # type: ignore[attr-defined]
+            model.config, model._site_config
+        )  # type: ignore[attr-defined]
 
     forcing_dict = _build_forcing_dict(forcing)
 
@@ -143,9 +139,16 @@ def run_model(
         delta14C = compute_delta14C(C14, C12)
 
         diag = model.diagnose(state, p, ft)
-        return (state, p), (C12, C14, delta14C,
-                            diag["NEE"], diag["GPP"], diag["ER"],
-                            diag["Rh"], diag["Ra"])
+        return (state, p), (
+            C12,
+            C14,
+            delta14C,
+            diag["NEE"],
+            diag["GPP"],
+            diag["ER"],
+            diag["Rh"],
+            diag["Ra"],
+        )
 
     T = forcing.time.shape[0]
     (final_state, _), (C12, C14, delta14C, NEE, GPP, ER, Rh, Ra) = jax.lax.scan(
@@ -153,8 +156,14 @@ def run_model(
     )
 
     return ModelOutput(
-        C12=C12, C14=C14, delta14C=delta14C,
-        NEE=NEE, GPP=GPP, ER=ER, Rh=Rh, Ra=Ra,
+        C12=C12,
+        C14=C14,
+        delta14C=delta14C,
+        NEE=NEE,
+        GPP=GPP,
+        ER=ER,
+        Rh=Rh,
+        Ra=Ra,
         final_state=final_state,
     )
 
@@ -174,7 +183,8 @@ def spinup(
     """
     params = make_default_params(model.config)
     state = make_initial_state(
-        model.config, model._site_config)  # type: ignore[attr-defined]
+        model.config, model._site_config
+    )  # type: ignore[attr-defined]
 
     # Build annual-mean forcing for a single representative year.
     # Use the first full calendar year present in the forcing record.
@@ -184,8 +194,7 @@ def spinup(
 
     # Prefer a full year; fall back to whatever is available.
     annual_mask = years == unique_years[len(unique_years) // 2]
-    annual_forcing = jax.tree_util.tree_map(
-        lambda x: x[annual_mask], forcing)
+    annual_forcing = jax.tree_util.tree_map(lambda x: x[annual_mask], forcing)
 
     max_years = n_years if n_years is not None else 2000
     prev_C12 = None
@@ -211,6 +220,19 @@ def spinup(
 
 
 # ── Re-exports for backward compatibility with notebooks / site modules ──────
-from .inversion import optimize, OptimizationResult  # noqa: E402
-from .optimal_estimation import optimize_oe, OEResult  # noqa: E402
-from ._oe_helpers import ObsBlock, _analytical_c12_ss  # noqa: E402
+from ._oe_helpers import ObsBlock, _analytical_c12_ss  # noqa: E402,F401
+from .inversion import OptimizationResult, optimize  # noqa: E402,F401
+from .optimal_estimation import OEResult, optimize_oe  # noqa: E402,F401
+from .optimizer import (  # noqa: E402
+    get_oe_fields,
+    get_opt_fields,
+    params_to_vector,
+    vector_to_params,
+)
+
+# Underscore-prefixed aliases kept for backward compatibility with notebooks /
+# site modules that import them from ``ecosystem_complexity.api``.
+_get_oe_fields = get_oe_fields
+_get_opt_fields = get_opt_fields
+_params_to_vector = params_to_vector
+_vector_to_params = vector_to_params

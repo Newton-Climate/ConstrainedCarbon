@@ -30,6 +30,7 @@ Mass balance (Euler step, dt = 1 day)
 --------------------------------------
   ΔC₁₂_total = NPP − Rh      (= −NEE,  positive = carbon gain)
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -43,9 +44,9 @@ import ecosystem_complexity.tracer_14C as tracer_14C
 from ecosystem_complexity.above_ground import _gpp, compute_external_soil_inputs
 from ecosystem_complexity.climate import _pool_env_vecs
 from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.soil import _step_12C_pure, het_respiration, nee as nee_flux
+from ecosystem_complexity.soil import _step_12C_pure, het_respiration
+from ecosystem_complexity.soil import nee as nee_flux
 from ecosystem_complexity.state import EcosystemState, ModelParams
-from ecosystem_complexity.transfer import get_transfer_matrix
 
 
 @dataclass
@@ -121,11 +122,19 @@ class EcosystemModel:
             mid_depths: list[float] = []
             n_ag_pools_depth = len(self.config.aboveground_pools)
             for _ in range(n_ag_pools_depth):
-                mid_depths.append(0.0)   # aboveground pools at surface
+                mid_depths.append(0.0)  # aboveground pools at surface
             for layer in self.config.soil_layers:
                 for pool in layer.som_pools:
-                    top = pool.depth_top_m if pool.depth_top_m is not None else layer.depth_top_m
-                    bot = pool.depth_bot_m if pool.depth_bot_m is not None else layer.depth_bot_m
+                    top = (
+                        pool.depth_top_m
+                        if pool.depth_top_m is not None
+                        else layer.depth_top_m
+                    )
+                    bot = (
+                        pool.depth_bot_m
+                        if pool.depth_bot_m is not None
+                        else layer.depth_bot_m
+                    )
                     mid_depths.append((top + bot) / 2.0)
             self._pool_mid_depths = jnp.array(mid_depths, dtype=jnp.float32)
             self._T_annual_mean = float(T_annual_mean)
@@ -141,7 +150,7 @@ class EcosystemModel:
         ext_active = ext is not None and ext.enabled
         if ext_active:
             ext_source_key = ext.source
-            ext_is_npp = (ext.source == "NPP_obs")
+            ext_is_npp = ext.source == "NPP_obs"
             ext_target_indices = jnp.array(
                 [self.pool_index[name] for name in ext.target_pool_names],
                 dtype=jnp.int32,
@@ -267,7 +276,11 @@ class EcosystemModel:
             are unchanged.
         """
         new_C14 = tracer_14C.step_14C(
-            state, params, forcing_t, self.config, self.pool_index,
+            state,
+            params,
+            forcing_t,
+            self.config,
+            self.pool_index,
             external_inputs_active=self._ext_active,
             external_input_source_key=self._ext_source_key,
             external_input_is_npp=self._ext_is_npp,

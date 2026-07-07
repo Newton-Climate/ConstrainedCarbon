@@ -20,6 +20,7 @@ validate_transfer_rules
   - Returns a list (may be empty or contain strings).
   - Sink-pool warning is emitted for a pool with no outgoing rules.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -84,9 +85,9 @@ def test_build_matrix_shape_barrow(barrow_config):
 
 def test_build_matrix_row_sums_leq_one(harvard_matrix):
     row_sums = np.array(harvard_matrix).sum(axis=1)
-    assert np.all(row_sums <= 1.0 + 1e-6), (
-        f"Row sums exceed 1.0: {row_sums[row_sums > 1.0 + 1e-6]}"
-    )
+    assert np.all(
+        row_sums <= 1.0 + 1e-6
+    ), f"Row sums exceed 1.0: {row_sums[row_sums > 1.0 + 1e-6]}"
 
 
 def test_build_matrix_dtype_float32(harvard_matrix):
@@ -234,9 +235,9 @@ def test_get_matrix_row_sums_leq_one(harvard_config, harvard_params):
     n_pools = len(PoolIndex(harvard_config))
     f_mat = get_transfer_matrix(harvard_params.log_f_transfer, n_pools)
     row_sums = f_mat.sum(axis=-1)
-    assert jnp.all(row_sums <= 1.0 + 1e-5), (
-        f"get_transfer_matrix row sums exceed 1.0: {row_sums}"
-    )
+    assert jnp.all(
+        row_sums <= 1.0 + 1e-5
+    ), f"get_transfer_matrix row sums exceed 1.0: {row_sums}"
 
 
 def test_get_matrix_grad_finite(harvard_config, harvard_params):
@@ -290,6 +291,4 @@ def test_validate_sink_pool_warning(tmp_path):
     cfg = _config_from_yaml(tmp_path, yaml_text)
     warnings = validate_transfer_rules(cfg)
     warning_text = " ".join(warnings)
-    assert "org_litter" in warning_text or any(
-        "org_litter" in w for w in warnings
-    )
+    assert "org_litter" in warning_text or any("org_litter" in w for w in warnings)

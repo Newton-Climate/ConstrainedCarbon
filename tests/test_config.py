@@ -12,6 +12,7 @@ Coverage
     - every pool name maps to a unique integer in [0, n_total_pools)
     - ag_slice covers exactly the aboveground pools
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -197,9 +198,9 @@ def test_pool_index_unique_integers(
     # All unique
     assert len(set(indices)) == n, "Pool indices are not unique"
     # All in [0, n)
-    assert all(0 <= idx < n for idx in indices), (
-        "Some pool index is out of range [0, n_total_pools)"
-    )
+    assert all(
+        0 <= idx < n for idx in indices
+    ), "Some pool index is out of range [0, n_total_pools)"
 
 
 def test_pool_index_ag_slice(
@@ -212,8 +213,7 @@ def test_pool_index_ag_slice(
     ag_names_from_slice = all_names[harvard_index.ag_slice]
 
     assert ag_names_from_slice == ag_names_from_config, (
-        f"ag_slice gives {ag_names_from_slice}, "
-        f"expected {ag_names_from_config}"
+        f"ag_slice gives {ag_names_from_slice}, " f"expected {ag_names_from_config}"
     )
 
 
@@ -295,8 +295,7 @@ def test_pool_names_no_duplicates_harvard(harvard_index: PoolIndex) -> None:
     """pool_names must not contain duplicate strings (Harvard Forest)."""
     names = harvard_index.pool_names
     assert len(names) == len(set(names)), (
-        f"Duplicate pool names detected: "
-        f"{[n for n in names if names.count(n) > 1]}"
+        f"Duplicate pool names detected: " f"{[n for n in names if names.count(n) > 1]}"
     )
 
 
@@ -304,8 +303,7 @@ def test_pool_names_no_duplicates_barrow(barrow_index: PoolIndex) -> None:
     """pool_names must not contain duplicate strings (Barrow Alaska)."""
     names = barrow_index.pool_names
     assert len(names) == len(set(names)), (
-        f"Duplicate pool names detected: "
-        f"{[n for n in names if names.count(n) > 1]}"
+        f"Duplicate pool names detected: " f"{[n for n in names if names.count(n) > 1]}"
     )
 
 
@@ -315,9 +313,9 @@ def test_layer_slices_keys_match_yaml_harvard(
     """layer_slices keys match the YAML soil layer names in definition order."""
     yaml_layer_names = [layer.name for layer in harvard_config.soil_layers]
     slice_keys = list(harvard_index.layer_slices.keys())
-    assert slice_keys == yaml_layer_names, (
-        f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
-    )
+    assert (
+        slice_keys == yaml_layer_names
+    ), f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
 
 
 def test_layer_slices_keys_match_yaml_barrow(
@@ -326,9 +324,9 @@ def test_layer_slices_keys_match_yaml_barrow(
     """layer_slices keys match the YAML soil layer names in definition order."""
     yaml_layer_names = [layer.name for layer in barrow_config.soil_layers]
     slice_keys = list(barrow_index.layer_slices.keys())
-    assert slice_keys == yaml_layer_names, (
-        f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
-    )
+    assert (
+        slice_keys == yaml_layer_names
+    ), f"layer_slices keys {slice_keys} != YAML layer names {yaml_layer_names}"
 
 
 # ---------------------------------------------------------------------------
@@ -362,8 +360,10 @@ def test_external_inputs_config_fields_correct() -> None:
     assert "mineral_B_passive" not in ext.target_pool_names  # not in partition
 
 
-def test_external_inputs_config_validation_bad_pool_name(tmp_path: pathlib.Path) -> None:
-    """A partition entry referencing a non-existent pool raises ConfigValidationError."""
+def test_external_inputs_config_validation_bad_pool_name(
+    tmp_path: pathlib.Path,
+) -> None:
+    """A partition entry referencing a missing pool raises ConfigValidationError."""
     yaml_text = """\
 site:
   id: "TEST"
@@ -405,7 +405,9 @@ external_inputs:
     DOES_NOT_EXIST: 1.0
   optimize_partition: false
 """
-    with pytest.raises(ConfigValidationError, match="[Uu]nknown|[Ii]nvalid|not found|not a soil"):
+    with pytest.raises(
+        ConfigValidationError, match="[Uu]nknown|[Ii]nvalid|not found|not a soil"
+    ):
         load_config(_write_yaml(tmp_path, yaml_text))
 
 
@@ -459,6 +461,6 @@ external_inputs:
 def test_external_inputs_absent_has_no_effect() -> None:
     """When external_inputs block is absent, ModelConfig.external_inputs is None."""
     cfg = load_config(str(CONFIGS_DIR / "harvard_forest.yaml"))
-    assert cfg.external_inputs is None, (
-        "harvard_forest.yaml has no external_inputs block — field should be None"
-    )
+    assert (
+        cfg.external_inputs is None
+    ), "harvard_forest.yaml has no external_inputs block — field should be None"

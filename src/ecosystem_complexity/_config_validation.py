@@ -7,6 +7,7 @@ a loaded config.  Kept in a separate module to stay within the 500-line limit.
 ``ConfigValidationError`` is defined here so that ``_config_validation.py``
 does not need to import from ``config.py``, avoiding a circular dependency.
 """
+
 from __future__ import annotations
 
 import math
@@ -33,9 +34,7 @@ def _all_valid_pool_names(config: ModelConfig) -> set[str]:
     return names
 
 
-def _check_transfer_pool_names(
-    config: ModelConfig, valid_names: set[str]
-) -> None:
+def _check_transfer_pool_names(config: ModelConfig, valid_names: set[str]) -> None:
     """Raise if any transfer rule references an unknown pool name."""
     for source, dest, _ in config.transfer_rules:
         if source not in valid_names:
@@ -120,9 +119,7 @@ def _check_external_inputs(config: ModelConfig, valid_names: set[str]) -> None:
         )
 
     if not (0.0 < ext.CUE <= 1.0):
-        raise ConfigValidationError(
-            f"external_inputs.CUE={ext.CUE} is outside (0, 1]."
-        )
+        raise ConfigValidationError(f"external_inputs.CUE={ext.CUE} is outside (0, 1].")
 
     ag_names = {p.name for p in config.aboveground_pools}
     for pool_name in ext.partition:

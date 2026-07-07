@@ -36,6 +36,7 @@ Integration
     - model.step_14C no longer raises NotImplementedError; returns updated
       EcosystemState with C14 changed and all other fields unchanged.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -45,12 +46,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.climate import f_moisture, f_temp
 from ecosystem_complexity.above_ground import npp_allocation
+from ecosystem_complexity.climate import f_moisture, f_temp
+from ecosystem_complexity.config import PoolIndex, load_config
 from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import (
-    EcosystemState,
     make_default_params,
     make_initial_state,
 )
@@ -61,7 +61,6 @@ from ecosystem_complexity.tracer_14C import (
     _LUE,
     _R_STD,
     compute_delta14C,
-    initialize_permafrost_14C,
     spinup_14C,
     step_14C,
 )
@@ -193,7 +192,7 @@ def _steady_state_c12(config, params, index, sw=100.0, soil_temp=15.0):
 
     # (I − F^T) · f_ss = npp_vec,  where f_ss = C12/τ
     A = np.eye(n_pools) - F_mat_np.T
-    f_ss = np.linalg.solve(A, npp_vec)   # decomposition fluxes at SS
+    f_ss = np.linalg.solve(A, npp_vec)  # decomposition fluxes at SS
     C12_ss_np = np.maximum(tau_np * f_ss, 0.0)
 
     return jnp.array(C12_ss_np, dtype=jnp.float32)
@@ -268,9 +267,7 @@ def test_step_14C_mass_balance(harvard_config, harvard_params, harvard_index):
     state = _make_warm_state(harvard_config, harvard_index, n_layers)
     forcing = _make_forcing(n_layers, delta14C_atm=100.0)
 
-    new_C14 = step_14C(
-        state, harvard_params, forcing, harvard_config, harvard_index
-    )
+    new_C14 = step_14C(state, harvard_params, forcing, harvard_config, harvard_index)
     observed_delta = float(jnp.sum(new_C14 - state.C14))
 
     # ── Independent computation of expected Σ ΔC14 ────────────────────────
@@ -317,9 +314,9 @@ def test_compute_delta14C_at_standard_is_zero():
     C12 = jnp.ones(n)
     C14 = jnp.full(n, _R_STD)  # R_sample = _R_STD → Δ¹⁴C = 0 ‰
     delta = compute_delta14C(C14, C12)
-    assert jnp.allclose(delta, 0.0, atol=1e-4), (
-        f"Expected 0.0 ‰ everywhere, got {delta}"
-    )
+    assert jnp.allclose(
+        delta, 0.0, atol=1e-4
+    ), f"Expected 0.0 ‰ everywhere, got {delta}"
 
 
 def test_compute_delta14C_negative_for_old_carbon():
@@ -328,9 +325,9 @@ def test_compute_delta14C_negative_for_old_carbon():
     C14 = jnp.full(4, 0.5 * _R_STD)
     delta = compute_delta14C(C14, C12)
     assert jnp.all(delta < 0.0), f"Expected negative Δ¹⁴C, got {delta}"
-    assert jnp.allclose(delta, -500.0, atol=1.0), (
-        f"Expected −500 ‰ for half-standard ratio, got {delta}"
-    )
+    assert jnp.allclose(
+        delta, -500.0, atol=1.0
+    ), f"Expected −500 ‰ for half-standard ratio, got {delta}"
 
 
 def test_compute_delta14C_positive_for_bomb_carbon():
@@ -339,9 +336,9 @@ def test_compute_delta14C_positive_for_bomb_carbon():
     C14 = jnp.full(4, 2.0 * _R_STD)
     delta = compute_delta14C(C14, C12)
     assert jnp.all(delta > 0.0), f"Expected positive Δ¹⁴C, got {delta}"
-    assert jnp.allclose(delta, 1000.0, atol=1.0), (
-        f"Expected 1000 ‰ for double-standard ratio, got {delta}"
-    )
+    assert jnp.allclose(
+        delta, 1000.0, atol=1.0
+    ), f"Expected 1000 ‰ for double-standard ratio, got {delta}"
 
 
 def test_compute_delta14C_zero_c12_safe():
@@ -349,9 +346,7 @@ def test_compute_delta14C_zero_c12_safe():
     C12 = jnp.zeros(4)
     C14 = jnp.zeros(4)
     delta = compute_delta14C(C14, C12)
-    assert jnp.all(jnp.isfinite(delta)), (
-        f"NaN/inf detected with zero C12: {delta}"
-    )
+    assert jnp.all(jnp.isfinite(delta)), f"NaN/inf detected with zero C12: {delta}"
 
 
 # ---------------------------------------------------------------------------
@@ -375,9 +370,9 @@ def test_spinup_14C_finite(
         "delta14C_atm": jnp.zeros(n_steps),
     }
     C14_final = spinup_14C(harvard_model, C12_ss, forcing_hist, harvard_params)
-    assert jnp.all(jnp.isfinite(C14_final)), (
-        f"C14 contains NaN/inf after spinup: {C14_final}"
-    )
+    assert jnp.all(
+        jnp.isfinite(C14_final)
+    ), f"C14 contains NaN/inf after spinup: {C14_final}"
 
 
 def test_spinup_14C_bomb_spike(
@@ -419,26 +414,28 @@ def test_spinup_14C_bomb_spike(
         harvard_config, harvard_params, harvard_index, sw=100.0, soil_temp=15.0
     )
 
-    n_pre = 1 * 365     # 365 days
-    n_spike = 3 * 365   # 1095 days
-    n_post = 2 * 365    # 730 days
+    n_pre = 1 * 365  # 365 days
+    n_spike = 3 * 365  # 1095 days
+    n_post = 2 * 365  # 730 days
     n_total = n_pre + n_spike + n_post  # 2190 days
 
     forcing_hist = {
         "sw_radiation": jnp.full(n_total, 100.0),
         "soil_temp": jnp.full((n_total, n_layers), 15.0),
         "soil_moisture": jnp.full((n_total, n_layers), 0.3),
-        "delta14C_atm": jnp.concatenate([
-            jnp.zeros(n_pre),
-            jnp.full(n_spike, 900.0),
-            jnp.full(n_post, 100.0),
-        ]),
+        "delta14C_atm": jnp.concatenate(
+            [
+                jnp.zeros(n_pre),
+                jnp.full(n_spike, 900.0),
+                jnp.full(n_post, 100.0),
+            ]
+        ),
     }
 
     C14_final = spinup_14C(harvard_model, C12_ss, forcing_hist, harvard_params)
-    assert jnp.all(jnp.isfinite(C14_final)), (
-        "C14 contains NaN/inf after bomb-spike spinup"
-    )
+    assert jnp.all(
+        jnp.isfinite(C14_final)
+    ), "C14 contains NaN/inf after bomb-spike spinup"
 
     delta14C_pools = compute_delta14C(C14_final, C12_ss)
     fast_idx = harvard_index["organic_fast"]
@@ -446,9 +443,9 @@ def test_spinup_14C_bomb_spike(
     fast_d14C = float(delta14C_pools[fast_idx])
     passive_d14C = float(delta14C_pools[passive_idx])
 
-    assert fast_d14C > 50.0, (
-        f"organic_fast Δ¹⁴C = {fast_d14C:.1f} ‰ — expected > 50 ‰ after bomb spike"
-    )
+    assert (
+        fast_d14C > 50.0
+    ), f"organic_fast Δ¹⁴C = {fast_d14C:.1f} ‰ — expected > 50 ‰ after bomb spike"
     assert passive_d14C < 10.0, (
         f"mineral_B_passive Δ¹⁴C = {passive_d14C:.3f} ‰ — "
         f"expected < 10 ‰ (τ = 100 yr, barely responds in 6 yr)"
@@ -458,4 +455,3 @@ def test_spinup_14C_bomb_spike(
 # ---------------------------------------------------------------------------
 # initialize_permafrost_14C
 # ---------------------------------------------------------------------------
-

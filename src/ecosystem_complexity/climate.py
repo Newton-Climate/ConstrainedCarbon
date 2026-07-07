@@ -11,6 +11,7 @@ thawed_frac         — differentiable freeze/thaw mask
 soil_temp_at_depth  — depth-attenuated soil temperature (Fourier placeholder)
 _pool_env_vecs      — broadcast per-layer scalars to per-pool vectors
 """
+
 from __future__ import annotations
 
 import jax
@@ -218,20 +219,20 @@ def _pool_env_vecs(
     ft_vec, fm_vec, ff_vec : each (n_pools,)
         Temperature, moisture, and thaw scalars broadcast to pool dimension.
     """
-    ft_layers = f_temp(soil_temp, log_Q10)                       # (n_layers,)
+    ft_layers = f_temp(soil_temp, log_Q10)  # (n_layers,)
     fm_layers = f_moisture(soil_moisture, log_theta_opt, log_gamma_moist)
-    ft_vec = ft_layers[pool_to_layer]                            # (n_pools,)
+    ft_vec = ft_layers[pool_to_layer]  # (n_pools,)
     fm_vec = fm_layers[pool_to_layer]
 
     if pool_mid_depths is not None and T_annual_mean is not None:
         # Per-pool depth-attenuated temperature → per-pool thawed_frac.
         # T_surface for each pool: use the layer-mean soil temperature.
-        T_surface_per_pool = soil_temp[pool_to_layer]            # (n_pools,)
+        T_surface_per_pool = soil_temp[pool_to_layer]  # (n_pools,)
         T_depth_per_pool = soil_temp_at_depth(
             T_surface_per_pool, pool_mid_depths, T_annual_mean, damping_depth_m
         )
-        ff_vec = thawed_frac(T_depth_per_pool)                   # (n_pools,)
+        ff_vec = thawed_frac(T_depth_per_pool)  # (n_pools,)
     else:
-        ff_vec = ff_layers[pool_to_layer]                        # (n_pools,)
+        ff_vec = ff_layers[pool_to_layer]  # (n_pools,)
 
     return ft_vec, fm_vec, ff_vec
