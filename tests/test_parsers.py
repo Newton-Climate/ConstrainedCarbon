@@ -198,7 +198,7 @@ def _make_intcal20_content() -> str:
     for cal_bp in range(500, -1, -1):
         year_ad = 1950 - cal_bp
         delta14c = -5.0 + 0.005 * cal_bp  # small pre-industrial variation
-        lines.append(f"{cal_bp} {400 + cal_bp} 30 {delta14c:.2f} 5.0\n")
+        lines.append(f"{cal_bp},{400 + cal_bp},30,{delta14c:.2f},5.0\n")
     return "".join(lines)
 
 
