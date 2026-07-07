@@ -11,6 +11,7 @@ het_respiration     — total heterotrophic respiration
 nee                 — net ecosystem exchange
 _step_12C_pure      — one Euler step of ¹²C pool dynamics (full system)
 """
+
 from __future__ import annotations
 
 import jax
@@ -19,8 +20,8 @@ import jax.numpy as jnp
 
 from ecosystem_complexity.above_ground import (
     _gpp,
-    npp_allocation,
     compute_external_soil_inputs,
+    npp_allocation,
 )
 from ecosystem_complexity.climate import _pool_env_vecs
 from ecosystem_complexity.transfer import get_transfer_matrix
@@ -111,14 +112,14 @@ def het_respiration(
         Non-negative scalar total Rh in gC m⁻² day⁻¹.
     """
     # Transfer fractions: softmax over last axis, drop respiration column
-    f_full = jax.nn.softmax(log_f_transfer, axis=-1)   # (n_pools, n_pools+1)
-    f_transfer = f_full[:, :n_pools]                    # (n_pools, n_pools)
+    f_full = jax.nn.softmax(log_f_transfer, axis=-1)  # (n_pools, n_pools+1)
+    f_transfer = f_full[:, :n_pools]  # (n_pools, n_pools)
 
     # Fraction of each pool's outflux that is respired
-    resp_frac = 1.0 - f_transfer.sum(axis=-1)           # (n_pools,)
+    resp_frac = 1.0 - f_transfer.sum(axis=-1)  # (n_pools,)
 
     # Per-pool decomposition fluxes (vectorised)
-    tau = jnp.exp(log_tau)                              # (n_pools,)
+    tau = jnp.exp(log_tau)  # (n_pools,)
     f_decomp = (C12 / tau) * ft_vec * fm_vec * ff_vec  # (n_pools,)
 
     return jnp.sum(resp_frac * f_decomp)
@@ -274,13 +275,13 @@ def _step_12C_pure(
     F_mat = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n, n)
 
     # ── Per-pool decomposition fluxes ─────────────────────────────────────
-    tau = jnp.exp(params.log_tau)                                # (n_pools,)
-    f_decomp = (state.C12 / tau) * ft_vec * fm_vec * ff_vec     # (n_pools,)
+    tau = jnp.exp(params.log_tau)  # (n_pools,)
+    f_decomp = (state.C12 / tau) * ft_vec * fm_vec * ff_vec  # (n_pools,)
 
     # ── Carbon influx from pool-to-pool transfers ─────────────────────────
     # F_mat[i, j] = fraction of pool-i outflux going to pool j
     # influx[j]   = Σ_i  F_mat[i, j] · f_decomp[i]  =  F_mat.T @ f_decomp
-    influx = F_mat.T @ f_decomp                                  # (n_pools,)
+    influx = F_mat.T @ f_decomp  # (n_pools,)
 
     # ── Euler update ──────────────────────────────────────────────────────
     dC12 = (influx + npp_inputs + ext_inputs - f_decomp) * dt

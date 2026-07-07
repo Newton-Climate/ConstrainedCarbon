@@ -44,41 +44,34 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from ecosystem_complexity._oe_helpers import _build_sa_diag, build_oe_prior_sigma
+from ecosystem_complexity.analysis import (
+    age_diagnostics_summary,
+    compute_age_diagnostics,
+    param_group_dfs,
+    run_ablation_study,
+)
 from ecosystem_complexity.api import build_model, run_model
-from ecosystem_complexity.config import load_config, PoolIndex
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 from ecosystem_complexity.information import (
-    FisherResult,
-    DofResult,
-    PosteriorResult,
-    compute_fisher,
-    compute_dof,
-    compute_posterior,
-    analyze_information_content,
     _default_fields,
+    compute_dof,
+    compute_fisher,
+    compute_posterior,
 )
 from ecosystem_complexity.sensitivity import (
     OBS_C_STOCKS,
     OBS_POOL_D14C,
     OBS_RESP_D14C,
-    ALL_OBS_TYPES,
-    flatten_params,
-    unflatten_params,
-    get_param_names,
-    get_param_groups,
-    make_prior_covariance,
     _build_obs_config,
     _build_obs_fn,
+    flatten_params,
+    get_param_groups,
+    get_param_names,
+    make_prior_covariance,
+    unflatten_params,
 )
-from ecosystem_complexity.analysis import (
-    run_ablation_study,
-    param_group_dfs,
-    compute_age_diagnostics,
-    age_diagnostics_summary,
-)
-from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import make_default_params, make_initial_state
-from ecosystem_complexity._oe_helpers import build_oe_prior_sigma, _build_sa_diag
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HF_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")
@@ -152,7 +145,7 @@ def _make_obs(pool_names: list[str]) -> ObservationData:
     c_pools = {}
     d14C_pools = {}
     for i, p in enumerate(soil_pools[:2]):
-        c_pools[p] = (500.0 + i * 100, 100.0)        # (value gC m-2, sigma)
+        c_pools[p] = (500.0 + i * 100, 100.0)  # (value gC m-2, sigma)
         d14C_pools[p] = (-50.0 + i * 10, 15.0, 2000)  # (value ‰, sigma ‰, year)
 
     resp_arr = jnp.full(n, -30.0)  # synthetic respired Δ¹⁴C
@@ -187,17 +180,16 @@ def test_flatten_unflatten_roundtrip(hf_params, hf_model):
     for f in fields:
         orig = np.array(getattr(hf_params, f))
         rec = np.array(getattr(recovered, f))
-        np.testing.assert_allclose(orig, rec, atol=1e-6,
-                                   err_msg=f"Round-trip mismatch for field '{f}'")
+        np.testing.assert_allclose(
+            orig, rec, atol=1e-6, err_msg=f"Round-trip mismatch for field '{f}'"
+        )
 
 
 def test_flatten_length(hf_params, hf_model):
     """Flat vector length equals sum of field sizes."""
     fields = _default_fields(hf_model)
     flat = flatten_params(hf_params, fields)
-    expected = sum(
-        int(math.prod(getattr(hf_params, f).shape)) for f in fields
-    )
+    expected = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
     assert flat.shape == (expected,)
 
 
@@ -266,9 +258,9 @@ def test_prior_covariance_tau_from_yaml(hf_model, hf_params):
     sigma = make_prior_covariance(hf_params, fields, hf_model)
     pool_names = hf_model.pool_index.pool_names
     idx_litter = pool_names.index("organic_litter")
-    assert sigma[idx_litter] != 1.0, (
-        "organic_litter tau sigma should come from YAML (60 days), not default"
-    )
+    assert (
+        sigma[idx_litter] != 1.0
+    ), "organic_litter tau sigma should come from YAML (60 days), not default"
 
 
 # ── _build_obs_config ──────────────────────────────────────────────────────────
@@ -331,7 +323,9 @@ def test_obs_fn_differentiable(hf_model, short_forcing, hf_state0, hf_params, hf
     obs_config = _build_obs_config(hf_obs, hf_model)
     obs_config_small = {OBS_C_STOCKS: obs_config[OBS_C_STOCKS]}
     warm_state = hf_state0._replace(C12=jnp.full_like(hf_state0.C12, 100.0))
-    obs_fn = _build_obs_fn(hf_model, short_forcing, warm_state, fields, obs_config_small)
+    obs_fn = _build_obs_fn(
+        hf_model, short_forcing, warm_state, fields, obs_config_small
+    )
 
     flat0 = jnp.array(flatten_params(hf_params, fields))
     grads = jax.grad(lambda p: obs_fn(p).sum())(flat0)
@@ -345,7 +339,11 @@ def test_obs_fn_differentiable(hf_model, short_forcing, hf_state0, hf_params, hf
 def hf_fisher(hf_model, short_forcing, hf_state0, hf_params, hf_obs):
     warm_state = hf_state0._replace(C12=jnp.full_like(hf_state0.C12, 100.0))
     return compute_fisher(
-        hf_model, short_forcing, warm_state, hf_params, hf_obs,
+        hf_model,
+        short_forcing,
+        warm_state,
+        hf_params,
+        hf_obs,
         fields=["log_tau"],  # small subset so tests stay fast
     )
 
@@ -362,7 +360,9 @@ def test_fisher_fim_symmetric(hf_fisher):
 
 def test_fisher_fim_psd(hf_fisher):
     eigvals = np.linalg.eigvalsh(hf_fisher.FIM_total)
-    assert np.all(eigvals >= -1e-6), f"FIM has negative eigenvalues: {eigvals.min():.2e}"
+    assert np.all(
+        eigvals >= -1e-6
+    ), f"FIM has negative eigenvalues: {eigvals.min():.2e}"
 
 
 def test_fisher_eigenvalues_descending(hf_fisher):
@@ -374,7 +374,9 @@ def test_fisher_fim_total_equals_sum_of_types(hf_fisher):
     """FIM_total ≈ sum of per-type FIMs."""
     fim_sum = sum(hf_fisher.FIM_per_type.values())
     np.testing.assert_allclose(
-        hf_fisher.FIM_total, fim_sum, rtol=1e-5,
+        hf_fisher.FIM_total,
+        fim_sum,
+        rtol=1e-5,
         err_msg="FIM_total != sum(FIM_per_type)",
     )
 
@@ -393,7 +395,11 @@ def test_fisher_empty_obs(hf_model, short_forcing, hf_state0, hf_params):
         delta14C_resp=None,
     )
     fisher = compute_fisher(
-        hf_model, short_forcing, hf_state0, hf_params, empty_obs,
+        hf_model,
+        short_forcing,
+        hf_state0,
+        hf_params,
+        empty_obs,
         fields=["log_tau"],
     )
     assert np.allclose(fisher.FIM_total, 0.0), "Expected zero FIM for empty obs"
@@ -415,17 +421,17 @@ def hf_dof(hf_fisher, hf_prior_sigma):
 
 def test_dof_total_in_range(hf_dof, hf_fisher):
     n_params = hf_fisher.FIM_total.shape[0]
-    assert 0.0 <= hf_dof.dfs_total <= n_params + 1e-6, (
-        f"DFS {hf_dof.dfs_total:.3f} outside [0, {n_params}]"
-    )
+    assert (
+        0.0 <= hf_dof.dfs_total <= n_params + 1e-6
+    ), f"DFS {hf_dof.dfs_total:.3f} outside [0, {n_params}]"
 
 
 def test_dof_trace_equals_total(hf_dof):
     """trace(A) == dfs_total."""
     trace_A = float(np.trace(hf_dof.averaging_kernel))
-    assert abs(trace_A - hf_dof.dfs_total) < 1e-5, (
-        f"trace(A)={trace_A:.4f} != dfs_total={hf_dof.dfs_total:.4f}"
-    )
+    assert (
+        abs(trace_A - hf_dof.dfs_total) < 1e-5
+    ), f"trace(A)={trace_A:.4f} != dfs_total={hf_dof.dfs_total:.4f}"
 
 
 def test_build_oe_prior_sigma_matches_sa_diag(hf_3pool_model):
@@ -433,7 +439,7 @@ def test_build_oe_prior_sigma_matches_sa_diag(hf_3pool_model):
     fields = ("log_tau", "log_f_transfer")
     sigma = np.array(build_oe_prior_sigma(hf_3pool_model.config, params0, fields))
     sa_diag = np.array(_build_sa_diag(hf_3pool_model.config, params0, fields))
-    np.testing.assert_allclose(sa_diag, sigma ** 2, rtol=1e-6)
+    np.testing.assert_allclose(sa_diag, sigma**2, rtol=1e-6)
 
 
 def test_build_oe_prior_sigma_transfer_and_tau_values(hf_3pool_model):
@@ -494,11 +500,20 @@ def test_dof_monotone_with_obs(hf_model, short_forcing, hf_state0, hf_params, hf
     prior_sigma = make_prior_covariance(hf_params, ["log_tau"], hf_model)
 
     fisher_C = compute_fisher(
-        hf_model, short_forcing, warm_state, hf_params, hf_obs,
-        fields=["log_tau"], active_obs_types=[OBS_C_STOCKS],
+        hf_model,
+        short_forcing,
+        warm_state,
+        hf_params,
+        hf_obs,
+        fields=["log_tau"],
+        active_obs_types=[OBS_C_STOCKS],
     )
     fisher_both = compute_fisher(
-        hf_model, short_forcing, warm_state, hf_params, hf_obs,
+        hf_model,
+        short_forcing,
+        warm_state,
+        hf_params,
+        hf_obs,
         fields=["log_tau"],
         active_obs_types=[OBS_C_STOCKS, OBS_POOL_D14C],
     )
@@ -506,9 +521,9 @@ def test_dof_monotone_with_obs(hf_model, short_forcing, hf_state0, hf_params, hf
     dof_C = compute_dof(fisher_C, prior_sigma)
     dof_both = compute_dof(fisher_both, prior_sigma)
 
-    assert dof_both.dfs_total >= dof_C.dfs_total - 1e-6, (
-        f"DFS(C+Δ14C)={dof_both.dfs_total:.3f} < DFS(C)={dof_C.dfs_total:.3f}"
-    )
+    assert (
+        dof_both.dfs_total >= dof_C.dfs_total - 1e-6
+    ), f"DFS(C+Δ14C)={dof_both.dfs_total:.3f} < DFS(C)={dof_C.dfs_total:.3f}"
 
 
 # ── compute_posterior ──────────────────────────────────────────────────────────
@@ -551,17 +566,18 @@ def test_posterior_uncertainty_reduction_in_01(hf_posterior):
 
 def test_posterior_correlation_diagonal_ones(hf_posterior):
     diag = np.diag(hf_posterior.correlation_matrix)
-    np.testing.assert_allclose(diag, 1.0, atol=1e-5,
-                               err_msg="Correlation matrix diagonal != 1")
+    np.testing.assert_allclose(
+        diag, 1.0, atol=1e-5, err_msg="Correlation matrix diagonal != 1"
+    )
 
 
 def test_posterior_per_type_psd(hf_posterior):
     """Per-type posterior covariance matrices are also PSD."""
     for obs_type, C_k in hf_posterior.C_post_per_type.items():
         eigvals = np.linalg.eigvalsh(C_k)
-        assert np.all(eigvals >= -1e-6), (
-            f"C_post[{obs_type}] has negative eigvals: {eigvals.min():.2e}"
-        )
+        assert np.all(
+            eigvals >= -1e-6
+        ), f"C_post[{obs_type}] has negative eigvals: {eigvals.min():.2e}"
 
 
 # ── run_ablation_study ─────────────────────────────────────────────────────────
@@ -571,7 +587,11 @@ def test_posterior_per_type_psd(hf_posterior):
 def hf_ablation(hf_model, short_forcing, hf_state0, hf_params, hf_obs):
     warm_state = hf_state0._replace(C12=jnp.full_like(hf_state0.C12, 100.0))
     return run_ablation_study(
-        hf_model, short_forcing, warm_state, hf_params, hf_obs,
+        hf_model,
+        short_forcing,
+        warm_state,
+        hf_params,
+        hf_obs,
         fields=["log_tau"],
     )
 
@@ -591,13 +611,12 @@ def test_ablation_scenario_types(hf_ablation):
 def test_ablation_dfs_monotone(hf_ablation):
     """DFS(C_stocks + Δ14C) ≥ DFS(C_stocks alone)."""
     from ecosystem_complexity.information import OBS_C_STOCKS, OBS_POOL_D14C
+
     key_C = OBS_C_STOCKS
     key_both = f"{OBS_C_STOCKS}+{OBS_POOL_D14C}"
     dfs_C = hf_ablation[key_C].dfs_total
     dfs_both = hf_ablation[key_both].dfs_total
-    assert dfs_both >= dfs_C - 1e-6, (
-        f"DFS(C+Δ14C)={dfs_both:.3f} < DFS(C)={dfs_C:.3f}"
-    )
+    assert dfs_both >= dfs_C - 1e-6, f"DFS(C+Δ14C)={dfs_both:.3f} < DFS(C)={dfs_C:.3f}"
 
 
 # ── param_group_dfs ────────────────────────────────────────────────────────────
@@ -608,9 +627,9 @@ def test_param_group_dfs_sums_to_total(hf_dof):
     group_dfs = param_group_dfs(hf_dof)
     if group_dfs:
         total = sum(group_dfs.values())
-        assert abs(total - hf_dof.dfs_total) < 1e-5, (
-            f"sum(group DFS)={total:.4f} != dfs_total={hf_dof.dfs_total:.4f}"
-        )
+        assert (
+            abs(total - hf_dof.dfs_total) < 1e-5
+        ), f"sum(group DFS)={total:.4f} != dfs_total={hf_dof.dfs_total:.4f}"
 
 
 # ── compute_age_diagnostics ────────────────────────────────────────────────────
@@ -632,7 +651,9 @@ def test_age_diagnostics_bulk_is_mass_weighted(hf_output, hf_params, hf_model):
     d14C = np.array(hf_output.delta14C)
     expected = (d14C * C12).sum(axis=-1) / (C12.sum(axis=-1) + 1e-30)
     np.testing.assert_allclose(
-        diag.bulk_delta14C, expected, rtol=1e-4,
+        diag.bulk_delta14C,
+        expected,
+        rtol=1e-4,
         err_msg="bulk_delta14C is not the mass-weighted mean",
     )
 

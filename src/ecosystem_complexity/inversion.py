@@ -5,6 +5,7 @@ Implements ``optimize``: Adam (or L-BFGS) minimisation of a weighted loss
 combining NEE/GPP/ER flux residuals, pool Δ¹⁴C residuals, respired CO₂
 Δ¹⁴C residuals, and a carbon-stock soft constraint.
 """
+
 from __future__ import annotations
 
 import math
@@ -15,29 +16,33 @@ import jax.numpy as jnp
 import numpy as np
 import optax
 
-from .api import ModelOutput, run_model
+from .api import run_model
+from .data.schemas import ForcingData, ObservationData
 from .optimizer import (
     get_opt_fields as _get_opt_fields,
+)
+from .optimizer import (
     params_to_vector as _params_to_vector,
+)
+from .optimizer import (
     vector_to_params as _vector_to_params,
 )
 from .state import EcosystemState, ModelParams, make_default_params, make_initial_state
-from .data.schemas import ForcingData, ObservationData
 
 
 class OptimizationResult(NamedTuple):
     params_opt: ModelParams
-    loss_history: jnp.ndarray        # (n_iter,)
-    loss_flux_history: jnp.ndarray   # (n_iter,)
-    loss_14C_history: jnp.ndarray    # (n_iter,)
-    loss_resp_history: jnp.ndarray   # (n_iter,) — respired CO₂ Δ¹⁴C loss
-    loss_carbon_history: jnp.ndarray # (n_iter,) — carbon stock constraint loss
-    tau_history: jnp.ndarray         # (n_iter, n_pools)
+    loss_history: jnp.ndarray  # (n_iter,)
+    loss_flux_history: jnp.ndarray  # (n_iter,)
+    loss_14C_history: jnp.ndarray  # (n_iter,)
+    loss_resp_history: jnp.ndarray  # (n_iter,) — respired CO₂ Δ¹⁴C loss
+    loss_carbon_history: jnp.ndarray  # (n_iter,) — carbon stock constraint loss
+    tau_history: jnp.ndarray  # (n_iter, n_pools)
     converged: bool
     n_iter: int
 
 
-def optimize(
+def optimize(  # noqa: C901
     model,
     forcing: ForcingData,
     observations: ObservationData,
@@ -72,8 +77,8 @@ def optimize(
     params0 = make_default_params(model.config)
     if state0 is None:
         state0 = make_initial_state(
-            model.config,
-            model._site_config)  # type: ignore[attr-defined]
+            model.config, model._site_config
+        )  # type: ignore[attr-defined]
 
     # Allow caller to restrict which fields enter the optimisation vector.
     if fields is not None:
@@ -103,7 +108,7 @@ def optimize(
             diff = sim - obs_safe
             return jnp.where(
                 jnp.any(mask),
-                jnp.mean(jnp.where(mask, diff ** 2, 0.0)),
+                jnp.mean(jnp.where(mask, diff**2, 0.0)),
                 0.0,
             )
 
@@ -129,8 +134,7 @@ def optimize(
             if jnp.any(valid):
                 obs_safe = jnp.where(valid, obs_arr, sim_arr)  # NaN → sim (diff=0)
                 diff = sim_arr - obs_safe
-                l_14C = l_14C + jnp.mean(
-                    jnp.where(valid, diff ** 2, 0.0))
+                l_14C = l_14C + jnp.mean(jnp.where(valid, diff**2, 0.0))
                 n_14C_terms += 1
         if n_14C_terms > 0:
             l_14C = l_14C / n_14C_terms
@@ -140,9 +144,9 @@ def optimize(
         # Double-where pattern applied for NaN-safe gradients.
         l_resp = jnp.zeros(())
         if w_resp > 0.0 and observations.delta14C_resp is not None:
-            tau_vals = jnp.exp(p.log_tau)                          # (n_pools,)
-            weights = out.C12 / (tau_vals[None, :] + 1e-30)       # (T, n_pools)
-            w_sum = weights.sum(-1, keepdims=False) + 1e-30        # (T,)
+            tau_vals = jnp.exp(p.log_tau)  # (n_pools,)
+            weights = out.C12 / (tau_vals[None, :] + 1e-30)  # (T, n_pools)
+            w_sum = weights.sum(-1, keepdims=False) + 1e-30  # (T,)
             d14C_resp_sim = (out.delta14C * weights).sum(-1) / w_sum  # (T,)
 
             obs_resp = jnp.array(observations.delta14C_resp)
@@ -151,7 +155,7 @@ def optimize(
             diff_resp = d14C_resp_sim - obs_resp_safe
             l_resp = jnp.where(
                 jnp.any(valid_resp),
-                jnp.mean(jnp.where(valid_resp, diff_resp ** 2, 0.0)),
+                jnp.mean(jnp.where(valid_resp, diff_resp**2, 0.0)),
                 0.0,
             )
 
@@ -160,7 +164,9 @@ def optimize(
         # Uses the mean modelled C12 over the full simulation window.
         l_carbon = jnp.zeros(())
         n_carbon_terms = 0
-        for pool_name, (c_obs_mean, c_obs_sigma) in (observations.C_pools_obs or {}).items():
+        for pool_name, (c_obs_mean, c_obs_sigma) in (
+            observations.C_pools_obs or {}
+        ).items():
             if pool_name not in set(model.pool_index.pool_names):
                 continue
             idx = model.pool_index[pool_name]
@@ -216,8 +222,11 @@ def optimize(
 
         if _use_lbfgs:
             updates, opt_state = tx.update(
-                grads, opt_state, vec,
-                value=loss_val, grad=grads,
+                grads,
+                opt_state,
+                vec,
+                value=loss_val,
+                grad=grads,
                 value_fn=lambda v: _loss_and_components(v)[0],
             )
         else:

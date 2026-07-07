@@ -29,17 +29,16 @@ _step_fn (scan compatibility)
   - _step_fn(state, forcing_t) returns (new_state, None).
   - Output state C12 shape is unchanged.
 """
+
 from __future__ import annotations
 
 import pathlib
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 
 from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.above_ground import _CUE
 from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import make_default_params, make_initial_state
 
@@ -84,7 +83,7 @@ def dummy_forcing(harvard_config):
     n_layers = len(harvard_config.soil_layers)
     return {
         "air_temp": jnp.array(20.0),
-        "sw_radiation": jnp.array(100.0),    # MJ m⁻² day⁻¹
+        "sw_radiation": jnp.array(100.0),  # MJ m⁻² day⁻¹
         "soil_temp": jnp.full(n_layers, 15.0),
         "soil_moisture": jnp.full(n_layers, 0.3),
         "delta14C_atm": jnp.array(0.0),
@@ -96,16 +95,12 @@ def dummy_forcing(harvard_config):
 # ---------------------------------------------------------------------------
 
 
-
 # test_mass_balance_harvard
 # ---------------------------------------------------------------------------
 
 
-
-
-
-
 _BARROW_PATH = str(CONFIGS_DIR / "barrow_alaska.yaml")
+
 
 def _sinusoidal_forcing_seq(
     n_steps: int,
@@ -130,6 +125,7 @@ def _sinusoidal_forcing_seq(
         "delta14C_atm": jnp.zeros(n_steps),
     }
 
+
 def _build_model_and_state(yaml_path: str, site_cfg: dict):
     """Load config, build model and initial state; return all four."""
     cfg = load_config(yaml_path)
@@ -138,6 +134,7 @@ def _build_model_and_state(yaml_path: str, site_cfg: dict):
     model = EcosystemModel(config=cfg, params=params, pool_index=idx)
     state = make_initial_state(cfg, site_cfg)
     return model, cfg, params, state
+
 
 def test_mass_balance_harvard():
     """
@@ -159,9 +156,12 @@ def test_mass_balance_harvard():
     dt = float(cfg.dt_days)
 
     forcing_seq = _sinusoidal_forcing_seq(
-        365, n_layers,
-        temp_mean=8.0, temp_amp=12.0,
-        sw_mean=150.0, sw_amp=100.0,
+        365,
+        n_layers,
+        temp_mean=8.0,
+        temp_amp=12.0,
+        sw_mean=150.0,
+        sw_amp=100.0,
     )
 
     def scan_body(state, forcing_t):
@@ -204,9 +204,12 @@ def test_mass_balance_barrow():
     dt = float(cfg.dt_days)
 
     forcing_seq = _sinusoidal_forcing_seq(
-        365, n_layers,
-        temp_mean=-12.0, temp_amp=20.0,
-        sw_mean=150.0, sw_amp=100.0,
+        365,
+        n_layers,
+        temp_mean=-12.0,
+        temp_amp=20.0,
+        sw_mean=150.0,
+        sw_amp=100.0,
     )
 
     # ── Mass balance scan ─────────────────────────────────────────────────
@@ -246,9 +249,9 @@ def test_mass_balance_barrow():
     # Sanity: fully thawed state gives Rh > 0 (decomposition is active)
     thawed_state = filled_state._replace(thawed_frac=jnp.ones(n_layers))
     diag_thawed = model.diagnose(thawed_state, params, winter_forcing)
-    assert float(diag_thawed["Rh"]) > 0.0, (
-        "Expected Rh > 0 with thawed_frac = 1 and non-zero C12"
-    )
+    assert (
+        float(diag_thawed["Rh"]) > 0.0
+    ), "Expected Rh > 0 with thawed_frac = 1 and non-zero C12"
 
 
 # ---------------------------------------------------------------------------
@@ -271,9 +274,12 @@ def test_no_nan_harvard():
 
     # Repeat the annual cycle 10 times
     forcing_seq = _sinusoidal_forcing_seq(
-        3650, n_layers,
-        temp_mean=8.0, temp_amp=12.0,
-        sw_mean=150.0, sw_amp=100.0,
+        3650,
+        n_layers,
+        temp_mean=8.0,
+        temp_amp=12.0,
+        sw_mean=150.0,
+        sw_amp=100.0,
     )
 
     def scan_body(state, forcing_t):
@@ -283,9 +289,7 @@ def test_no_nan_harvard():
 
     _, finite_flags = jax.lax.scan(scan_body, init_state, forcing_seq)
     n_bad = int(jnp.sum(~finite_flags))
-    assert n_bad == 0, (
-        f"C12 became non-finite at {n_bad} / 3650 timesteps"
-    )
+    assert n_bad == 0, f"C12 became non-finite at {n_bad} / 3650 timesteps"
 
 
 # ---------------------------------------------------------------------------
@@ -326,12 +330,12 @@ def test_gradient_flow():
     grads = jax.grad(loss)(params)
 
     # All key fields must have finite gradients
-    assert jnp.all(jnp.isfinite(grads.log_tau)), (
-        f"Non-finite gradient in log_tau: {grads.log_tau}"
-    )
-    assert jnp.all(jnp.isfinite(grads.log_alloc)), (
-        f"Non-finite gradient in log_alloc: {grads.log_alloc}"
-    )
+    assert jnp.all(
+        jnp.isfinite(grads.log_tau)
+    ), f"Non-finite gradient in log_tau: {grads.log_tau}"
+    assert jnp.all(
+        jnp.isfinite(grads.log_alloc)
+    ), f"Non-finite gradient in log_alloc: {grads.log_alloc}"
     assert jnp.all(jnp.isfinite(grads.log_f_transfer)), (
         f"Non-finite gradient in log_f_transfer (shape "
         f"{grads.log_f_transfer.shape})"
@@ -355,5 +359,3 @@ def test_gradient_flow():
 # ---------------------------------------------------------------------------
 # test_pool_positivity
 # ---------------------------------------------------------------------------
-
-

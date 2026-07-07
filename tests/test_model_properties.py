@@ -29,6 +29,7 @@ _step_fn (scan compatibility)
   - _step_fn(state, forcing_t) returns (new_state, None).
   - Output state C12 shape is unchanged.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -39,7 +40,6 @@ import numpy as np
 import pytest
 
 from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.above_ground import _CUE
 from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import make_default_params, make_initial_state
 
@@ -84,7 +84,7 @@ def dummy_forcing(harvard_config):
     n_layers = len(harvard_config.soil_layers)
     return {
         "air_temp": jnp.array(20.0),
-        "sw_radiation": jnp.array(100.0),    # MJ m⁻² day⁻¹
+        "sw_radiation": jnp.array(100.0),  # MJ m⁻² day⁻¹
         "soil_temp": jnp.full(n_layers, 15.0),
         "soil_moisture": jnp.full(n_layers, 0.3),
         "delta14C_atm": jnp.array(0.0),
@@ -96,16 +96,12 @@ def dummy_forcing(harvard_config):
 # ---------------------------------------------------------------------------
 
 
-
 # test_mass_balance_harvard
 # ---------------------------------------------------------------------------
 
 
-
-
-
-
 _BARROW_PATH = str(CONFIGS_DIR / "barrow_alaska.yaml")
+
 
 def _sinusoidal_forcing_seq(
     n_steps: int,
@@ -130,6 +126,7 @@ def _sinusoidal_forcing_seq(
         "delta14C_atm": jnp.zeros(n_steps),
     }
 
+
 def _build_model_and_state(yaml_path: str, site_cfg: dict):
     """Load config, build model and initial state; return all four."""
     cfg = load_config(yaml_path)
@@ -138,6 +135,7 @@ def _build_model_and_state(yaml_path: str, site_cfg: dict):
     model = EcosystemModel(config=cfg, params=params, pool_index=idx)
     state = make_initial_state(cfg, site_cfg)
     return model, cfg, params, state
+
 
 def test_pool_positivity():
     """
@@ -156,9 +154,12 @@ def test_pool_positivity():
     n_layers = len(cfg.soil_layers)
 
     forcing_seq = _sinusoidal_forcing_seq(
-        3650, n_layers,
-        temp_mean=8.0, temp_amp=12.0,
-        sw_mean=150.0, sw_amp=100.0,
+        3650,
+        n_layers,
+        temp_mean=8.0,
+        temp_amp=12.0,
+        sw_mean=150.0,
+        sw_amp=100.0,
     )
 
     def scan_body(state, forcing_t):
@@ -178,7 +179,9 @@ def test_pool_positivity():
 # external_inputs pathway
 # ---------------------------------------------------------------------------
 
-_SOIL_ONLY_PATH = str(pathlib.Path(__file__).parent.parent / "configs" / "harvard_forest_soil_only.yaml")
+_SOIL_ONLY_PATH = str(
+    pathlib.Path(__file__).parent.parent / "configs" / "harvard_forest_soil_only.yaml"
+)
 
 
 @pytest.fixture(scope="module")
@@ -189,6 +192,7 @@ def soil_only_config():
 @pytest.fixture(scope="module")
 def soil_only_model(soil_only_config):
     from ecosystem_complexity.state import make_default_params
+
     idx = PoolIndex(soil_only_config)
     params = make_default_params(soil_only_config)
     return EcosystemModel(config=soil_only_config, params=params, pool_index=idx)
@@ -197,6 +201,7 @@ def soil_only_model(soil_only_config):
 @pytest.fixture(scope="module")
 def soil_only_state(soil_only_config):
     from ecosystem_complexity.state import make_initial_state
+
     site_cfg = {"mat_c": 8.5, "permafrost": False}
     return make_initial_state(soil_only_config, site_cfg)
 
@@ -204,51 +209,7 @@ def soil_only_state(soil_only_config):
 @pytest.fixture(scope="module")
 def soil_only_params(soil_only_config):
     from ecosystem_complexity.state import make_default_params
-    return make_default_params(soil_only_config)
 
-
-def _soil_forcing(n_layers: int, gpp: float = 5.0):
-    """Forcing dict for soil-only model tests."""
-    return {
-        "air_temp": jnp.array(15.0),
-        "sw_radiation": jnp.array(100.0),
-        "soil_temp": jnp.full(n_layers, 15.0),
-        "soil_moisture": jnp.full(n_layers, 0.3),
-        "delta14C_atm": jnp.array(50.0),
-        "GPP_obs": jnp.array(gpp),
-        "NPP_obs": jnp.array(float("nan")),
-    }
-
-# ---------------------------------------------------------------------------
-# external_inputs pathway
-# ---------------------------------------------------------------------------
-
-_SOIL_ONLY_PATH = str(pathlib.Path(__file__).parent.parent / "configs" / "harvard_forest_soil_only.yaml")
-
-
-@pytest.fixture(scope="module")
-def soil_only_config():
-    return load_config(_SOIL_ONLY_PATH)
-
-
-@pytest.fixture(scope="module")
-def soil_only_model(soil_only_config):
-    from ecosystem_complexity.state import make_default_params
-    idx = PoolIndex(soil_only_config)
-    params = make_default_params(soil_only_config)
-    return EcosystemModel(config=soil_only_config, params=params, pool_index=idx)
-
-
-@pytest.fixture(scope="module")
-def soil_only_state(soil_only_config):
-    from ecosystem_complexity.state import make_initial_state
-    site_cfg = {"mat_c": 8.5, "permafrost": False}
-    return make_initial_state(soil_only_config, site_cfg)
-
-
-@pytest.fixture(scope="module")
-def soil_only_params(soil_only_config):
-    from ecosystem_complexity.state import make_default_params
     return make_default_params(soil_only_config)
 
 
@@ -276,8 +237,12 @@ def test_step_12C_with_external_inputs_pool_sum_increases(
     forcing_with_gpp = _soil_forcing(n_layers, gpp=5.0)
     forcing_no_gpp = _soil_forcing(n_layers, gpp=0.0)
 
-    state_with = soil_only_model.step_12C(soil_only_state, soil_only_params, forcing_with_gpp)
-    state_none = soil_only_model.step_12C(soil_only_state, soil_only_params, forcing_no_gpp)
+    state_with = soil_only_model.step_12C(
+        soil_only_state, soil_only_params, forcing_with_gpp
+    )
+    state_none = soil_only_model.step_12C(
+        soil_only_state, soil_only_params, forcing_no_gpp
+    )
 
     # Pool sum must be higher when GPP_obs > 0 (net input > 0)
     sum_with = float(jnp.sum(state_with.C12))
@@ -299,15 +264,20 @@ def test_step_12C_external_inputs_disabled_matches_baseline(
     """
     # Forcing with and without GPP_obs — should produce the same state
     forcing_with = dict(dummy_forcing)
-    forcing_with["GPP_obs"] = jnp.array(999.0)   # should be ignored
+    forcing_with["GPP_obs"] = jnp.array(999.0)  # should be ignored
     forcing_with["NPP_obs"] = jnp.array(float("nan"))
 
     state_base = harvard_model.step_12C(initial_state, harvard_params, dummy_forcing)
     state_extra = harvard_model.step_12C(initial_state, harvard_params, forcing_with)
 
     np.testing.assert_allclose(
-        np.array(state_base.C12), np.array(state_extra.C12), rtol=1e-6,
-        err_msg="step_12C changed when GPP_obs was added to forcing (external_inputs disabled)",
+        np.array(state_base.C12),
+        np.array(state_extra.C12),
+        rtol=1e-6,
+        err_msg=(
+            "step_12C changed when GPP_obs was added to forcing "
+            "(external_inputs disabled)"
+        ),
     )
 
 
@@ -324,10 +294,10 @@ def test_external_14C_input_uses_atmospheric_signature(
     n_layers = len(soil_only_config.soil_layers)
 
     forcing_low = _soil_forcing(n_layers, gpp=5.0)
-    forcing_low["delta14C_atm"] = jnp.array(-100.0)   # depleted 14C
+    forcing_low["delta14C_atm"] = jnp.array(-100.0)  # depleted 14C
 
     forcing_high = dict(forcing_low)
-    forcing_high["delta14C_atm"] = jnp.array(200.0)   # bomb-spike 14C
+    forcing_high["delta14C_atm"] = jnp.array(200.0)  # bomb-spike 14C
 
     # Start with zero C14 so new inputs dominate
     state0 = soil_only_state._replace(C14=jnp.zeros_like(soil_only_state.C14))
@@ -341,5 +311,3 @@ def test_external_14C_input_uses_atmospheric_signature(
         f"Higher delta14C_atm should yield more C14 in soil pools. "
         f"Got: low={sum_low:.6e}, high={sum_high:.6e}"
     )
-
-

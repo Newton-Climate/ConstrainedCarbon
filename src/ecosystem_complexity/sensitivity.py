@@ -11,17 +11,18 @@ Provides:
   - Observation extraction: _extract_scalar_obs, _build_obs_config
   - Forward model and Jacobian for Fisher analysis: _build_obs_fn, compute_jacobian
 """
+
 from __future__ import annotations
 
 import math
-from typing import Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
-from .state import ModelParams, make_default_params
 from .data.schemas import ForcingData, ObservationData
+from .state import ModelParams, make_default_params
 
 if TYPE_CHECKING:
     from .model import EcosystemModel
@@ -42,9 +43,9 @@ PARAM_GROUP_TRANSFER = "transfer_fractions"
 PARAM_GROUP_ENV = "environmental"
 
 # Default observation uncertainties used when none are supplied
-_DEFAULT_C_SIGMA_REL: float = 0.2    # 20 % relative uncertainty for C stocks
-_DEFAULT_D14C_SIGMA: float = 20.0    # 20 ‰ for pool Δ¹⁴C
-_DEFAULT_RESP_SIGMA: float = 20.0    # 20 ‰ for respired Δ¹⁴C
+_DEFAULT_C_SIGMA_REL: float = 0.2  # 20 % relative uncertainty for C stocks
+_DEFAULT_D14C_SIGMA: float = 20.0  # 20 ‰ for pool Δ¹⁴C
+_DEFAULT_RESP_SIGMA: float = 20.0  # 20 ‰ for respired Δ¹⁴C
 
 # Default prior standard deviation in log-space for unspecified parameters
 _DEFAULT_PRIOR_SIGMA: float = 1.0
@@ -68,7 +69,10 @@ def unflatten_params(
     template: ModelParams,
     fields: Sequence[str],
 ) -> ModelParams:
-    """Reconstruct ModelParams from a flat vector, filling all other fields from template."""
+    """Reconstruct ModelParams from a flat vector.
+
+    All other fields are filled from the template.
+    """
     updates: dict[str, jnp.ndarray] = {}
     offset = 0
     for f in fields:
@@ -79,7 +83,7 @@ def unflatten_params(
     return template._replace(**updates)
 
 
-def get_param_names(
+def get_param_names(  # noqa: C901
     params: ModelParams,
     fields: Sequence[str],
     model: EcosystemModel,
@@ -113,30 +117,28 @@ def get_param_names(
 
         elif f == "log_Q10":
             layer_names = [lay.name for lay in model.config.soil_layers]
-            names.extend(f"log_Q10[{l}]" for l in layer_names)
+            names.extend(f"log_Q10[{lyr}]" for lyr in layer_names)
 
         elif f == "log_theta_opt":
             layer_names = [lay.name for lay in model.config.soil_layers]
-            names.extend(f"log_theta_opt[{l}]" for l in layer_names)
+            names.extend(f"log_theta_opt[{lyr}]" for lyr in layer_names)
 
         elif f == "log_gamma_moist":
             layer_names = [lay.name for lay in model.config.soil_layers]
-            names.extend(f"log_gamma_moist[{l}]" for l in layer_names)
+            names.extend(f"log_gamma_moist[{lyr}]" for lyr in layer_names)
 
         elif f == "log_external_input_partition":
             ext = model.config.external_inputs
             if ext is not None and ext.enabled:
-                names.extend(
-                    f"log_ext_partition[{p}]" for p in ext.target_pool_names
-                )
+                names.extend(f"log_ext_partition[{p}]" for p in ext.target_pool_names)
             else:
                 pass  # empty array — no names to add
 
         elif f == "alpha_priming":
             n_mic = int(math.prod(shape))
             layer_names = [lay.name for lay in model.config.soil_layers]
-            mic_layers = layer_names[: n_mic]
-            names.extend(f"alpha_priming[{l}]" for l in mic_layers)
+            mic_layers = layer_names[:n_mic]
+            names.extend(f"alpha_priming[{lyr}]" for lyr in mic_layers)
 
         else:
             # Generic fallback: scalar or unknown shape
@@ -272,7 +274,7 @@ def _extract_scalar_obs(
     return float(np.nanmean(arr)), float("nan")
 
 
-def _build_obs_config(
+def _build_obs_config(  # noqa: C901
     observations: ObservationData,
     model: EcosystemModel,
     obs_sigma_C: float = _DEFAULT_C_SIGMA_REL,

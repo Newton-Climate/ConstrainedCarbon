@@ -3,6 +3,7 @@ Tests for src/ecosystem_complexity/soil.py.
 
 Coverage: decomp_flux, het_respiration, nee
 """
+
 from __future__ import annotations
 
 import math

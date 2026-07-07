@@ -3,13 +3,13 @@ Tests for src/ecosystem_complexity/climate.py.
 
 Coverage: f_temp, f_moisture, thawed_frac
 """
+
 from __future__ import annotations
 
 import math
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 
 from ecosystem_complexity.climate import (

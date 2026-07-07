@@ -10,10 +10,10 @@ from ecosystem_complexity.api import build_model
 from ecosystem_complexity.data.israd_observations import (
     FractionMappingRule,
     add_layer_midpoint,
-    summarize_by_depth,
-    obs_dict_from_single_year_summary,
-    obs_blocks_from_single_year_summary,
     build_fraction_obs_blocks,
+    obs_blocks_from_single_year_summary,
+    obs_dict_from_single_year_summary,
+    summarize_by_depth,
 )
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
@@ -26,11 +26,13 @@ def hf_3pool_model():
 
 
 def test_summarize_by_depth():
-    df = pd.DataFrame({
-        "lyr_top": [-10, 0, 20, 25],
-        "lyr_bot": [0, 20, 40, 45],
-        "lyr_14c": [50.0, -10.0, -200.0, -240.0],
-    })
+    df = pd.DataFrame(
+        {
+            "lyr_top": [-10, 0, 20, 25],
+            "lyr_bot": [0, 20, 40, 45],
+            "lyr_14c": [50.0, -10.0, -200.0, -240.0],
+        }
+    )
     df = add_layer_midpoint(df)
     summary = summarize_by_depth(
         df,
@@ -60,18 +62,29 @@ def test_obs_dict_and_blocks_from_single_year_summary(hf_3pool_model):
     blocks = obs_blocks_from_single_year_summary(
         summary, hf_3pool_model.pool_index, forcing_time, 1970.0
     )
-    assert [block.name for block in blocks] == ["israd_layer_soil_active", "israd_layer_soil_slow"]
+    assert [block.name for block in blocks] == [
+        "israd_layer_soil_active",
+        "israd_layer_soil_slow",
+    ]
 
 
 def test_build_fraction_obs_blocks_weighted_and_depth_filtered(hf_3pool_model):
-    df = pd.DataFrame({
-        "entry_name": ["A", "A", "B", "B", "C"],
-        "frc_property": ["free light", "free light", "heavy", "heavy", "free light"],
-        "frc_14c": [100.0, 0.0, -200.0, -100.0, 999.0],
-        "frc_mass_perc": [3.0, 1.0, 1.0, 1.0, 1.0],
-        "lyr_top": [0.0, 0.0, 0.0, 0.0, 20.0],
-        "lyr_bot": [5.0, 5.0, 40.0, 40.0, 25.0],
-    })
+    df = pd.DataFrame(
+        {
+            "entry_name": ["A", "A", "B", "B", "C"],
+            "frc_property": [
+                "free light",
+                "free light",
+                "heavy",
+                "heavy",
+                "free light",
+            ],
+            "frc_14c": [100.0, 0.0, -200.0, -100.0, 999.0],
+            "frc_mass_perc": [3.0, 1.0, 1.0, 1.0, 1.0],
+            "lyr_top": [0.0, 0.0, 0.0, 0.0, 20.0],
+            "lyr_bot": [5.0, 5.0, 40.0, 40.0, 25.0],
+        }
+    )
     df = add_layer_midpoint(df)
     rows = build_fraction_obs_blocks(
         df,

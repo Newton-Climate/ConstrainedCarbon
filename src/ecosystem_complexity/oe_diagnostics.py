@@ -8,12 +8,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ._oe_helpers import _analytical_c12_ss, _build_obs_blocks, _build_sa_diag
 from .api import run_model
-from .optimizer import params_to_vector, vector_to_params
-from .state import make_default_params
-from ._oe_helpers import _build_obs_blocks, _build_sa_diag, _analytical_c12_ss
 from .oe_utils import build_mean_ss_modifier
+from .optimizer import params_to_vector, vector_to_params
 from .sensitivity import OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C
+from .state import make_default_params
 
 _BLOCK_TO_OBSTYPE = {
     "pool_14C": OBS_POOL_D14C,
@@ -33,7 +33,11 @@ def classify_block(block_name: str) -> str:
 
 
 def oe_style_ablation(
-    model, forcing, state0, params_opt, observations,
+    model,
+    forcing,
+    state0,
+    params_opt,
+    observations,
     opt_fields: tuple,
     extra_obs_blocks: list | None = None,
 ) -> dict:
@@ -44,8 +48,13 @@ def oe_style_ablation(
     sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
 
     obs_blocks = _build_obs_blocks(
-        observations, model, sigma_pool, sigma_resp, sigma_carbon,
-        f_hetero=0.0, sigma_er_frac=0.15,
+        observations,
+        model,
+        sigma_pool,
+        sigma_resp,
+        sigma_carbon,
+        f_hetero=0.0,
+        sigma_er_frac=0.15,
     )
     if extra_obs_blocks:
         obs_blocks = obs_blocks + list(extra_obs_blocks)
@@ -84,7 +93,7 @@ def oe_style_ablation(
         row_mask = np.zeros(k.shape[0], dtype=bool)
         for i, obs_type in enumerate(obs_type_per_block):
             if obs_type in active_types:
-                row_mask[block_starts[i]:block_starts[i + 1]] = True
+                row_mask[block_starts[i] : block_starts[i + 1]] = True
         if not row_mask.any():
             return 0.0, 0, np.zeros(k.shape[1])
         k_sub = k[row_mask, :]
@@ -100,7 +109,10 @@ def oe_style_ablation(
         ("pool_delta14C", [OBS_POOL_D14C]),
         ("resp_delta14C", [OBS_RESP_D14C]),
         ("C_stocks+pool_delta14C", [OBS_C_STOCKS, OBS_POOL_D14C]),
-        ("C_stocks+pool_delta14C+resp_delta14C", [OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C]),
+        (
+            "C_stocks+pool_delta14C+resp_delta14C",
+            [OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C],
+        ),
     ]
     return {
         label: {"dfs_total": dfs, "n_obs": n_obs, "dfs_per_param": dfs_diag}
@@ -110,7 +122,11 @@ def oe_style_ablation(
 
 
 def oe_constraint_ladder(
-    model, forcing, state0, params_opt, observations,
+    model,
+    forcing,
+    state0,
+    params_opt,
+    observations,
     opt_fields: tuple,
     extra_obs_blocks: list | None = None,
 ) -> list[dict]:
@@ -121,8 +137,13 @@ def oe_constraint_ladder(
     sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
 
     obs_blocks = _build_obs_blocks(
-        observations, model, sigma_pool, sigma_resp, sigma_carbon,
-        f_hetero=0.0, sigma_er_frac=0.15,
+        observations,
+        model,
+        sigma_pool,
+        sigma_resp,
+        sigma_carbon,
+        f_hetero=0.0,
+        sigma_er_frac=0.15,
     )
     if extra_obs_blocks:
         obs_blocks = obs_blocks + list(extra_obs_blocks)
@@ -167,11 +188,13 @@ def oe_constraint_ladder(
         h = ktsek + np.diag(sa_inv)
         sx = np.linalg.inv(h)
         a = sx @ ktsek
-        results.append({
-            "label": block.name,
-            "obs_type": obs_type,
-            "n_obs": int(block.y.shape[0]),
-            "dfs": float(np.trace(a)),
-            "dfs_per_param": np.diag(a),
-        })
+        results.append(
+            {
+                "label": block.name,
+                "obs_type": obs_type,
+                "n_obs": int(block.y.shape[0]),
+                "dfs": float(np.trace(a)),
+                "dfs_per_param": np.diag(a),
+            }
+        )
     return results

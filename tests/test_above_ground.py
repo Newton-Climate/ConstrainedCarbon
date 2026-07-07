@@ -3,6 +3,7 @@ Tests for src/ecosystem_complexity/above_ground.py.
 
 Coverage: npp_allocation, compute_external_soil_inputs
 """
+
 from __future__ import annotations
 
 import math
@@ -54,9 +55,7 @@ def test_npp_allocation_uses_only_n_ag_pools():
     gpp = jnp.array(10.0)
     result_long = npp_allocation(gpp, 0.5, log_alloc_long, 3)
     result_short = npp_allocation(gpp, 0.5, log_alloc_short, 3)
-    np.testing.assert_allclose(
-        np.array(result_long), np.array(result_short), rtol=1e-6
-    )
+    np.testing.assert_allclose(np.array(result_long), np.array(result_short), rtol=1e-6)
 
 
 # ---------------------------------------------------------------------------
@@ -68,7 +67,7 @@ def _make_ext_inputs(n_pools: int = 6, n_targets: int = 2):
     """Return a consistent set of inputs for compute_external_soil_inputs tests."""
     target_indices = jnp.array([2, 4], dtype=jnp.int32)[:n_targets]
     log_CUE = jnp.array(math.log(0.5))
-    log_soil_frac = jnp.array(math.log(0.6 / 0.4))   # sigmoid → 0.6
+    log_soil_frac = jnp.array(math.log(0.6 / 0.4))  # sigmoid → 0.6
     log_partition = jnp.array([math.log(0.7), math.log(0.3)])[:n_targets]
     return log_CUE, log_soil_frac, log_partition, target_indices, n_pools
 
@@ -89,14 +88,17 @@ def test_compute_external_soil_inputs_mass_conservation():
     )
 
     import jax.nn as jnn
-    expected_total = float(GPP) * math.exp(float(log_CUE)) * float(jnn.sigmoid(log_soil_frac))
+
+    expected_total = (
+        float(GPP) * math.exp(float(log_CUE)) * float(jnn.sigmoid(log_soil_frac))
+    )
     assert float(result.sum()) == pytest.approx(expected_total, rel=1e-5)
 
 
 def test_compute_external_soil_inputs_disabled_returns_zeros():
     """With soil_input_fraction ≈ 0 (logit → −∞), result is essentially zero."""
     log_CUE = jnp.array(math.log(0.5))
-    log_soil_frac = jnp.array(-1e6)   # sigmoid(−1e6) ≈ 0
+    log_soil_frac = jnp.array(-1e6)  # sigmoid(−1e6) ≈ 0
     log_partition = jnp.array([0.0, 0.0])
     target_indices = jnp.array([1, 3], dtype=jnp.int32)
 
@@ -117,7 +119,7 @@ def test_compute_external_soil_inputs_disabled_returns_zeros():
 def test_compute_external_soil_inputs_partition_sums_to_total():
     """Individual pool inputs sum exactly to the expected soil_input_total."""
     log_CUE = jnp.array(math.log(0.4))
-    log_soil_frac = jnp.array(0.0)    # sigmoid(0) = 0.5
+    log_soil_frac = jnp.array(0.0)  # sigmoid(0) = 0.5
     log_partition = jnp.log(jnp.array([0.3, 0.5, 0.2]))
     target_indices = jnp.array([0, 2, 4], dtype=jnp.int32)
     n_pools = 6

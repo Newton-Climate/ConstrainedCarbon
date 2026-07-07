@@ -47,16 +47,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Optional, Sequence
+from typing import Sequence
 
-import jax
-import jax.numpy as jnp
 import numpy as np
 
-from .config import ModelConfig, PoolIndex
-from .model import EcosystemModel
-from .state import ModelParams, make_default_params
 from .data.schemas import ForcingData, ObservationData
+from .model import EcosystemModel
+from .state import ModelParams
 
 # ── Result dataclasses ─────────────────────────────────────────────────────────
 
@@ -158,28 +155,30 @@ class PosteriorResult:
     param_names: list[str] | None = None
 
 
-
-from .sensitivity import (
+# Re-export sensitivity's public constants/helpers into this namespace so that
+# `ecosystem_complexity.information` remains the stable import surface for tests
+# and notebooks.  Placed after the dataclasses to avoid a circular import.
+from .sensitivity import (  # noqa: E402,F401
+    _DEFAULT_C_SIGMA_REL,
+    _DEFAULT_D14C_SIGMA,
+    _DEFAULT_PRIOR_SIGMA,
+    _DEFAULT_RESP_SIGMA,
+    ALL_OBS_TYPES,
     OBS_C_STOCKS,
     OBS_POOL_D14C,
     OBS_RESP_D14C,
-    ALL_OBS_TYPES,
-    PARAM_GROUP_TAU,
-    PARAM_GROUP_PARTITION,
-    PARAM_GROUP_TRANSFER,
     PARAM_GROUP_ENV,
-    _DEFAULT_C_SIGMA_REL,
-    _DEFAULT_D14C_SIGMA,
-    _DEFAULT_RESP_SIGMA,
-    _DEFAULT_PRIOR_SIGMA,
-    flatten_params,
-    unflatten_params,
-    get_param_names,
-    get_param_groups,
-    make_prior_covariance,
+    PARAM_GROUP_PARTITION,
+    PARAM_GROUP_TAU,
+    PARAM_GROUP_TRANSFER,
     _build_obs_config,
     _build_obs_fn,
     compute_jacobian,
+    flatten_params,
+    get_param_groups,
+    get_param_names,
+    make_prior_covariance,
+    unflatten_params,
 )
 
 # ── Core information functions ─────────────────────────────────────────────────
@@ -190,7 +189,7 @@ def _fim_from_jacobian(
     obs_sigma: np.ndarray,
 ) -> np.ndarray:
     """Compute FIM = Hᵀ diag(1/σ²) H from Jacobian H (n_obs, n_params)."""
-    S_inv = 1.0 / (obs_sigma ** 2 + 1e-300)
+    S_inv = 1.0 / (obs_sigma**2 + 1e-300)
     return (H * S_inv[:, None]).T @ H
 
 
@@ -250,7 +249,8 @@ def compute_fisher(
         fields = _default_fields(model)
 
     obs_config = _build_obs_config(
-        observations, model,
+        observations,
+        model,
         obs_sigma_C=obs_sigma_C,
         obs_sigma_d14C=obs_sigma_d14C,
         obs_sigma_resp=obs_sigma_resp,
@@ -260,9 +260,7 @@ def compute_fisher(
         obs_config = {k: v for k, v in obs_config.items() if k in active_obs_types}
 
     if not obs_config:
-        n_params = sum(
-            int(math.prod(getattr(params, f).shape)) for f in fields
-        )
+        n_params = sum(int(math.prod(getattr(params, f).shape)) for f in fields)
         empty_fim = np.zeros((n_params, n_params))
         return FisherResult(
             FIM_total=empty_fim,
@@ -328,8 +326,7 @@ def compute_dof(
     -------
     DofResult
     """
-    C_prior = np.diag(prior_sigma ** 2)
-    C_prior_inv = np.diag(1.0 / (prior_sigma ** 2 + 1e-300))
+    C_prior_inv = np.diag(1.0 / (prior_sigma**2 + 1e-300))
 
     C_post = _invert_posterior(fisher.FIM_total, C_prior_inv)
     A = C_post @ fisher.FIM_total  # averaging kernel
@@ -380,7 +377,7 @@ def compute_posterior(
     -------
     PosteriorResult
     """
-    C_prior_inv = np.diag(1.0 / (prior_sigma ** 2 + 1e-300))
+    C_prior_inv = np.diag(1.0 / (prior_sigma**2 + 1e-300))
 
     C_post = _invert_posterior(fisher.FIM_total, C_prior_inv)
     post_sigma = np.sqrt(np.diag(C_post))
@@ -448,7 +445,11 @@ def analyze_information_content(
         fields = _default_fields(model)
 
     fisher = compute_fisher(
-        model, forcing, state0, params, observations,
+        model,
+        forcing,
+        state0,
+        params,
+        observations,
         fields=fields,
         obs_sigma_C=obs_sigma_C,
         obs_sigma_d14C=obs_sigma_d14C,

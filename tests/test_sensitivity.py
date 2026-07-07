@@ -44,38 +44,22 @@ import numpy as np
 import pytest
 
 from ecosystem_complexity.api import build_model, run_model
-from ecosystem_complexity.config import load_config, PoolIndex
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 from ecosystem_complexity.information import (
-    FisherResult,
-    DofResult,
-    PosteriorResult,
-    compute_fisher,
-    compute_dof,
-    compute_posterior,
-    analyze_information_content,
     _default_fields,
 )
 from ecosystem_complexity.sensitivity import (
     OBS_C_STOCKS,
     OBS_POOL_D14C,
     OBS_RESP_D14C,
-    ALL_OBS_TYPES,
-    flatten_params,
-    unflatten_params,
-    get_param_names,
-    get_param_groups,
-    make_prior_covariance,
     _build_obs_config,
     _build_obs_fn,
+    flatten_params,
+    get_param_groups,
+    get_param_names,
+    make_prior_covariance,
+    unflatten_params,
 )
-from ecosystem_complexity.analysis import (
-    run_ablation_study,
-    param_group_dfs,
-    compute_age_diagnostics,
-    age_diagnostics_summary,
-)
-from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
@@ -144,7 +128,7 @@ def _make_obs(pool_names: list[str]) -> ObservationData:
     c_pools = {}
     d14C_pools = {}
     for i, p in enumerate(soil_pools[:2]):
-        c_pools[p] = (500.0 + i * 100, 100.0)        # (value gC m-2, sigma)
+        c_pools[p] = (500.0 + i * 100, 100.0)  # (value gC m-2, sigma)
         d14C_pools[p] = (-50.0 + i * 10, 15.0, 2000)  # (value ‰, sigma ‰, year)
 
     resp_arr = jnp.full(n, -30.0)  # synthetic respired Δ¹⁴C
@@ -170,7 +154,6 @@ def hf_obs(hf_pool_names):
 # ── flatten / unflatten ────────────────────────────────────────────────────────
 
 
-
 def test_flatten_unflatten_roundtrip(hf_params, hf_model):
     """flatten then unflatten recovers the original parameter values exactly."""
     fields = _default_fields(hf_model)
@@ -180,17 +163,16 @@ def test_flatten_unflatten_roundtrip(hf_params, hf_model):
     for f in fields:
         orig = np.array(getattr(hf_params, f))
         rec = np.array(getattr(recovered, f))
-        np.testing.assert_allclose(orig, rec, atol=1e-6,
-                                   err_msg=f"Round-trip mismatch for field '{f}'")
+        np.testing.assert_allclose(
+            orig, rec, atol=1e-6, err_msg=f"Round-trip mismatch for field '{f}'"
+        )
 
 
 def test_flatten_length(hf_params, hf_model):
     """Flat vector length equals sum of field sizes."""
     fields = _default_fields(hf_model)
     flat = flatten_params(hf_params, fields)
-    expected = sum(
-        int(math.prod(getattr(hf_params, f).shape)) for f in fields
-    )
+    expected = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
     assert flat.shape == (expected,)
 
 
@@ -262,9 +244,9 @@ def test_prior_covariance_tau_from_yaml(hf_model, hf_params):
     pool_names = hf_model.pool_index.pool_names
     idx_litter = pool_names.index("organic_litter")
     # tau_prior_std=60 != 1.0 (default), so sigma at that index should differ
-    assert sigma[idx_litter] != 1.0, (
-        "organic_litter tau sigma should come from YAML (60 days), not default"
-    )
+    assert (
+        sigma[idx_litter] != 1.0
+    ), "organic_litter tau sigma should come from YAML (60 days), not default"
 
 
 # ── _build_obs_config ──────────────────────────────────────────────────────────
@@ -329,13 +311,12 @@ def test_obs_fn_differentiable(hf_model, short_forcing, hf_state0, hf_params, hf
     # Restrict to C stocks only for fastest test
     obs_config_small = {OBS_C_STOCKS: obs_config[OBS_C_STOCKS]}
     warm_state = hf_state0._replace(C12=jnp.full_like(hf_state0.C12, 100.0))
-    obs_fn = _build_obs_fn(hf_model, short_forcing, warm_state, fields, obs_config_small)
+    obs_fn = _build_obs_fn(
+        hf_model, short_forcing, warm_state, fields, obs_config_small
+    )
 
     flat0 = jnp.array(flatten_params(hf_params, fields))
 
     # Sum output to get a scalar for grad
     grads = jax.grad(lambda p: obs_fn(p).sum())(flat0)
     assert jnp.all(jnp.isfinite(grads)), f"Non-finite grads: {grads}"
-
-
-

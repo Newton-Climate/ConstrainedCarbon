@@ -21,6 +21,7 @@ Coverage
     - jax.tree.map(lambda x: x * 2, state) works without error or registration.
     - jax.tree.map(lambda x: x * 2, params) works without error.
 """
+
 from __future__ import annotations
 
 import math
@@ -91,9 +92,9 @@ def harvard_params(harvard_config):
 
 def test_initial_state_c12_shape(harvard_config, harvard_state):
     n_pools = len(PoolIndex(harvard_config))
-    assert harvard_state.C12.shape == (n_pools,), (
-        f"Expected C12 shape ({n_pools},), got {harvard_state.C12.shape}"
-    )
+    assert harvard_state.C12.shape == (
+        n_pools,
+    ), f"Expected C12 shape ({n_pools},), got {harvard_state.C12.shape}"
 
 
 def test_initial_state_c14_shape(harvard_config, harvard_state):
@@ -176,26 +177,26 @@ def test_active_layer_depth_permafrost_is_finite(barrow_state):
 
 def test_log_tau_length_equals_n_total_pools(harvard_config, harvard_params):
     n_pools = len(PoolIndex(harvard_config))
-    assert harvard_params.log_tau.shape == (n_pools,), (
-        f"log_tau shape {harvard_params.log_tau.shape} != ({n_pools},)"
-    )
+    assert harvard_params.log_tau.shape == (
+        n_pools,
+    ), f"log_tau shape {harvard_params.log_tau.shape} != ({n_pools},)"
 
 
 def test_log_f_transfer_shape(harvard_config, harvard_params):
     n_pools = len(PoolIndex(harvard_config))
     expected = (n_pools, n_pools + 1)
-    assert harvard_params.log_f_transfer.shape == expected, (
-        f"log_f_transfer shape {harvard_params.log_f_transfer.shape} != {expected}"
-    )
+    assert (
+        harvard_params.log_f_transfer.shape == expected
+    ), f"log_f_transfer shape {harvard_params.log_f_transfer.shape} != {expected}"
 
 
 def test_log_f_transfer_rows_sum_to_one(harvard_params):
     """softmax(log_f_transfer) rows must be valid probability vectors."""
     f = jax.nn.softmax(harvard_params.log_f_transfer, axis=-1)
     row_sums = f.sum(axis=-1)
-    assert jnp.allclose(row_sums, 1.0, atol=1e-5), (
-        f"Transfer matrix rows do not sum to 1: {row_sums}"
-    )
+    assert jnp.allclose(
+        row_sums, 1.0, atol=1e-5
+    ), f"Transfer matrix rows do not sum to 1: {row_sums}"
 
 
 def test_log_alloc_sums_to_one(harvard_params):
@@ -231,7 +232,7 @@ def test_lambda14c_value(harvard_params):
 
     The spec quotes 3.317e-7 (a slight rounding); we accept ±1 % tolerance.
     """
-    expected = math.log(2.0) / (5730.0 * 365.25)   # 3.312e-7
+    expected = math.log(2.0) / (5730.0 * 365.25)  # 3.312e-7
     assert float(harvard_params.lambda_14C) == pytest.approx(expected, rel=1e-4)
 
 
@@ -297,9 +298,9 @@ def test_harvard_log_tau_shape_explicit(harvard_params) -> None:
     This cross-module test confirms that make_default_params allocates
     one turnover-time parameter per pool as counted from the YAML structure.
     """
-    assert harvard_params.log_tau.shape == (10,), (
-        f"Expected log_tau shape (10,), got {harvard_params.log_tau.shape}"
-    )
+    assert harvard_params.log_tau.shape == (
+        10,
+    ), f"Expected log_tau shape (10,), got {harvard_params.log_tau.shape}"
 
 
 def test_barrow_log_tau_shape_explicit(barrow_params) -> None:
@@ -309,9 +310,9 @@ def test_barrow_log_tau_shape_explicit(barrow_params) -> None:
     This cross-module test confirms that make_default_params allocates
     one turnover-time parameter per pool as counted from the YAML structure.
     """
-    assert barrow_params.log_tau.shape == (8,), (
-        f"Expected log_tau shape (8,), got {barrow_params.log_tau.shape}"
-    )
+    assert barrow_params.log_tau.shape == (
+        8,
+    ), f"Expected log_tau shape (8,), got {barrow_params.log_tau.shape}"
 
 
 def test_log_tau_finite_and_positive(harvard_params) -> None:
@@ -321,9 +322,7 @@ def test_log_tau_finite_and_positive(harvard_params) -> None:
     Sign convention: log_tau = log(τ_days).  All τ_prior_days in the
     Harvard config are ≥ 180 days, so log(τ) > log(1) = 0 → log_tau > 0.
     """
-    assert jnp.all(jnp.isfinite(harvard_params.log_tau)), (
-        "log_tau contains NaN or inf"
-    )
+    assert jnp.all(jnp.isfinite(harvard_params.log_tau)), "log_tau contains NaN or inf"
     assert jnp.all(harvard_params.log_tau > 0.0), (
         f"Expected all log_tau > 0 (τ > 1 day), "
         f"got min={float(harvard_params.log_tau.min()):.4f}"
@@ -344,9 +343,7 @@ def test_barrow_log_tau_finite_and_positive(barrow_params) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_barrow_permafrost_layer_thawed_frac_zero(
-    barrow_config, barrow_state
-) -> None:
+def test_barrow_permafrost_layer_thawed_frac_zero(barrow_config, barrow_state) -> None:
     """
     The 'permafrost' soil layer (permafrost_eligible=True) starts fully
     frozen: thawed_frac == 0.0 at initialisation.
@@ -376,7 +373,7 @@ def test_barrow_active_layer_depth_value(barrow_config, barrow_state) -> None:
         None,
     )
     assert first_pf is not None, "Barrow config has no permafrost-eligible layer"
-    expected_ald = first_pf.depth_top_m   # 0.10 m (top of 'active' layer)
+    expected_ald = first_pf.depth_top_m  # 0.10 m (top of 'active' layer)
     assert float(barrow_state.active_layer_depth) == pytest.approx(
         expected_ald, abs=1e-6
     ), (

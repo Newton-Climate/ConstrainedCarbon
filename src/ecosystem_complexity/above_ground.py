@@ -10,6 +10,7 @@ _gpp                        — light-use-efficiency GPP estimate
 npp_allocation              — partition NPP across aboveground pools
 compute_external_soil_inputs — direct soil inputs from prescribed GPP/NPP
 """
+
 from __future__ import annotations
 
 import jax
@@ -20,10 +21,10 @@ import jax.numpy as jnp
 # Model-level constants (placeholder light-use efficiency model)
 # ---------------------------------------------------------------------------
 
-_LUE: float = 0.002   # light-use efficiency (gC MJ⁻¹, placeholder)
-_K_EXT: float = 0.5   # Beer–Lambert extinction coefficient (dimensionless)
-_LAI: float = 5.0     # leaf area index (m² m⁻², placeholder)
-_CUE: float = 0.5     # carbon use efficiency (NPP / GPP)
+_LUE: float = 0.002  # light-use efficiency (gC MJ⁻¹, placeholder)
+_K_EXT: float = 0.5  # Beer–Lambert extinction coefficient (dimensionless)
+_LAI: float = 5.0  # leaf area index (m² m⁻², placeholder)
+_CUE: float = 0.5  # carbon use efficiency (NPP / GPP)
 
 
 def _gpp(sw_radiation: jnp.ndarray) -> jnp.ndarray:
@@ -94,9 +95,11 @@ def compute_external_soil_inputs(
 
     .. math::
 
-        \\text{soil\\_input\\_total} = NPP \\cdot \\sigma(\\text{log\\_soil\\_input\\_fraction})
+        \\text{soil\\_input\\_total} =
+            NPP \\cdot \\sigma(\\text{log\\_soil\\_input\\_fraction})
 
-        \\text{partition} = \\mathrm{softmax}(\\text{log\\_external\\_input\\_partition})
+        \\text{partition} =
+            \\mathrm{softmax}(\\text{log\\_external\\_input\\_partition})
 
         \\text{inputs}[\\text{target\\_pool\\_indices}] =
             \\text{soil\\_input\\_total} \\times \\text{partition}

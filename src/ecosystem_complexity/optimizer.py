@@ -40,7 +40,9 @@ def get_opt_fields(config: ModelConfig) -> tuple[str, ...]:
     return tuple(fields)
 
 
-def get_oe_fields(config: ModelConfig, inv_cfg: Optional[dict] = None) -> tuple[str, ...]:
+def get_oe_fields(
+    config: ModelConfig, inv_cfg: Optional[dict] = None
+) -> tuple[str, ...]:
     """Fields for the OE Levenberg-Marquardt inversion."""
     fields = list(_OE_CORE_FIELDS)
     inv = inv_cfg or {}
@@ -55,9 +57,7 @@ def get_oe_fields(config: ModelConfig, inv_cfg: Optional[dict] = None) -> tuple[
     return tuple(fields)
 
 
-def params_to_vector(
-    params: ModelParams, opt_fields: tuple[str, ...]
-) -> jnp.ndarray:
+def params_to_vector(params: ModelParams, opt_fields: tuple[str, ...]) -> jnp.ndarray:
     """Flatten optimised parameter fields into a 1-D vector."""
     parts = [jnp.ravel(getattr(params, f)) for f in opt_fields]
     return jnp.concatenate(parts) if parts else jnp.zeros((0,), dtype=jnp.float32)
@@ -72,7 +72,7 @@ def vector_to_params(
     for f in opt_fields:
         val = getattr(template, f)
         size = int(math.prod(val.shape))
-        updates[f] = vec[offset:offset + size].reshape(val.shape)
+        updates[f] = vec[offset : offset + size].reshape(val.shape)
         offset += size
     return template._replace(**updates)
 
