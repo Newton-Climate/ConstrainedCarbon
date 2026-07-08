@@ -50,6 +50,10 @@ from ecosystem_complexity.config import load_config
 from ecosystem_complexity.data.parsers import attach_atm14C, load_harvard_forest, slice_forcing
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
+from ecosystem_complexity.data.israd_observations import (
+    FractionMappingRule,
+    build_fraction_obs_blocks,
+)
 from ecosystem_complexity.state import make_default_params
 from ecosystem_complexity.analysis import compute_age_diagnostics, compute_resp_delta14C
 
@@ -163,85 +167,39 @@ def build_israd_14C_obs(israd_frac_path: str, forcing_time, pool_index) -> list:
         print(f"  ISRaD frac file not found: {israd_frac_path} — skipping")
         return []
 
-    from collections import defaultdict
-
     df = pd.read_csv(israd_frac_path, low_memory=False)
     df = df[
         df["site_name"].str.contains("Harvard", na=False) &
         (df["frc_scheme"] == "density")
     ]
 
-    _FRAC_TO_POOL = {
-        "free light":     "soil_active",
-        "occluded light": "soil_slow",
-        "heavy":          "soil_passive",
-    }
     _ENTRY_YEAR = {
         "Gaudinski_2000": 1996,
         "Savage_unpub":   2007,
         "McFarlane_2013": 2011,
     }
     _EXCLUDE = {("soil_passive", 2011)}
-
-    pool_names_set = set(pool_index.pool_names)
-    time_np  = np.array(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
-
-    records: dict = defaultdict(list)
-    for _, row in df.iterrows():
-        entry = str(row.get("entry_name", "")).strip()
-        yr    = _ENTRY_YEAR.get(entry)
-        if yr is None:
-            continue
-        frac  = str(row.get("frc_property", "")).strip().lower()
-        pool  = _FRAC_TO_POOL.get(frac)
-        if pool is None or pool not in pool_names_set:
-            continue
-        d14c_raw = row.get("frc_14c", np.nan)
-        if d14c_raw is None or (isinstance(d14c_raw, float) and np.isnan(d14c_raw)):
-            continue
-        d14c = float(d14c_raw)
-        if not np.isfinite(d14c):
-            continue
-        mass_pct_raw = row.get("frc_mass_perc", np.nan)
-        try:
-            mass_f = float(mass_pct_raw)
-            w = mass_f if np.isfinite(mass_f) and mass_f > 0 else 1.0
-        except (TypeError, ValueError):
-            w = 1.0
-        records[(pool, yr)].append((d14c, w))
-
+    rows = build_fraction_obs_blocks(
+        df,
+        forcing_time,
+        pool_index,
+        rules=[
+            FractionMappingRule("soil_active", "free light"),
+            FractionMappingRule("soil_slow", "occluded light"),
+            FractionMappingRule("soil_passive", "heavy"),
+        ],
+        entry_to_year=_ENTRY_YEAR,
+        exclude_pool_years=_EXCLUDE,
+        weight_col="frc_mass_perc",
+        name_prefix="israd",
+    )
     blocks = []
-    for (pool, yr), pts in sorted(records.items()):
-        if (pool, yr) in _EXCLUDE:
-            print(f"  ISRaD obs: {pool:<14} yr={yr}  EXCLUDED (density-cutoff inconsistency)")
-            continue
-        vals = np.array([v for v, _ in pts])
-        wts  = np.array([w for _, w in pts])
-        wts  = wts / wts.sum()
-        d14c_mean = float(np.dot(wts, vals))
-        n = len(vals)
-        if n > 1:
-            var_w  = float(np.dot(wts, (vals - d14c_mean) ** 2))
-            n_eff  = 1.0 / float(np.dot(wts, wts))
-            sigma_mean = float(np.sqrt(var_w / max(n_eff, 1.0)))
-        else:
-            sigma_mean = 50.0
-        sigma_mean = max(sigma_mean, 15.0)
-
-        t_idx    = int(np.argmin(np.abs(years_np - (float(yr) + 0.6))))
-        pool_col = pool_index[pool]
-        _t   = jnp.array([t_idx],    dtype=jnp.int32)
-        _col = jnp.array([pool_col], dtype=jnp.int32)
-        _y   = jnp.array([d14c_mean], dtype=jnp.float32)
-        _se  = jnp.array([sigma_mean ** 2], dtype=jnp.float32)
-        blocks.append(ObsBlock(
-            name=f"israd_{pool}_{yr}",
-            y=_y, Se=_se,
-            predict=lambda out, p, t=_t, col=_col: out.delta14C[t, col],
-        ))
-        print(f"  ISRaD obs: {pool:<14} yr={yr}  Δ¹⁴C={d14c_mean:+.1f}‰  "
-              f"σ={sigma_mean:.1f}‰  n={n}")
+    for row in rows:
+        print(
+            f"  ISRaD obs: {row['pool_name']:<14} yr={row['obs_year']}  "
+            f"Δ¹⁴C={row['mean']:+.1f}‰  σ={row['sigma']:.1f}‰  n={row['n']}"
+        )
+        blocks.append(row["block"])
     return blocks
 
 
@@ -634,7 +592,7 @@ def run_optimal_inversion() -> dict:
 def make_figure(r: dict, out_path: str | None = None):
     """Save the 8-panel OE comparison figure for Harvard Forest."""
     if out_path is None:
-        out_path = _wt("notebooks/harvard_optimal_model.png")
+        out_path = _wt("notebooks/harvard_forest_three_pool_oe_summary.png")
     make_oe5_figure(
         r=r,
         site_title="Harvard Forest — 3-Pool Optimal Model  (active + slow + passive)",

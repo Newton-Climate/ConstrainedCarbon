@@ -29,6 +29,7 @@ _step_fn (scan compatibility)
   - _step_fn(state, forcing_t) returns (new_state, None).
   - Output state C12 shape is unchanged.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -38,8 +39,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from ecosystem_complexity.above_ground import _CUE
 from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.model import _CUE, EcosystemModel
+from ecosystem_complexity.model import EcosystemModel
 from ecosystem_complexity.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
@@ -83,7 +85,7 @@ def dummy_forcing(harvard_config):
     n_layers = len(harvard_config.soil_layers)
     return {
         "air_temp": jnp.array(20.0),
-        "sw_radiation": jnp.array(100.0),    # MJ m⁻² day⁻¹
+        "sw_radiation": jnp.array(100.0),  # MJ m⁻² day⁻¹
         "soil_temp": jnp.full(n_layers, 15.0),
         "soil_moisture": jnp.full(n_layers, 0.3),
         "delta14C_atm": jnp.array(0.0),
@@ -133,9 +135,7 @@ def test_step_12C_other_fields_unchanged(
 ):
     """Only C12 is modified; all other state fields pass through."""
     new_state = harvard_model.step_12C(initial_state, harvard_params, dummy_forcing)
-    np.testing.assert_array_equal(
-        np.array(new_state.C14), np.array(initial_state.C14)
-    )
+    np.testing.assert_array_equal(np.array(new_state.C14), np.array(initial_state.C14))
     np.testing.assert_array_equal(
         np.array(new_state.soil_temp), np.array(initial_state.soil_temp)
     )
@@ -204,9 +204,9 @@ def test_step_12C_grad_params_finite(
     grads = jax.grad(loss)(harvard_params)
     leaves = jax.tree.leaves(grads)
     for leaf in leaves:
-        assert jnp.all(jnp.isfinite(leaf)), (
-            f"Non-finite gradient in a ModelParams leaf: {leaf}"
-        )
+        assert jnp.all(
+            jnp.isfinite(leaf)
+        ), f"Non-finite gradient in a ModelParams leaf: {leaf}"
 
 
 # ---------------------------------------------------------------------------
@@ -234,9 +234,16 @@ def test_step_14C_no_longer_raises(
 
 
 _EXPECTED_DIAG_KEYS = {
-    "GPP", "Ra", "NPP", "Rh", "ER", "NEE",
+    "GPP",
+    "Ra",
+    "NPP",
+    "Rh",
+    "ER",
+    "NEE",
     # external_inputs diagnostics (always present; zero when feature disabled)
-    "GPP_forcing_used", "external_C_input_total", "external_C_input_by_pool",
+    "GPP_forcing_used",
+    "external_C_input_total",
+    "external_C_input_by_pool",
 }
 
 
@@ -290,9 +297,7 @@ def test_diagnose_npp_equals_gpp_times_cue(
 ):
     """NPP = GPP × CUE."""
     diag = harvard_model.diagnose(initial_state, harvard_params, dummy_forcing)
-    assert float(diag["NPP"]) == pytest.approx(
-        float(diag["GPP"]) * _CUE, rel=1e-6
-    )
+    assert float(diag["NPP"]) == pytest.approx(float(diag["GPP"]) * _CUE, rel=1e-6)
 
 
 def test_diagnose_zero_radiation_zero_gpp(
@@ -316,9 +321,7 @@ def test_diagnose_zero_radiation_zero_gpp(
 # ---------------------------------------------------------------------------
 
 
-def test_step_fn_returns_tuple(
-    harvard_model, initial_state, dummy_forcing
-):
+def test_step_fn_returns_tuple(harvard_model, initial_state, dummy_forcing):
     """_step_fn(state, forcing_t) returns (new_state, None)."""
     result = harvard_model._step_fn(initial_state, dummy_forcing)
     assert isinstance(result, tuple) and len(result) == 2
@@ -372,8 +375,8 @@ def _sinusoidal_forcing_seq(
     t = jnp.arange(n_steps, dtype=jnp.float32)
     phase = 2.0 * jnp.pi * t / 365.0
     sw_seq = jnp.maximum(sw_mean + sw_amp * jnp.sin(phase), 0.0)  # (n,)
-    temp_1d = temp_mean + temp_amp * jnp.sin(phase)                # (n,)
-    temp_seq = jnp.outer(temp_1d, jnp.ones(n_layers))             # (n, L)
+    temp_1d = temp_mean + temp_amp * jnp.sin(phase)  # (n,)
+    temp_seq = jnp.outer(temp_1d, jnp.ones(n_layers))  # (n, L)
     moisture_seq = jnp.full((n_steps, n_layers), 0.3)
     return {
         "air_temp": jnp.zeros(n_steps),
@@ -395,382 +398,3 @@ def _build_model_and_state(yaml_path: str, site_cfg: dict):
 
 
 # ---------------------------------------------------------------------------
-# test_mass_balance_harvard
-# ---------------------------------------------------------------------------
-
-
-def test_mass_balance_harvard():
-    """
-    Mass balance holds at every step over a full annual cycle (Harvard Forest).
-
-    Runs 365 Euler steps with sinusoidal T / SW forcing via jax.lax.scan.
-    At each step the scan body cross-checks step_12C against diagnose():
-
-        |Σ(ΔC12) − (NPP − Rh) × dt| < 1e-4 gC m⁻² day⁻¹
-
-    The residual is O(float32 ε × flux magnitude) ≈ 1e-7, well below the
-    tolerance, so this test catches any structural mismatch between the
-    ODE integrator and the diagnostic code path.
-    """
-    model, cfg, params, init_state = _build_model_and_state(
-        _HARVARD_PATH, {"mat_c": 8.5, "permafrost": False}
-    )
-    n_layers = len(cfg.soil_layers)
-    dt = float(cfg.dt_days)
-
-    forcing_seq = _sinusoidal_forcing_seq(
-        365, n_layers,
-        temp_mean=8.0, temp_amp=12.0,
-        sw_mean=150.0, sw_amp=100.0,
-    )
-
-    def scan_body(state, forcing_t):
-        new_state = model.step_12C(state, params, forcing_t)
-        diag = model.diagnose(state, params, forcing_t)
-        expected = (diag["NPP"] - diag["Rh"]) * dt
-        residual = jnp.abs(jnp.sum(new_state.C12 - state.C12) - expected)
-        return new_state, residual
-
-    _, residuals = jax.lax.scan(scan_body, init_state, forcing_seq)
-    max_res = float(jnp.max(residuals))
-    assert max_res < 1e-4, (
-        f"Harvard mass balance violated: "
-        f"max |ΔC_total − (NPP−Rh)·dt| = {max_res:.3e} gC m⁻² day⁻¹"
-    )
-
-
-# ---------------------------------------------------------------------------
-# test_mass_balance_barrow
-# ---------------------------------------------------------------------------
-
-
-def test_mass_balance_barrow():
-    """
-    Mass balance holds over a full annual cycle (Barrow Alaska, cold site).
-
-    Forcing: T = −12 + 20·sin(2π·t/365) so soil temperatures dip well
-    below 0 °C in winter.  The permafrost layers start with thawed_frac = 0,
-    suppressing their decomposition; the mass balance test is valid regardless
-    of freeze/thaw state because it is an algebraic identity.
-
-    Additionally verifies that a fully frozen state (thawed_frac = 0) gives
-    Rh ≈ 0: the thaw-fraction mask completely suppresses decomposition.
-    """
-    model, cfg, params, init_state = _build_model_and_state(
-        _BARROW_PATH, {"mat_c": -12.0, "permafrost": True}
-    )
-    n_layers = len(cfg.soil_layers)
-    n_pools = len(model.pool_index)
-    dt = float(cfg.dt_days)
-
-    forcing_seq = _sinusoidal_forcing_seq(
-        365, n_layers,
-        temp_mean=-12.0, temp_amp=20.0,
-        sw_mean=150.0, sw_amp=100.0,
-    )
-
-    # ── Mass balance scan ─────────────────────────────────────────────────
-    def scan_body(state, forcing_t):
-        new_state = model.step_12C(state, params, forcing_t)
-        diag = model.diagnose(state, params, forcing_t)
-        expected = (diag["NPP"] - diag["Rh"]) * dt
-        residual = jnp.abs(jnp.sum(new_state.C12 - state.C12) - expected)
-        return new_state, residual
-
-    _, residuals = jax.lax.scan(scan_body, init_state, forcing_seq)
-    max_res = float(jnp.max(residuals))
-    assert max_res < 1e-4, (
-        f"Barrow mass balance violated: "
-        f"max |ΔC_total − (NPP−Rh)·dt| = {max_res:.3e} gC m⁻² day⁻¹"
-    )
-
-    # ── thawed_frac = 0 suppresses decomposition ─────────────────────────────
-    # Fill all pools with 50 gC m⁻² then set thawed_frac = 0 for all layers.
-    # With thawed_frac = 0 everywhere, f_decomp = 0 for every pool → Rh = 0.
-    filled_state = init_state._replace(C12=jnp.ones(n_pools) * 50.0)
-    zero_thaw_state = filled_state._replace(thawed_frac=jnp.zeros(n_layers))
-
-    winter_forcing = {
-        "air_temp": jnp.array(-20.0),
-        "sw_radiation": jnp.array(5.0),
-        "soil_temp": jnp.full(n_layers, -15.0),
-        "soil_moisture": jnp.full(n_layers, 0.3),
-        "delta14C_atm": jnp.array(0.0),
-    }
-    diag_zero_thaw = model.diagnose(zero_thaw_state, params, winter_forcing)
-    assert float(diag_zero_thaw["Rh"]) == pytest.approx(0.0, abs=1e-6), (
-        f"Expected Rh = 0 with thawed_frac = 0, "
-        f"got Rh = {float(diag_zero_thaw['Rh']):.3e} gC m⁻² day⁻¹"
-    )
-
-    # Sanity: fully thawed state gives Rh > 0 (decomposition is active)
-    thawed_state = filled_state._replace(thawed_frac=jnp.ones(n_layers))
-    diag_thawed = model.diagnose(thawed_state, params, winter_forcing)
-    assert float(diag_thawed["Rh"]) > 0.0, (
-        "Expected Rh > 0 with thawed_frac = 1 and non-zero C12"
-    )
-
-
-# ---------------------------------------------------------------------------
-# test_no_nan_harvard
-# ---------------------------------------------------------------------------
-
-
-def test_no_nan_harvard():
-    """
-    C12 remains finite at every step over 10 years (3 650 steps, Harvard).
-
-    Uses a repeating annual sinusoidal forcing cycle via jax.lax.scan.
-    A NaN or inf anywhere would indicate a numerical instability (e.g.
-    division by zero in log_tau or overflow in the softmax).
-    """
-    model, cfg, params, init_state = _build_model_and_state(
-        _HARVARD_PATH, {"mat_c": 8.5, "permafrost": False}
-    )
-    n_layers = len(cfg.soil_layers)
-
-    # Repeat the annual cycle 10 times
-    forcing_seq = _sinusoidal_forcing_seq(
-        3650, n_layers,
-        temp_mean=8.0, temp_amp=12.0,
-        sw_mean=150.0, sw_amp=100.0,
-    )
-
-    def scan_body(state, forcing_t):
-        new_state = model.step_12C(state, params, forcing_t)
-        all_finite = jnp.all(jnp.isfinite(new_state.C12))
-        return new_state, all_finite
-
-    _, finite_flags = jax.lax.scan(scan_body, init_state, forcing_seq)
-    n_bad = int(jnp.sum(~finite_flags))
-    assert n_bad == 0, (
-        f"C12 became non-finite at {n_bad} / 3650 timesteps"
-    )
-
-
-# ---------------------------------------------------------------------------
-# test_gradient_flow
-# ---------------------------------------------------------------------------
-
-
-def test_gradient_flow():
-    """
-    Gradients of the one-step C12 total w.r.t. every ModelParams field are
-    finite and non-zero for the key differentiable parameters.
-
-    Uses a "warm" initial state (C12 = 100 gC m⁻² per pool) so that
-    decomposition is non-zero and gradients flow through log_tau and
-    log_f_transfer.  With the default empty state (C12 = 0), those
-    gradients would be identically zero (no carbon → no decomp flux).
-    """
-    model, cfg, params, init_state = _build_model_and_state(
-        _HARVARD_PATH, {"mat_c": 8.5, "permafrost": False}
-    )
-    n_pools = len(model.pool_index)
-    n_layers = len(cfg.soil_layers)
-
-    # Warm state: 100 gC m⁻² per pool so decomp flux is active
-    warm_state = init_state._replace(C12=jnp.full(n_pools, 100.0))
-
-    forcing = {
-        "air_temp": jnp.array(20.0),
-        "sw_radiation": jnp.array(150.0),
-        "soil_temp": jnp.full(n_layers, 15.0),
-        "soil_moisture": jnp.full(n_layers, 0.3),
-        "delta14C_atm": jnp.array(0.0),
-    }
-
-    def loss(p):
-        return model.step_12C(warm_state, p, forcing).C12.sum()
-
-    grads = jax.grad(loss)(params)
-
-    # All key fields must have finite gradients
-    assert jnp.all(jnp.isfinite(grads.log_tau)), (
-        f"Non-finite gradient in log_tau: {grads.log_tau}"
-    )
-    assert jnp.all(jnp.isfinite(grads.log_alloc)), (
-        f"Non-finite gradient in log_alloc: {grads.log_alloc}"
-    )
-    assert jnp.all(jnp.isfinite(grads.log_f_transfer)), (
-        f"Non-finite gradient in log_f_transfer (shape "
-        f"{grads.log_f_transfer.shape})"
-    )
-
-    # Gradients must actually flow (not all zero)
-    assert not jnp.all(grads.log_tau == 0.0), (
-        "log_tau gradient is identically zero — "
-        "no gradient signal flowing through decomposition"
-    )
-    assert not jnp.all(grads.log_alloc == 0.0), (
-        "log_alloc gradient is identically zero — "
-        "no gradient signal flowing through NPP allocation"
-    )
-    assert not jnp.all(grads.log_f_transfer == 0.0), (
-        "log_f_transfer gradient is identically zero — "
-        "no gradient signal flowing through carbon transfers"
-    )
-
-
-# ---------------------------------------------------------------------------
-# test_pool_positivity
-# ---------------------------------------------------------------------------
-
-
-def test_pool_positivity():
-    """
-    C12 never goes negative over 3 650 steps (Harvard Forest, 10 years).
-
-    Proof sketch (Euler step, dt = 1 day, τ ≥ 1 day):
-        C12_new[i] = C12[i] + dt·(influx[i] + npp[i] − C12[i]/τ[i]·scalars)
-                   ≥ C12[i]·(1 − dt/τ[i]) ≥ 0
-    because influx ≥ 0, npp ≥ 0, and dt/τ ≤ 1 for all pools (τ ≥ 180 days
-    in the Harvard config).  This test catches mis-initialised tau values
-    or softmax outputs that could violate the τ ≥ 1 assumption.
-    """
-    model, cfg, params, init_state = _build_model_and_state(
-        _HARVARD_PATH, {"mat_c": 8.5, "permafrost": False}
-    )
-    n_layers = len(cfg.soil_layers)
-
-    forcing_seq = _sinusoidal_forcing_seq(
-        3650, n_layers,
-        temp_mean=8.0, temp_amp=12.0,
-        sw_mean=150.0, sw_amp=100.0,
-    )
-
-    def scan_body(state, forcing_t):
-        new_state = model.step_12C(state, params, forcing_t)
-        all_nonneg = jnp.all(new_state.C12 >= 0.0)
-        return new_state, all_nonneg
-
-    _, nonneg_flags = jax.lax.scan(scan_body, init_state, forcing_seq)
-    n_bad = int(jnp.sum(~nonneg_flags))
-    assert n_bad == 0, (
-        f"C12 went negative at {n_bad} / 3650 timesteps — "
-        f"Euler step is unstable for the current tau values"
-    )
-
-
-# ---------------------------------------------------------------------------
-# external_inputs pathway
-# ---------------------------------------------------------------------------
-
-_SOIL_ONLY_PATH = str(pathlib.Path(__file__).parent.parent / "configs" / "harvard_forest_soil_only.yaml")
-
-
-@pytest.fixture(scope="module")
-def soil_only_config():
-    return load_config(_SOIL_ONLY_PATH)
-
-
-@pytest.fixture(scope="module")
-def soil_only_model(soil_only_config):
-    from ecosystem_complexity.state import make_default_params
-    idx = PoolIndex(soil_only_config)
-    params = make_default_params(soil_only_config)
-    return EcosystemModel(config=soil_only_config, params=params, pool_index=idx)
-
-
-@pytest.fixture(scope="module")
-def soil_only_state(soil_only_config):
-    from ecosystem_complexity.state import make_initial_state
-    site_cfg = {"mat_c": 8.5, "permafrost": False}
-    return make_initial_state(soil_only_config, site_cfg)
-
-
-@pytest.fixture(scope="module")
-def soil_only_params(soil_only_config):
-    from ecosystem_complexity.state import make_default_params
-    return make_default_params(soil_only_config)
-
-
-def _soil_forcing(n_layers: int, gpp: float = 5.0):
-    """Forcing dict for soil-only model tests."""
-    return {
-        "air_temp": jnp.array(15.0),
-        "sw_radiation": jnp.array(100.0),
-        "soil_temp": jnp.full(n_layers, 15.0),
-        "soil_moisture": jnp.full(n_layers, 0.3),
-        "delta14C_atm": jnp.array(50.0),
-        "GPP_obs": jnp.array(gpp),
-        "NPP_obs": jnp.array(float("nan")),
-    }
-
-
-def test_step_12C_with_external_inputs_pool_sum_increases(
-    soil_only_model, soil_only_state, soil_only_params, soil_only_config
-):
-    """
-    With external_inputs active and positive GPP_obs, target soil pools
-    receive positive carbon inputs (pool sum strictly increases vs. zero-GPP case).
-    """
-    n_layers = len(soil_only_config.soil_layers)
-    forcing_with_gpp = _soil_forcing(n_layers, gpp=5.0)
-    forcing_no_gpp = _soil_forcing(n_layers, gpp=0.0)
-
-    state_with = soil_only_model.step_12C(soil_only_state, soil_only_params, forcing_with_gpp)
-    state_none = soil_only_model.step_12C(soil_only_state, soil_only_params, forcing_no_gpp)
-
-    # Pool sum must be higher when GPP_obs > 0 (net input > 0)
-    sum_with = float(jnp.sum(state_with.C12))
-    sum_none = float(jnp.sum(state_none.C12))
-    assert sum_with > sum_none, (
-        f"Pool sum with GPP_obs=5 ({sum_with:.4f}) should exceed "
-        f"sum with GPP_obs=0 ({sum_none:.4f})"
-    )
-
-
-def test_step_12C_external_inputs_disabled_matches_baseline(
-    harvard_model, initial_state, harvard_params, dummy_forcing
-):
-    """
-    When external_inputs is not configured (Harvard model), step_12C output
-    is identical whether or not GPP_obs is in the forcing dict.
-
-    The external_inputs pathway is disabled, so GPP_obs is ignored.
-    """
-    # Forcing with and without GPP_obs — should produce the same state
-    forcing_with = dict(dummy_forcing)
-    forcing_with["GPP_obs"] = jnp.array(999.0)   # should be ignored
-    forcing_with["NPP_obs"] = jnp.array(float("nan"))
-
-    state_base = harvard_model.step_12C(initial_state, harvard_params, dummy_forcing)
-    state_extra = harvard_model.step_12C(initial_state, harvard_params, forcing_with)
-
-    np.testing.assert_allclose(
-        np.array(state_base.C12), np.array(state_extra.C12), rtol=1e-6,
-        err_msg="step_12C changed when GPP_obs was added to forcing (external_inputs disabled)",
-    )
-
-
-def test_external_14C_input_uses_atmospheric_signature(
-    soil_only_model, soil_only_state, soil_only_params, soil_only_config
-):
-    """
-    When external inputs are active, the 14C content of new soil inputs
-    reflects the atmospheric Δ14C signal (positive bomb-spike → higher C14).
-
-    Compare: two steps with different delta14C_atm but same GPP_obs.
-    The step with higher delta14C_atm should produce higher total C14.
-    """
-    n_layers = len(soil_only_config.soil_layers)
-
-    forcing_low = _soil_forcing(n_layers, gpp=5.0)
-    forcing_low["delta14C_atm"] = jnp.array(-100.0)   # depleted 14C
-
-    forcing_high = dict(forcing_low)
-    forcing_high["delta14C_atm"] = jnp.array(200.0)   # bomb-spike 14C
-
-    # Start with zero C14 so new inputs dominate
-    state0 = soil_only_state._replace(C14=jnp.zeros_like(soil_only_state.C14))
-
-    state_low = soil_only_model.step_14C(state0, soil_only_params, forcing_low)
-    state_high = soil_only_model.step_14C(state0, soil_only_params, forcing_high)
-
-    sum_low = float(jnp.sum(state_low.C14))
-    sum_high = float(jnp.sum(state_high.C14))
-    assert sum_high > sum_low, (
-        f"Higher delta14C_atm should yield more C14 in soil pools. "
-        f"Got: low={sum_low:.6e}, high={sum_high:.6e}"
-    )

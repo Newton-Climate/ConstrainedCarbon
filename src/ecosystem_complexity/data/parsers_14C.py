@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import warnings
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -62,7 +63,7 @@ def load_full_14C_record(
         comment="#",
         header=None,
         names=["cal_BP", "age14C", "sigma_age", "Delta14C", "sigma_D14C"],
-        sep=r"\s+",
+        sep=",",
         engine="python",
     )
     intcal = intcal.dropna(subset=["cal_BP", "Delta14C"])
@@ -157,10 +158,10 @@ def _check_splice_continuity(
 
 def fm_to_delta14C(fm: float, obs_year: float) -> float:
     """Convert fraction modern to Δ¹⁴C ‰."""
-    return (fm * np.exp((1.0 / 8267.0) * (1950.0 - obs_year)) - 1.0) * 1000.0
+    return float((fm * np.exp((1.0 / 8267.0) * (1950.0 - obs_year)) - 1.0) * 1000.0)
 
 
-def _get_uncertainty(row: dict | pd.Series, sigma_col: str, sd_col: str,
+def _get_uncertainty(row: dict[str, Any] | pd.Series, sigma_col: str, sd_col: str,
                      default: float = 5.0) -> float:
     sigma = row.get(sigma_col, np.nan)
     if pd.notna(sigma) and sigma > 0:
@@ -187,7 +188,7 @@ def load_israd_14C(
     pool_name_map: dict[str, str] | None = None,
     prefer_fractions: bool = True,
     use_dd14c: bool = True,
-) -> tuple[dict, dict]:
+) -> tuple[dict[str, tuple[float, ...]], dict[str, tuple[float, ...]]]:
     """
     Load ISRaD radiocarbon observations and map to model pool names.
 
@@ -209,8 +210,8 @@ def load_israd_14C(
     frc = _apply_site_filter(frc, site_name_filter, lat_filter, lon_filter, radius_deg)
     frc = frc.dropna(subset=["frc_14c"])
 
-    delta14C_obs: dict[str, tuple] = {}
-    deltaD14C_obs: dict[str, tuple] = {}
+    delta14C_obs: dict[str, tuple[float, ...]] = {}
+    deltaD14C_obs: dict[str, tuple[float, ...]] = {}
 
     # ── Layer-level observations → model layers via depth alignment ──────────
     if not lyr.empty:

@@ -73,29 +73,18 @@ def build_mean_ss_modifier(forcing, model, t_nan_fill: float = 5.0,
         mean_input_val : float
             Mean GPP × CUE (gC m⁻² day⁻¹).
     """
-    from ecosystem_complexity.fluxes import f_temp as _ft_fn, f_moisture as _fm_fn, thawed_frac as _ff_fn
+    from ecosystem_complexity.oe_utils import build_mean_ss_modifier as _build_mean_ss_modifier
     from ecosystem_complexity.state import make_default_params
 
     params0 = make_default_params(model.config)
-
-    air_t_np   = np.nan_to_num(np.array(forcing.air_temp), nan=t_nan_fill)
-    soil_t_raw = np.array(forcing.soil_temp[:, 0])
-    T_soil_np  = np.where(np.isnan(soil_t_raw), air_t_np, soil_t_raw)
-    theta_np   = np.where(
-        np.isnan(np.array(forcing.soil_moisture[:, 0])),
-        theta_nan_fill,
-        np.array(forcing.soil_moisture[:, 0]),
+    mean_modifier, mean_gpp = _build_mean_ss_modifier(
+        forcing,
+        params0,
+        t_nan_fill=t_nan_fill,
+        theta_nan_fill=theta_nan_fill,
     )
-
-    ft_ = _ft_fn(jnp.array(T_soil_np, dtype=jnp.float32), params0.log_Q10[0])
-    fm_ = _fm_fn(jnp.array(theta_np,  dtype=jnp.float32),
-                 params0.log_theta_opt[0], params0.log_gamma_moist[0])
-    ff_ = _ff_fn(jnp.array(T_soil_np, dtype=jnp.float32))
-    mean_modifier = float(jnp.nanmean(ft_ * fm_ * ff_))
-
-    cue_val       = float(model.config.external_inputs.CUE)
-    mean_input_val = float(jnp.nanmean(forcing.GPP_obs)) * cue_val
-
+    cue_val = float(model.config.external_inputs.CUE)
+    mean_input_val = mean_gpp * cue_val
     return mean_modifier, mean_input_val
 
 
@@ -132,37 +121,11 @@ def build_oe5_obs_sets(forcing, delta14C_obs: dict, delta14C_resp,
     tuple[ObservationData, ...]
         Five obs sets in order OE1, OE2, OE3, OE4, OE5.
     """
-    from ecosystem_complexity.data.schemas import ObservationData
+    from ecosystem_complexity.oe_utils import build_oe_observation_sets
 
-    T     = int(forcing.time.shape[0])
-    nan_T = jnp.full(T, jnp.nan)
-
-    obs_carbon_only = ObservationData(
-        time=forcing.time, NEE=nan_T, GPP=nan_T, ER=nan_T, NEE_unc=nan_T,
-        delta14C_obs={}, deltaD14C_obs={},
-        C_pools_obs=c_pools_obs, delta14C_resp=None,
+    return build_oe_observation_sets(
+        forcing, delta14C_obs, delta14C_resp, c_pools_obs, er_sliced
     )
-    obs_carbon_pool14C = ObservationData(
-        time=forcing.time, NEE=nan_T, GPP=nan_T, ER=nan_T, NEE_unc=nan_T,
-        delta14C_obs=delta14C_obs, deltaD14C_obs={},
-        C_pools_obs=c_pools_obs, delta14C_resp=None,
-    )
-    obs_carbon_resp14C = ObservationData(
-        time=forcing.time, NEE=nan_T, GPP=nan_T, ER=nan_T, NEE_unc=nan_T,
-        delta14C_obs={}, deltaD14C_obs={},
-        C_pools_obs=c_pools_obs, delta14C_resp=delta14C_resp,
-    )
-    obs_all = ObservationData(
-        time=forcing.time, NEE=nan_T, GPP=nan_T, ER=nan_T, NEE_unc=nan_T,
-        delta14C_obs=delta14C_obs, deltaD14C_obs={},
-        C_pools_obs=c_pools_obs, delta14C_resp=delta14C_resp,
-    )
-    obs_all_er = ObservationData(
-        time=forcing.time, NEE=nan_T, GPP=nan_T, ER=er_sliced, NEE_unc=nan_T,
-        delta14C_obs=delta14C_obs, deltaD14C_obs={},
-        C_pools_obs=c_pools_obs, delta14C_resp=delta14C_resp,
-    )
-    return obs_carbon_only, obs_carbon_pool14C, obs_carbon_resp14C, obs_all, obs_all_er
 
 
 # ─────────────────────────────────────────────────────────────────────────────

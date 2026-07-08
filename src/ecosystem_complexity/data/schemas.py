@@ -32,9 +32,9 @@ class ObservationData(NamedTuple):
     GPP: jnp.ndarray        # (T,) gC m⁻² day⁻¹
     ER: jnp.ndarray         # (T,) gC m⁻² day⁻¹
     NEE_unc: jnp.ndarray    # (T,) 1-sigma uncertainty gC m⁻² day⁻¹
-    delta14C_obs: dict      # {pool_name: (Δ14C ‰, uncertainty ‰, year)}
-    deltaD14C_obs: dict     # {pool_name: (Δ-Δ14C ‰, uncertainty ‰, year)}
-    C_pools_obs: dict       # {pool_name: (gC m⁻², uncertainty)}
+    delta14C_obs: dict[str, tuple[float, ...]]  # {pool: (Δ14C ‰, unc ‰, year)}
+    deltaD14C_obs: dict[str, tuple[float, ...]]  # {pool: (Δ-Δ14C ‰, unc ‰, year)}
+    C_pools_obs: dict[str, tuple[float, ...]]  # {pool: (gC m⁻², uncertainty)}
     # Optional — flux-weighted respired CO₂ Δ¹⁴C (T,); NaN at unmeasured days.
     # Defaults to None so existing ObservationData constructors need no change.
     delta14C_resp: Optional[jnp.ndarray] = None

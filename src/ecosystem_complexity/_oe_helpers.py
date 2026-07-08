@@ -1,0 +1,390 @@
+"""
+Internal helpers for the Optimal Estimation inversion.
+
+Contains:
+  ObsBlock                 — self-contained observation block definition
+  _build_obs_blocks        — build the OE observation vector from ObservationData
+  build_oe_prior_sigma     — prior 1-sigma values for the OE state vector
+  _build_sa_diag           — prior error variances for the OE state vector
+  _analytical_c12_ss       — analytical steady-state C12 stocks
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable, Optional
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+from .config import ModelConfig, PoolIndex
+from .state import ModelParams
+from .transfer import get_transfer_matrix
+
+if TYPE_CHECKING:
+    # Imported lazily to avoid circular imports (``data.israd_observations``
+    # imports ``ObsBlock`` from here; ``api`` re-exports from here).  These names
+    # are used only in annotations, which are strings under
+    # ``from __future__ import annotations``.
+    from .api import ModelOutput
+    from .data.schemas import ObservationData
+    from .model import EcosystemModel
+
+
+@dataclass
+class ObsBlock:
+    """
+    Self-contained observation block for Optimal Estimation.
+
+    Each block represents one logical observation type (e.g. pool Δ¹⁴C,
+    respired Δ¹⁴C, carbon stocks, annual ER flux).  Blocks are assembled
+    into the full OE observation vector by simple concatenation.
+
+    Fields
+    ------
+    name : str
+        Human-readable label used in log messages and diagnostics.
+    y : jnp.ndarray  shape (n_i,)
+        Observed values.
+    Se : jnp.ndarray  shape (n_i,)
+        Diagonal observation-error variances σ² (same length as y).
+    predict : Callable[[ModelOutput, ModelParams], jnp.ndarray]
+        Pure-JAX function that takes the full model output and current
+        parameters and returns the simulated counterpart of y, shape (n_i,).
+        Must be differentiable via jax.jacobian.
+    """
+
+    name: str
+    y: jnp.ndarray
+    Se: jnp.ndarray
+    predict: Callable[..., jnp.ndarray]  # (ModelOutput, ModelParams) -> (n_i,)
+
+
+def _build_obs_blocks(  # noqa: C901
+    observations: ObservationData,
+    model: EcosystemModel,
+    sigma_pool: float,
+    sigma_resp: float,
+    sigma_carbon: Optional[float] = None,
+    f_hetero: float = 0.0,
+    sigma_er_frac: float = 0.15,
+) -> list[ObsBlock]:
+    """
+    Build the list of ObsBlock objects that together define the OE observation
+    vector.  Each block is independent: it owns its observed values, error
+    variances, and a JAX-differentiable ``predict`` callable.
+
+    Adding a new observation type means appending one more ObsBlock here;
+    ``optimize_oe`` and ``_forward`` need no changes.
+
+    Current blocks (appended in order; each is skipped if it has zero obs):
+      1. pool_14C    — pool-level Δ¹⁴C at sparse (time, pool) pairs
+      2. resp_14C    — flux-weighted respired Δ¹⁴C at sparse time indices
+      3. c_stock     — time-mean carbon stocks, one entry per constrained pool
+      4. er_annual   — annual mean ecosystem respiration from FluxNet ER;
+                       model prediction is Rh_sim / sigmoid(log_f_hetero)
+
+    Parameters
+    ----------
+    observations : ObservationData
+    model        : EcosystemModel
+    sigma_pool   : float   Δ¹⁴C obs error [‰] for pool-level obs
+    sigma_resp   : float   Δ¹⁴C obs error [‰] for respired CO₂ obs
+    sigma_carbon : float   fallback C-stock obs error [gC m⁻²] (used when
+                           the C_pools_obs tuple sigma is zero/None)
+    f_hetero     : float   prior f_hetero > 0 enables the ER block;
+                           actual value used only as on/off flag — the
+                           posterior value comes from p.log_f_hetero
+    sigma_er_frac: float   fractional σ on annual ER observations
+
+    Returns
+    -------
+    list[ObsBlock]
+        Non-empty blocks only.  Concatenate .y and .Se to get the full
+        OE vectors; call b.predict(out, p) for each block to build F(x).
+    """
+    pool_names_set = set(model.pool_index.pool_names)
+    blocks: list[ObsBlock] = []
+
+    # ── Block 1: pool-level Δ¹⁴C ────────────────────────────────────────────
+    t_p, col_p, y_p = [], [], []
+    for pool_name in sorted(observations.delta14C_obs.keys()):
+        if pool_name not in pool_names_set:
+            continue
+        obs_arr = np.array(observations.delta14C_obs[pool_name])
+        valid = np.where(np.isfinite(obs_arr))[0]
+        pcol = model.pool_index[pool_name]
+        for t in valid:
+            t_p.append(int(t))
+            col_p.append(pcol)
+            y_p.append(float(obs_arr[t]))
+
+    if t_p:
+        _t = jnp.array(t_p, dtype=jnp.int32)
+        _col = jnp.array(col_p, dtype=jnp.int32)
+        blocks.append(
+            ObsBlock(
+                name="pool_14C",
+                y=jnp.array(y_p, dtype=jnp.float32),
+                Se=jnp.full(len(y_p), sigma_pool**2),
+                predict=lambda out, p, t=_t, col=_col: out.delta14C[t, col],
+            )
+        )
+
+    # ── Block 2: respired CO₂ Δ¹⁴C ─────────────────────────────────────────
+    t_r, y_r = [], []
+    if observations.delta14C_resp is not None:
+        resp_np = np.array(observations.delta14C_resp)
+        for t in np.where(np.isfinite(resp_np))[0]:
+            t_r.append(int(t))
+            y_r.append(float(resp_np[t]))
+
+    if t_r:
+        _t_r = jnp.array(t_r, dtype=jnp.int32)
+
+        def _predict_resp(
+            out: ModelOutput, p: ModelParams, t_r: jnp.ndarray = _t_r
+        ) -> jnp.ndarray:
+            tau_v = jnp.exp(p.log_tau)
+            w = out.C12 / (tau_v[None, :] + 1e-30)  # (T, n_pools)
+            d14c = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)  # (T,)
+            return d14c[t_r]
+
+        blocks.append(
+            ObsBlock(
+                name="resp_14C",
+                y=jnp.array(y_r, dtype=jnp.float32),
+                Se=jnp.full(len(y_r), sigma_resp**2),
+                predict=_predict_resp,
+            )
+        )
+
+    # ── Block 3: carbon stocks ───────────────────────────────────────────────
+    c_col, y_c, se_c = [], [], []
+    for pool_name, (c_mean, c_sigma) in (observations.C_pools_obs or {}).items():
+        if pool_name not in pool_names_set:
+            continue
+        sigma_c = (
+            float(c_sigma) if (c_sigma and c_sigma > 0) else (sigma_carbon or 1000.0)
+        )
+        c_col.append(model.pool_index[pool_name])
+        y_c.append(float(c_mean))
+        se_c.append(sigma_c**2)
+
+    if c_col:
+        _c_col = jnp.array(c_col, dtype=jnp.int32)
+        blocks.append(
+            ObsBlock(
+                name="c_stock",
+                y=jnp.array(y_c, dtype=jnp.float32),
+                Se=jnp.array(se_c, dtype=jnp.float32),
+                predict=lambda out, p, col=_c_col: jnp.mean(out.C12, axis=0)[col],
+            )
+        )
+
+    # ── Block 4: annual ER from FluxNet (model predicts ER = Rh / f_hetero) ─
+    if f_hetero > 0.0 and observations.ER is not None:
+        T = len(np.array(observations.time))
+        er_np = np.array(observations.ER, dtype=np.float64)
+        time_np = np.array(observations.time, dtype=np.float64)
+        years_np = 1970.0 + time_np / 365.25
+        yr_start = int(np.floor(years_np[0]))
+        yr_end = int(np.floor(years_np[-1]))
+
+        rows: list[np.ndarray] = []
+        y_er: list[float] = []
+        se_er: list[float] = []
+
+        for yr in range(yr_start, yr_end + 1):
+            mask = (years_np >= yr) & (years_np < yr + 1) & np.isfinite(er_np)
+            if mask.sum() < 30:
+                continue
+            er_est = float(np.mean(er_np[mask]))
+            sigma = max(abs(er_est) * sigma_er_frac, 0.01)
+            row = np.zeros(T, dtype=np.float32)
+            row[mask] = 1.0 / mask.sum()
+            rows.append(row)
+            y_er.append(er_est)
+            se_er.append(sigma**2)
+
+        if rows:
+            _W = jnp.array(np.stack(rows, axis=0))  # (n_er_obs, T)
+
+            def _predict_er(
+                out: ModelOutput, p: ModelParams, W: jnp.ndarray = _W
+            ) -> jnp.ndarray:
+                f_het = jax.nn.sigmoid(p.log_f_hetero)
+                return (W @ out.Rh) / (f_het + 1e-6)
+
+            blocks.append(
+                ObsBlock(
+                    name="er_annual",
+                    y=jnp.array(y_er, dtype=jnp.float32),
+                    Se=jnp.array(se_er, dtype=jnp.float32),
+                    predict=_predict_er,
+                )
+            )
+
+    return blocks
+
+
+def _build_sa_diag(
+    config: ModelConfig,
+    params0: ModelParams,
+    opt_fields: tuple[str, ...],
+) -> jnp.ndarray:
+    """
+    Build the diagonal of Sₐ (prior error variances) for the OE state vector.
+
+    log_tau[i]             : σ = tau_prior_std[i] / tau_prior_days[i]  (log-space)
+    log_f_transfer[i,j]    : σ = 0.5 for real transfer rules, 0.02 for structural zeros
+    log_external_input_partition : σ = 0.30  (moderate; let Δ¹⁴C inform partition)
+    everything else        : σ = 0.5
+    """
+    sigma = build_oe_prior_sigma(config, params0, opt_fields)
+    return sigma**2
+
+
+def build_oe_prior_sigma(
+    config: ModelConfig,
+    params0: ModelParams,
+    opt_fields: tuple[str, ...],
+) -> jnp.ndarray:
+    """Build the diagonal 1-sigma vector for the OE state vector.
+
+    This is the sigma-space counterpart to ``_build_sa_diag`` and is the
+    intended source of truth for any analysis that should match the OE prior.
+    """
+    pool_idx = PoolIndex(config)
+    n_pools = len(pool_idx)
+
+    # Pool name → (tau_prior_days, tau_prior_std)
+    tau_info: dict[str, tuple[float, float]] = {}
+    for layer in config.soil_layers:
+        for pool in layer.som_pools:
+            pname = f"{layer.name}_{pool.name}"
+            tau_info[pname] = (pool.tau_prior_days, pool.tau_prior_std)
+
+    # (src_i, dst_j) pairs from YAML transfer rules
+    real_transfer_pairs = set()
+    for src_name, dst_name, _ in config.transfer_rules:
+        real_transfer_pairs.add((pool_idx[src_name], pool_idx[dst_name]))
+
+    sigma_parts = []
+    for f in opt_fields:
+        val = getattr(params0, f)
+        n = int(math.prod(val.shape))
+
+        if f == "log_tau":
+            sigma = np.array(
+                [
+                    tau_info.get(name, (1000.0, 1000.0))[1]
+                    / max(tau_info.get(name, (1000.0, 1000.0))[0], 1.0)
+                    for name in pool_idx.pool_names
+                ],
+                dtype=np.float32,
+            )
+            sigma_parts.append(jnp.array(sigma))
+
+        elif f == "log_f_transfer":
+            sigma = np.full(n, 0.02, dtype=np.float32)
+            for si, dj in real_transfer_pairs:
+                flat_i = si * (n_pools + 1) + dj
+                sigma[flat_i] = 0.5
+            sigma_parts.append(jnp.array(sigma))
+
+        elif f == "log_external_input_partition":
+            sigma_parts.append(jnp.full(n, 0.30))
+
+        elif f == "log_f_hetero":
+            # f_hetero prior ≈ 0.55, σ_f ≈ 0.08 (absolute).
+            # In logit-space: σ_logit = σ_f / (f(1-f)) = 0.08 / (0.55×0.45) ≈ 0.323.
+            sigma_parts.append(jnp.full(n, 0.323))
+
+        else:
+            sigma_parts.append(jnp.full(n, 0.5))
+
+    return jnp.concatenate(sigma_parts)
+
+
+def _analytical_c12_ss(
+    params: ModelParams,
+    n_pools: int,
+    mean_input: float,
+    mean_modifier: float = 1.0,
+    target_indices: Optional[list[int]] = None,
+) -> jnp.ndarray:
+    """
+    Compute analytical steady-state C12 stocks for a general pool system with
+    both direct external inputs and cascade transfers.
+
+    At true steady state for pool i:
+        dC_i/dt = I_i_eff - (C_i / τ_i) × modifier = 0
+        → C_i = I_i_eff × τ_i / modifier
+
+    where ``I_i_eff`` is the total effective input to pool i:
+        I_i_eff = f_partition[i] × mean_input      (direct external)
+                + Σ_j F[j,i] × I_j_eff            (cascade from upstream)
+
+    This forms a lower-triangular system solved by forward substitution.
+
+    ``modifier`` is the climatological mean of (f_T × f_moisture × f_freeze).
+
+    Parameters
+    ----------
+    params :
+        Current ModelParams.  ``log_tau``, ``log_f_transfer``, and (if present)
+        ``log_external_input_partition`` are used.
+    n_pools :
+        Number of carbon pools.
+    mean_input :
+        Long-term mean total external carbon input [gC m⁻² day⁻¹].
+    mean_modifier : float, optional
+        Climatological mean decomposition scalar.  Default 1.0.
+    target_indices : list of int, optional
+        Pool indices that receive direct external input, in the same order as
+        ``log_external_input_partition``.  Required when the partition covers
+        fewer pools than n_pools (e.g. 2-way softmax over active+slow only
+        when n_pools=3).  If None, defaults to the first n_lep pools.
+
+    Returns
+    -------
+    jnp.ndarray
+        Shape ``(n_pools,)`` steady-state C12 stocks [gC m⁻²].
+    """
+    tau = jnp.exp(params.log_tau)  # (n_pools,)
+    F = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n_pools, n_pools)
+
+    # External input partition: softmax over target pools only.
+    lep = params.log_external_input_partition
+    n_lep = lep.shape[0]
+
+    if n_lep == 0:
+        # No partition at all — all input to pool 0 (legacy fallback)
+        f_part = jnp.zeros(n_pools).at[0].set(1.0)
+    else:
+        f_soft = jax.nn.softmax(lep)  # (n_lep,) summing to 1
+        if n_lep == n_pools and target_indices is None:
+            # Simple case: one logit per pool
+            f_part = f_soft
+        else:
+            # Sparse case: map n_lep fractions to specific pool indices
+            indices = (
+                target_indices if target_indices is not None else list(range(n_lep))
+            )
+            f_part = jnp.zeros(n_pools)
+            for k, ti in enumerate(indices):
+                f_part = f_part.at[ti].set(f_soft[k])
+
+    # Effective inputs: I_direct + cascade from upstream pools.
+    # For a lower-triangular cascade (F[i,j]=0 if j<=i) this is solvable by
+    # forward substitution in pool order.
+    inp = f_part * float(mean_input)  # direct external to each pool (n_pools,)
+    for j in range(1, n_pools):
+        # Add cascade inflows from all upstream pools i < j
+        inp = inp.at[j].add(jnp.dot(F[:j, j], inp[:j]))
+
+    # Correct for decomposition modifier (true SS has longer effective τ)
+    return inp * tau / float(mean_modifier)

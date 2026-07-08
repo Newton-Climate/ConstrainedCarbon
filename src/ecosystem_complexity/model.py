@@ -30,264 +30,23 @@ Mass balance (Euler step, dt = 1 day)
 --------------------------------------
   ΔC₁₂_total = NPP − Rh      (= −NEE,  positive = carbon gain)
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Any, Callable
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
 import ecosystem_complexity.tracer_14C as tracer_14C
+from ecosystem_complexity.above_ground import _gpp, compute_external_soil_inputs
+from ecosystem_complexity.climate import _pool_env_vecs
 from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.fluxes import (
-    compute_external_soil_inputs,
-    f_moisture,
-    f_temp,
-    het_respiration,
-    npp_allocation,
-    soil_temp_at_depth,
-    thawed_frac,
-)
-from ecosystem_complexity.fluxes import (
-    nee as nee_flux,
-)
+from ecosystem_complexity.soil import _step_12C_pure, het_respiration
+from ecosystem_complexity.soil import nee as nee_flux
 from ecosystem_complexity.state import EcosystemState, ModelParams
-from ecosystem_complexity.transfer import get_transfer_matrix
-
-# ---------------------------------------------------------------------------
-# Model-level constants (placeholder light-use efficiency model)
-# ---------------------------------------------------------------------------
-
-_LUE: float = 0.002   # light-use efficiency (gC MJ⁻¹, placeholder)
-_K_EXT: float = 0.5   # Beer–Lambert extinction coefficient (dimensionless)
-_LAI: float = 5.0     # leaf area index (m² m⁻², placeholder)
-_CUE: float = 0.5     # carbon use efficiency (NPP / GPP)
-
-
-# ---------------------------------------------------------------------------
-# Module-level pure helpers — no class state
-# ---------------------------------------------------------------------------
-
-
-def _gpp(sw_radiation: jnp.ndarray) -> jnp.ndarray:
-    """
-    Light-use-efficiency GPP estimate (gC m⁻² day⁻¹).
-
-    .. math::
-
-        GPP = SW_{rad} \\cdot LUE \\cdot \\bigl(1 - e^{-k \\cdot LAI}\\bigr)
-
-    This is a placeholder; the inversion will constrain GPP via NEE obs.
-    """
-    return sw_radiation * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
-
-
-def _pool_env_vecs(
-    soil_temp: jnp.ndarray,
-    soil_moisture: jnp.ndarray,
-    ff_layers: jnp.ndarray,
-    log_Q10: jnp.ndarray,
-    log_theta_opt: jnp.ndarray,
-    log_gamma_moist: jnp.ndarray,
-    pool_to_layer: jnp.ndarray,
-    *,
-    pool_mid_depths: jnp.ndarray | None = None,
-    T_annual_mean: float | None = None,
-    damping_depth_m: float = 2.0,
-) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
-    """
-    Broadcast per-layer environmental scalars to per-pool vectors.
-
-    When ``pool_mid_depths`` and ``T_annual_mean`` are provided, the thawed
-    fraction for each pool is computed from a depth-attenuated temperature
-    (via ``soil_temp_at_depth``) rather than the layer-surface temperature.
-    This implements freeze-thaw gating: deep permafrost pools stay frozen
-    (thawed_frac ≈ 0) even when the surface thaws in summer.
-
-    Parameters
-    ----------
-    soil_temp : (n_layers,)
-        Soil temperature in °C, from forcing.
-    soil_moisture : (n_layers,)
-        Volumetric soil moisture (m³ m⁻³), from forcing.
-    ff_layers : (n_layers,)
-        Layer-level thaw fraction from the current state (used when
-        ``pool_mid_depths`` is None).
-    log_Q10, log_theta_opt, log_gamma_moist : (n_layers,)
-        Log-space environmental parameters from ``ModelParams``.
-    pool_to_layer : (n_pools,) int
-        Static index: ``pool_to_layer[i]`` is the layer index for pool *i*.
-    pool_mid_depths : (n_pools,) float or None
-        Mid-depth of each pool in metres.  When provided, enables per-pool
-        depth-attenuated freeze-thaw gating.
-    T_annual_mean : float or None
-        Mean annual surface temperature (°C); asymptotic deep temperature.
-    damping_depth_m : float
-        Thermal damping depth for the ``soil_temp_at_depth`` placeholder.
-
-    Returns
-    -------
-    ft_vec, fm_vec, ff_vec : each (n_pools,)
-        Temperature, moisture, and thaw scalars broadcast to pool dimension.
-    """
-    ft_layers = f_temp(soil_temp, log_Q10)                       # (n_layers,)
-    fm_layers = f_moisture(soil_moisture, log_theta_opt, log_gamma_moist)
-    ft_vec = ft_layers[pool_to_layer]                            # (n_pools,)
-    fm_vec = fm_layers[pool_to_layer]
-
-    if pool_mid_depths is not None and T_annual_mean is not None:
-        # Per-pool depth-attenuated temperature → per-pool thawed_frac.
-        # T_surface for each pool: use the layer-mean soil temperature.
-        T_surface_per_pool = soil_temp[pool_to_layer]            # (n_pools,)
-        T_depth_per_pool = soil_temp_at_depth(
-            T_surface_per_pool, pool_mid_depths, T_annual_mean, damping_depth_m
-        )
-        ff_vec = thawed_frac(T_depth_per_pool)                   # (n_pools,)
-    else:
-        ff_vec = ff_layers[pool_to_layer]                        # (n_pools,)
-
-    return ft_vec, fm_vec, ff_vec
-
-
-def _step_12C_pure(
-    state: EcosystemState,
-    params: ModelParams,
-    forcing_t: dict,
-    *,
-    n_pools: int,
-    n_ag_pools: int,
-    pool_to_layer: jnp.ndarray,
-    dt: float,
-    # External-inputs static arguments (resolved at JIT trace time)
-    external_inputs_active: bool = False,
-    external_input_source_key: str = "GPP_obs",
-    external_input_is_npp: bool = False,
-    external_input_target_indices: jnp.ndarray | None = None,
-    # Freeze-thaw gating at depth (optional; None = use layer-level thawed_frac)
-    pool_mid_depths: jnp.ndarray | None = None,
-    T_annual_mean: float | None = None,
-    damping_depth_m: float = 2.0,
-) -> EcosystemState:
-    """
-    One Euler step of ¹²C pool dynamics — pure function, no ``self``.
-
-    Implements:
-
-    .. math::
-
-        \\frac{dC_{12,i}}{dt} =
-            \\underbrace{\\sum_j F_{ji}\\,F_{\\text{decomp},j}}_{\\text{transfers in}}
-            + F_{\\text{NPP},i}
-            + F_{\\text{ext},i}
-            - F_{\\text{decomp},i}
-
-    where ``F[j, i]`` is the fraction of pool-j outflux routed to pool i
-    (from ``get_transfer_matrix``), ``F_{decomp,i} = C_i / τ_i · ft · fm · ff``,
-    and ``F_{ext,i}`` is the optional external soil carbon input term (zero when
-    ``external_inputs_active=False``).
-
-    Parameters
-    ----------
-    state :
-        Current ecosystem state (only ``state.C12`` and ``state.thawed_frac``
-        are read; all other fields are passed through unchanged).
-    params :
-        Model parameters (traced by ``jax.grad``).
-    forcing_t :
-        Dict with at least ``'sw_radiation'``, ``'soil_temp'``,
-        ``'soil_moisture'`` for this timestep.
-    n_pools, n_ag_pools :
-        Static pool counts — not traced.
-    pool_to_layer :
-        Static pool→layer index array — not traced.
-    dt :
-        Timestep in days (Python float, not traced).
-    external_inputs_active :
-        Static Python bool — when True, prescribed GPP/NPP forcing is used
-        instead of the internal LUE model.
-    external_input_source_key :
-        Key in ``forcing_t`` containing prescribed GPP or NPP values.
-    external_input_is_npp :
-        Static bool — True when the source field is already NPP (skip CUE).
-    external_input_target_indices :
-        Integer indices of soil pools that receive direct carbon input.
-
-    Returns
-    -------
-    EcosystemState
-        New state with ``C12`` updated; all other fields unchanged.
-    """
-    # ── GPP — use prescribed value or internal LUE model ─────────────────
-    CUE = jnp.exp(params.log_CUE)
-    if external_inputs_active:
-        GPP_prescribed = forcing_t[external_input_source_key]
-        # Fall back to LUE estimate when the prescribed value is NaN
-        GPP = jnp.where(
-            jnp.isnan(GPP_prescribed), _gpp(forcing_t["sw_radiation"]), GPP_prescribed
-        )
-        # Fraction of NPP that bypasses AG pools and enters soil directly
-        soil_frac = jax.nn.sigmoid(params.log_soil_input_fraction)
-        ag_frac = 1.0 - soil_frac
-    else:
-        GPP = _gpp(forcing_t["sw_radiation"])
-        ag_frac = 1.0
-
-    # ── Environmental scalars (per pool) ─────────────────────────────────
-    ft_vec, fm_vec, ff_vec = _pool_env_vecs(
-        forcing_t["soil_temp"],
-        forcing_t["soil_moisture"],
-        state.thawed_frac,
-        params.log_Q10,
-        params.log_theta_opt,
-        params.log_gamma_moist,
-        pool_to_layer,
-        pool_mid_depths=pool_mid_depths,
-        T_annual_mean=T_annual_mean,
-        damping_depth_m=damping_depth_m,
-    )
-
-    # ── NPP allocation to aboveground pools ───────────────────────────────
-    F_npp = npp_allocation(GPP, CUE, params.log_alloc, n_ag_pools) * ag_frac
-    npp_inputs = jnp.zeros(n_pools).at[:n_ag_pools].set(F_npp)
-
-    # ── External soil inputs (non-zero when external_inputs_active=True) ──
-    if external_inputs_active:
-        ext_inputs = compute_external_soil_inputs(
-            GPP_or_NPP=GPP if not external_input_is_npp else GPP * CUE,
-            is_npp=external_input_is_npp,
-            log_CUE=params.log_CUE,
-            log_soil_input_fraction=params.log_soil_input_fraction,
-            log_external_input_partition=params.log_external_input_partition,
-            n_pools=n_pools,
-            target_pool_indices=external_input_target_indices,
-        )
-    else:
-        ext_inputs = jnp.zeros(n_pools)
-
-    # ── Transfer matrix ───────────────────────────────────────────────────
-    F_mat = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n, n)
-
-    # ── Per-pool decomposition fluxes ─────────────────────────────────────
-    tau = jnp.exp(params.log_tau)                                # (n_pools,)
-    f_decomp = (state.C12 / tau) * ft_vec * fm_vec * ff_vec     # (n_pools,)
-
-    # ── Carbon influx from pool-to-pool transfers ─────────────────────────
-    # F_mat[i, j] = fraction of pool-i outflux going to pool j
-    # influx[j]   = Σ_i  F_mat[i, j] · f_decomp[i]  =  F_mat.T @ f_decomp
-    influx = F_mat.T @ f_decomp                                  # (n_pools,)
-
-    # ── Euler update ──────────────────────────────────────────────────────
-    dC12 = (influx + npp_inputs + ext_inputs - f_decomp) * dt
-    C12_new = state.C12 + dC12
-
-    return state._replace(C12=C12_new)
-
-
-# ---------------------------------------------------------------------------
-# EcosystemModel dataclass
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -320,7 +79,7 @@ class EcosystemModel:
     pool_index: PoolIndex
 
     # Private fields initialised in __post_init__ — not part of __init__.
-    _step_fn: Callable | None = field(default=None, init=False, repr=False)
+    _step_fn: Callable[..., Any] | None = field(default=None, init=False, repr=False)
     _pool_to_layer: jnp.ndarray | None = field(default=None, init=False, repr=False)
     _pool_mid_depths: jnp.ndarray | None = field(default=None, init=False, repr=False)
     _T_annual_mean: float | None = field(default=None, init=False, repr=False)
@@ -334,6 +93,8 @@ class EcosystemModel:
     _ext_target_indices: jnp.ndarray | None = field(
         default=None, init=False, repr=False
     )
+    # Raw site-config dict, attached by api.build_model for spinup/init helpers.
+    _site_config: dict[str, Any] | None = field(default=None, init=False, repr=False)
 
     # ------------------------------------------------------------------
     # Initialisation
@@ -363,11 +124,19 @@ class EcosystemModel:
             mid_depths: list[float] = []
             n_ag_pools_depth = len(self.config.aboveground_pools)
             for _ in range(n_ag_pools_depth):
-                mid_depths.append(0.0)   # aboveground pools at surface
+                mid_depths.append(0.0)  # aboveground pools at surface
             for layer in self.config.soil_layers:
                 for pool in layer.som_pools:
-                    top = pool.depth_top_m if pool.depth_top_m is not None else layer.depth_top_m
-                    bot = pool.depth_bot_m if pool.depth_bot_m is not None else layer.depth_bot_m
+                    top = (
+                        pool.depth_top_m
+                        if pool.depth_top_m is not None
+                        else layer.depth_top_m
+                    )
+                    bot = (
+                        pool.depth_bot_m
+                        if pool.depth_bot_m is not None
+                        else layer.depth_bot_m
+                    )
                     mid_depths.append((top + bot) / 2.0)
             self._pool_mid_depths = jnp.array(mid_depths, dtype=jnp.float32)
             self._T_annual_mean = float(T_annual_mean)
@@ -381,9 +150,9 @@ class EcosystemModel:
         # ── External-inputs static config ─────────────────────────────
         ext = self.config.external_inputs
         ext_active = ext is not None and ext.enabled
-        if ext_active:
+        if ext is not None and ext.enabled:
             ext_source_key = ext.source
-            ext_is_npp = (ext.source == "NPP_obs")
+            ext_is_npp = ext.source == "NPP_obs"
             ext_target_indices = jnp.array(
                 [self.pool_index[name] for name in ext.target_pool_names],
                 dtype=jnp.int32,
@@ -409,7 +178,7 @@ class EcosystemModel:
         @jax.jit
         def _compiled_step(
             state: EcosystemState,
-            forcing_t: dict,
+            forcing_t: dict[str, jnp.ndarray],
         ) -> tuple[EcosystemState, None]:
             new_state = _step_12C_pure(
                 state,
@@ -438,7 +207,7 @@ class EcosystemModel:
         self,
         state: EcosystemState,
         params: ModelParams,
-        forcing_t: dict,
+        forcing_t: dict[str, jnp.ndarray],
     ) -> EcosystemState:
         """
         One Euler timestep of bulk ¹²C pool dynamics.
@@ -484,7 +253,7 @@ class EcosystemModel:
         self,
         state: EcosystemState,
         params: ModelParams,
-        forcing_t: dict,
+        forcing_t: dict[str, jnp.ndarray],
     ) -> EcosystemState:
         """
         One Euler timestep of ¹⁴C tracer dynamics.
@@ -509,7 +278,11 @@ class EcosystemModel:
             are unchanged.
         """
         new_C14 = tracer_14C.step_14C(
-            state, params, forcing_t, self.config, self.pool_index,
+            state,
+            params,
+            forcing_t,
+            self.config,
+            self.pool_index,
             external_inputs_active=self._ext_active,
             external_input_source_key=self._ext_source_key,
             external_input_is_npp=self._ext_is_npp,
@@ -525,8 +298,8 @@ class EcosystemModel:
         self,
         state: EcosystemState,
         params: ModelParams,
-        forcing_t: dict,
-    ) -> dict:
+        forcing_t: dict[str, jnp.ndarray],
+    ) -> dict[str, jnp.ndarray]:
         """
         Compute diagnostic carbon flux scalars for the current state.
 
@@ -605,7 +378,7 @@ class EcosystemModel:
                 target_pool_indices=self._ext_target_indices,  # type: ignore[arg-type]
             )
             ext_total = jnp.sum(ext_inputs)
-            ext_by_pool = ext_inputs[self._ext_target_indices]  # type: ignore[index]
+            ext_by_pool = ext_inputs[self._ext_target_indices]
         else:
             ext_total = jnp.array(0.0)
             ext_by_pool = jnp.zeros(n_targets)

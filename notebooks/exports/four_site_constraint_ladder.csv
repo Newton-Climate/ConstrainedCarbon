@@ -1,0 +1,29 @@
+site,site_id,rank_within_site,constraint_label,obs_type,n_obs,dfs
+Harvard Forest,US-Ha1,1,resp_14C,resp_delta14C,41,2.0564205646514893
+Harvard Forest,US-Ha1,2,c_stock,C_stocks,3,2.0032958984375
+Harvard Forest,US-Ha1,3,israd_soil_slow_2011,pool_delta14C,1,0.9986575245857239
+Harvard Forest,US-Ha1,4,israd_soil_passive_1996,pool_delta14C,1,0.9984993934631348
+Harvard Forest,US-Ha1,5,israd_soil_passive_2007,pool_delta14C,1,0.9982661604881287
+Harvard Forest,US-Ha1,6,israd_soil_active_1996,pool_delta14C,1,0.9946624040603638
+Harvard Forest,US-Ha1,7,israd_soil_active_2007,pool_delta14C,1,0.18887726962566376
+Harvard Forest,US-Ha1,8,israd_soil_active_2011,pool_delta14C,1,0.018029384315013885
+Barrow,US-A10,1,c_stock,C_stocks,2,1.4268559217453003
+Barrow,US-A10,2,resp_14C,resp_delta14C,14,1.0588730573654175
+Barrow,US-A10,3,israd_layer_soil_passive,pool_delta14C,1,0.9462728500366211
+Barrow,US-A10,4,israd_layer_soil_active,pool_delta14C,1,0.9330109357833862
+Barrow,US-A10,5,israd_layer_soil_slow,pool_delta14C,1,0.7394107580184937
+Eight-mile Lake,US-EML,1,c_stock,C_stocks,3,1.5374616384506226
+Eight-mile Lake,US-EML,2,resp_14C,resp_delta14C,12,1.0001137256622314
+Eight-mile Lake,US-EML,3,israd_layer_soil_active,pool_delta14C,1,0.9958164691925049
+Eight-mile Lake,US-EML,4,israd_macrofossil_soil_slow,pool_delta14C,1,0.9485300779342651
+Eight-mile Lake,US-EML,5,israd_layer_soil_slow,pool_delta14C,1,0.9466889500617981
+Eight-mile Lake,US-EML,6,israd_layer_soil_passive,pool_delta14C,1,0.9220300316810608
+Eight-mile Lake,US-EML,7,israd_macrofossil_soil_active,pool_delta14C,1,0.914443850517273
+Howland Forest,US-Ho1,1,pool_14C,pool_delta14C,7,3.072349786758423
+Howland Forest,US-Ho1,2,c_stock,C_stocks,3,2.0938827991485596
+Howland Forest,US-Ho1,3,resp_14C,resp_delta14C,11,1.1723583936691284
+Howland Forest,US-Ho1,4,israd_density_soil_active_1986,pool_delta14C,1,0.9993049502372742
+Howland Forest,US-Ho1,5,israd_density_soil_active_1997,pool_delta14C,1,0.9992653131484985
+Howland Forest,US-Ho1,6,israd_density_soil_active_1996,pool_delta14C,1,0.9987409710884094
+Howland Forest,US-Ho1,7,israd_density_soil_passive_1997,pool_delta14C,1,0.9936463832855225
+Howland Forest,US-Ho1,8,israd_density_soil_passive_1996,pool_delta14C,1,0.9930554032325745

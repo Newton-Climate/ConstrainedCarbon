@@ -15,6 +15,7 @@ Factory functions
     make_initial_state(config, site_config)  -> EcosystemState
     make_default_params(config)              -> ModelParams
 """
+
 from __future__ import annotations
 
 import math
@@ -210,9 +211,9 @@ def make_initial_state(
 # Factory: default parameters
 # ---------------------------------------------------------------------------
 
-_DEFAULT_TAU_AG_DAYS: float = 365.0   # fallback AG pool turnover (1 year)
-_DEFAULT_TAU_MIC_DAYS: float = 30.0   # default microbial turnover time
-_EPS: float = 1e-6                    # floor for transfer fractions
+_DEFAULT_TAU_AG_DAYS: float = 365.0  # fallback AG pool turnover (1 year)
+_DEFAULT_TAU_MIC_DAYS: float = 30.0  # default microbial turnover time
+_EPS: float = 1e-6  # floor for transfer fractions
 
 
 # ---------------------------------------------------------------------------
@@ -223,8 +224,7 @@ _EPS: float = 1e-6                    # floor for transfer fractions
 def _build_log_tau(config: ModelConfig) -> jnp.ndarray:
     """Build log-space turnover-time vector from YAML priors and overrides."""
     tau_overrides: dict[str, float] = {
-        k: float(v)
-        for k, v in config.parameters_raw.get("tau_overrides", {}).items()
+        k: float(v) for k, v in config.parameters_raw.get("tau_overrides", {}).items()
     }
     tau_vals: list[float] = []
     for pool in config.aboveground_pools:
@@ -268,7 +268,7 @@ def _build_log_f_transfer(
     return jnp.log(f_norm)
 
 
-def _yaml_prior(params_raw: dict, key: str, default: float) -> float:
+def _yaml_prior(params_raw: dict[str, Any], key: str, default: float) -> float:
     """Extract a scalar prior value from the YAML parameters dict."""
     entry = params_raw.get(key, {})
     if isinstance(entry, dict):
@@ -318,9 +318,7 @@ def make_default_params(config: ModelConfig) -> ModelParams:
 
     # ── log_alloc ──────────────────────────────────────────────────────────
     ag_names = [p.name for p in config.aboveground_pools]
-    alloc_vals = jnp.array(
-        [config.alloc[name] for name in ag_names], dtype=jnp.float32
-    )
+    alloc_vals = jnp.array([config.alloc[name] for name in ag_names], dtype=jnp.float32)
     alloc_norm = alloc_vals / alloc_vals.sum()
     log_alloc = jnp.log(alloc_norm)
 

@@ -22,14 +22,13 @@ test_harvard_soil_only_inversion_tau_recovery_synthetic
     Synthetic inversion: given C12 stocks from a "true" tau, optimise tau and
     verify the loss decreases monotonically (gradient descent is working).
 """
+
 from __future__ import annotations
 
-import math
 import pathlib
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 
 from ecosystem_complexity.api import build_model, run_model, spinup
@@ -178,9 +177,12 @@ def test_harvard_soil_only_inversion_tau_recovery_synthetic(soil_only_model):
     """
     import optax
 
-    from ecosystem_complexity.api import _get_opt_fields, _params_to_vector, _vector_to_params
+    from ecosystem_complexity.api import (
+        _params_to_vector,
+        _vector_to_params,
+    )
 
-    T = 365   # 1 year — needed to see signal with τ priors ~1700–100 000 days
+    T = 365  # 1 year — needed to see signal with τ priors ~1700–100 000 days
     forcing = _make_forcing(T, gpp=4.0)
 
     config = load_config(_SOIL_ONLY_PATH)

@@ -1,0 +1,83 @@
+Presentation-related files in `notebooks/`
+=========================================
+
+This manifest lists the presentation assets and the scripts that generate them.
+
+Scripts
+-------
+- `build_ecosystem_complexity_presentation.js`
+  Builds the final slide deck from the figure assets below.
+- `qa_ecosystem_complexity_presentation.py`
+  Runs a basic PPTX layout QA pass for overflow and off-slide elements.
+- `headline_figures.py`
+  Generates the canonical cross-site summary figures used in the deck.
+- `harvard_forest_analysis.py`
+  Generates the Harvard Forest canonical information-content figure.
+- `barrow_alaska_analysis.py`
+  Generates the Barrow canonical information-content figure.
+- `cross_site_information.py`
+  Generates the cross-site DFS-by-observation-type comparison figure.
+- `atm_14c_timeseries.py`
+  Generates the atmospheric radiocarbon sampling-window figure.
+- `soil_14c_by_biome.py`
+  Generates the biome-distribution soil radiocarbon figure.
+- `invert_hf_sierra.py`
+  Generates the Harvard Forest radiocarbon inversion summary figure.
+- `harvard_optimal_model.py`
+  Generates the Harvard Forest 8-panel three-pool OE summary figure.
+- `barrow_model.py`
+  Generates the Barrow 8-panel canonical three-pool OE summary figure.
+- `averaging_kernel_figure.py`
+  Generates the side-by-side τ-block averaging-kernel comparison for the two sites.
+- `barrow_model_israd.py`
+  Compatibility wrapper that writes the same canonical Barrow figure under an alias filename.
+
+Figures used in the slide deck
+------------------------------
+- `atmospheric_delta14c_sampling_windows.png`
+  Atmospheric Δ14C history with Harvard Forest and Barrow sampling windows.
+- `soil_delta14c_biome_distribution_with_sites.png`
+  Biome-level soil Δ14C distributions, annotated with Harvard Forest and Barrow.
+- `harvard_forest_radiocarbon_inversion_summary.png`
+  Harvard Forest radiocarbon inversion figure used in the site-results section.
+- `harvard_forest_three_pool_oe_summary.png`
+  Harvard Forest 8-panel three-pool optimal-estimation summary.
+- `barrow_canonical_information_content_analysis.png`
+  Barrow canonical information-content figure used for the Barrow panel in the deck.
+- `canonical_respired_delta14c_model_observation_fits.png`
+  Cross-site posterior respired Δ14C model-vs-observation fit figure.
+- `canonical_posterior_turnover_time_comparison.png`
+  Cross-site posterior turnover-time comparison figure.
+- `harvard_forest_canonical_information_content_analysis.png`
+  Harvard Forest canonical information-content figure.
+- `averaging_kernel_tau_comparison.png`
+  Side-by-side turnover-time averaging kernels for Harvard Forest and Barrow.
+- `cross_site_observation_type_dfs_comparison.png`
+  Cross-site DFS comparison by observation type.
+- `model_complexity_information_saturation.png`
+  DFS-vs-model-complexity ladder showing information saturation near 3 pools.
+- `clm/clm_emulator_posterior.png`
+  CLM-emulated posterior τ comparison against the radiocarbon-constrained posterior.
+- `clm/clm_emulator_14c_mismatch.png`
+  CLM-emulated respired Δ14C mismatch against observations.
+
+Other figure assets used in the slide deck
+------------------------------------------
+- `shi2020_fig2_global_carbon_distribution.png`
+  External reference figure: global soil-carbon age distribution by depth.
+- `shi2020_fig3_modelled_14C_map.png`
+  External reference figure: observed vs modeled soil Δ14C by biome.
+- `nottingham2020_fig2_tropical_soil_warming.png`
+  External reference figure: tropical whole-soil warming result.
+
+Deck output
+-----------
+- `ecosystem_complexity_soil_carbon_canonical_presentation.pptx`
+  Final PowerPoint deck built from `build_ecosystem_complexity_presentation.js`.
+
+Compatibility / non-deck outputs
+--------------------------------
+- `barrow_three_pool_canonical_oe_summary.png`
+  Standalone 8-panel canonical Barrow OE summary figure.
+- `barrow_three_pool_canonical_oe_summary_compatibility_alias.png`
+  Same Barrow figure written for backward compatibility with the old ISRaD wrapper.

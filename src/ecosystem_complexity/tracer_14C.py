@@ -19,6 +19,7 @@ Design constraints
 * No circular imports: model.py imports this module; this module imports only
   config, state, fluxes, and transfer.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -27,13 +28,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.fluxes import (
+from ecosystem_complexity.above_ground import (
     compute_external_soil_inputs,
-    f_moisture,
-    f_temp,
     npp_allocation,
 )
+from ecosystem_complexity.climate import f_moisture, f_temp
+from ecosystem_complexity.config import ModelConfig, PoolIndex
 from ecosystem_complexity.state import EcosystemState, ModelParams
 from ecosystem_complexity.transfer import get_transfer_matrix
 
@@ -44,15 +44,15 @@ if TYPE_CHECKING:
 # Module-level constants
 # ---------------------------------------------------------------------------
 
-_R_STD: float = 1.176e-12   # IAEA modern standard ¹⁴C/¹²C ratio
+_R_STD: float = 1.176e-12  # IAEA modern standard ¹⁴C/¹²C ratio
 
 # GPP placeholder constants — mirror model.py so the two step functions are
 # always in sync.  When the full LUE model is replaced these should move to
 # a shared constants module.
-_LUE: float = 0.002          # light-use efficiency (gC MJ⁻¹)
-_K_EXT: float = 0.5          # Beer–Lambert extinction coefficient
-_LAI: float = 5.0            # leaf area index (m² m⁻²)
-_CUE: float = 0.5            # carbon use efficiency (NPP / GPP)
+_LUE: float = 0.002  # light-use efficiency (gC MJ⁻¹)
+_K_EXT: float = 0.5  # Beer–Lambert extinction coefficient
+_LAI: float = 5.0  # leaf area index (m² m⁻²)
+_CUE: float = 0.5  # carbon use efficiency (NPP / GPP)
 
 
 # ---------------------------------------------------------------------------
@@ -87,7 +87,7 @@ def _build_pool_to_layer(
 def step_14C(
     state: EcosystemState,
     params: ModelParams,
-    forcing_t: dict,
+    forcing_t: dict[str, jnp.ndarray],
     config: ModelConfig,
     pool_index: PoolIndex,
     *,
@@ -162,7 +162,7 @@ def step_14C(
     fm_layers = f_moisture(
         forcing_t["soil_moisture"], params.log_theta_opt, params.log_gamma_moist
     )
-    ft_vec = ft_layers[pool_to_layer]            # (n_pools,)
+    ft_vec = ft_layers[pool_to_layer]  # (n_pools,)
     fm_vec = fm_layers[pool_to_layer]
     ff_vec = state.thawed_frac[pool_to_layer]
 
@@ -180,7 +180,7 @@ def step_14C(
         ag_frac = 1.0 - soil_frac
     else:
         GPP = forcing_t["sw_radiation"] * _LUE * (1.0 - jnp.exp(-_K_EXT * _LAI))
-        ag_frac = 1.0
+        ag_frac = jnp.asarray(1.0)
 
     F_npp = npp_allocation(GPP, CUE, params.log_alloc, n_ag) * ag_frac  # (n_ag,)
 
@@ -193,6 +193,7 @@ def step_14C(
     # ── External direct soil ¹⁴C inputs ──────────────────────────────────
     # Mirror the ¹²C external inputs, weighted by the atmospheric ¹⁴C ratio.
     if external_inputs_active:
+        assert external_input_target_indices is not None
         GPP_or_NPP = GPP if not external_input_is_npp else GPP * CUE
         ext_inputs_12C = compute_external_soil_inputs(
             GPP_or_NPP=GPP_or_NPP,
@@ -211,20 +212,20 @@ def step_14C(
     F_mat = get_transfer_matrix(params.log_f_transfer, n_pools)  # (n, n)
 
     # ── Per-pool ¹⁴C outflux ─────────────────────────────────────────────
-    tau = jnp.exp(params.log_tau)                                # (n_pools,)
-    F14_out = (state.C14 / tau) * ft_vec * fm_vec * ff_vec      # (n_pools,)
+    tau = jnp.exp(params.log_tau)  # (n_pools,)
+    F14_out = (state.C14 / tau) * ft_vec * fm_vec * ff_vec  # (n_pools,)
 
     # ── ¹⁴C influx from pool-to-pool transfers ────────────────────────────
     # F_mat[i, j] = fraction of pool-i outflux going to pool j
     # F14_in[j]   = Σ_i F_mat[i, j] · F14_out[i]  =  F_mat.T @ F14_out
-    F14_in = F_mat.T @ F14_out                                   # (n_pools,)
+    F14_in = F_mat.T @ F14_out  # (n_pools,)
 
     # ── Radioactive decay ─────────────────────────────────────────────────
-    decay = params.lambda_14C * state.C14                        # (n_pools,)
+    decay = params.lambda_14C * state.C14  # (n_pools,)
 
     # ── Euler update ──────────────────────────────────────────────────────
     dC14 = F14_npp + F14_ext + F14_in - F14_out - decay
-    return state.C14 + dC14 * dt
+    return jnp.asarray(state.C14 + dC14 * dt)
 
 
 # ---------------------------------------------------------------------------
@@ -274,7 +275,7 @@ def compute_delta14C(
 def spinup_14C(
     model: EcosystemModel,
     C12_ss: jnp.ndarray,
-    forcing_historical: dict,
+    forcing_historical: dict[str, jnp.ndarray],
     params: ModelParams,
 ) -> jnp.ndarray:
     """
@@ -329,7 +330,7 @@ def spinup_14C(
     # ── Phase 2: scan through historical atmospheric record ───────────────
     def _scan_body(
         C14: jnp.ndarray,
-        forcing_t: dict,
+        forcing_t: dict[str, jnp.ndarray],
     ) -> tuple[jnp.ndarray, None]:
         state = EcosystemState(
             C12=C12_ss,
@@ -392,7 +393,5 @@ def initialize_permafrost_14C(
     """
     for pool_name, delta14C_obs in permafrost_obs.items():
         i = pool_index[pool_name]
-        C14 = C14.at[i].set(
-            C12[i] * _R_STD * (1.0 + delta14C_obs / 1000.0)
-        )
+        C14 = C14.at[i].set(C12[i] * _R_STD * (1.0 + delta14C_obs / 1000.0))
     return C14

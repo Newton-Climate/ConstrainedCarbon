@@ -11,11 +11,15 @@ dependencies:
   - pandas
   - matplotlib
   - pyyaml
+  # Differentiable modelling / inversion
+  - jax
+  - optax
   # Dev tools
   - pytest
   - pytest-cov
   - black
   - ruff
   - mypy
+  - types-pyyaml
   - pip:
       - -r requirements.txt

@@ -71,6 +71,7 @@ if _SRC_ROOT not in sys.path:
     sys.path.insert(0, _SRC_ROOT)
 
 from ecosystem_complexity.api import build_model, optimize_oe, run_model
+from ecosystem_complexity._oe_helpers import _build_sa_diag
 from ecosystem_complexity.config import load_config
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
@@ -287,13 +288,23 @@ def main():
     c12_prior  = np.array(out_prior.C12)
 
     # ── OE inversion: log_tau + log_f_transfer ────────────────────────────────
+    # Pin dead_roots τ near Gaudinski's 6 yr by overriding its prior σ to be
+    # tight in log-space.  Without this, the optimizer compresses dead_roots
+    # to <1 yr to chase respired Δ¹⁴C bias — an unphysical posterior.
+    opt_fields = ("log_tau", "log_f_transfer")
+    sa_diag = np.array(_build_sa_diag(model.config, params_prior, opt_fields))
+    _i_dead = idx["dead_roots"]
+    sa_diag[_i_dead] = 0.05 ** 2          # σ_log = 0.05 → τ stays within ±5 %
+    print(f"  Pinning dead_roots τ at {tau_prior[_i_dead]/365:.1f} yr "
+          f"(prior σ_log = 0.05; ≈ ±{tau_prior[_i_dead]/365 * 0.05:.2f} yr)")
     print("\nOptimal Estimation (Levenberg-Marquardt)…")
     print("  Optimizing: log_tau (7) + log_f_transfer (7×8=56, structural zeros frozen)")
     t0 = time.perf_counter()
     oe_result = optimize_oe(
         model, forcing, obs,
         state0=state_1900,
-        fields=("log_tau", "log_f_transfer"),
+        fields=opt_fields,
+        sa_override_diag=jnp.array(sa_diag, dtype=jnp.float32),
     )
     jax.block_until_ready(oe_result.x_opt)
     print(f"  Done in {time.perf_counter()-t0:.1f} s")
@@ -528,7 +539,7 @@ def _make_figure(
     ax.legend(fontsize=8); ax.set_xlim(1950, 2011)
 
     fig.tight_layout()
-    out_path = os.path.join(_SCRIPT_ROOT, "invert_hf_sierra.png")
+    out_path = os.path.join(_SCRIPT_ROOT, "harvard_forest_radiocarbon_inversion_summary.png")
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"\nFigure saved → {out_path}")
     plt.close(fig)
