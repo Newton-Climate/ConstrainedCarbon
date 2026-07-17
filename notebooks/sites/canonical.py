@@ -85,7 +85,11 @@ from sites.harvard_forest import (
     build_pool_14C_obs as hf_build_pool_14C_obs,
     build_resp_14C_obs as hf_build_resp_14C_obs,
     build_israd_14C_obs as hf_build_israd_blocks,
+    build_hf_bulk_14C_obs as hf_build_bulk_blocks,
+    build_hf_bulk_mixture_14C_obs as hf_build_bulk_mixture_blocks,
+    build_hf_bulk_perlayer_mixture_14C_obs as hf_build_bulk_perlayer_blocks,
     ISRAD_FRAC_PATH,
+    ISRAD_LAYER_PATH as HF_ISRAD_LAYER_PATH,
     build_state0 as hf_build_state0,
 )
 
@@ -252,18 +256,46 @@ def _run_oe_canonical(
 # Harvard Forest canonical inversion
 # ════════════════════════════════════════════════════════════════════════════
 
-def run_hf_canonical() -> dict:
+def run_hf_canonical(pool_14c_source: str = "fraction") -> dict:
     """Single OE inversion at Harvard Forest (3-pool config).
 
     Obs:
-      pool Δ¹⁴C    hf212-03 density fractions → 3 pools × 2 years
+      pool Δ¹⁴C    ISRaD radiocarbon → 3 pools (source set by ``pool_14c_source``)
       resp Δ¹⁴C    hf212-01 NWN respired CO₂  (41 dates)
       C stocks     ISRaD H1–H5 layer-integrated, one entry per pool
-      ISRaD blocks density-fraction Δ¹⁴C (Gaudinski 1996, Savage 2007, McFarlane 2011)
+
+    Parameters
+    ----------
+    pool_14c_source : {"fraction", "bulk", "mixture", "perlayer", "both"}
+        Which ISRaD ¹⁴C constraint carries the pool Δ¹⁴C information:
+
+        ``"fraction"`` (default, canonical)
+            Density-fraction Δ¹⁴C (Gaudinski 2000, Savage 2007, McFarlane 2013);
+            each fraction isolates one kinetic pool.
+        ``"bulk"``
+            Whole-soil layer Δ¹⁴C (McFarlane 2013 H1–H5), binned to pools by
+            *depth* — a depth→pool proxy, one constraint per pool.
+        ``"mixture"``
+            Whole-soil layer Δ¹⁴C as a single carbon-mass-weighted mixture
+            constraint, ``Σ_p (C12_p/ΣC12)·Δ14C_p`` — uses the model's own pool
+            masses, no depth→pool assumption.  One scalar constraint.
+        ``"perlayer"``
+            Per-layer carbon-mass-weighted mixture, one constraint per depth bin:
+            surface bins use *measured* density-fraction masses as weights, deep
+            bins fall back to the model C12 partition.  The physically-honest,
+            rank-limited operator.
+        ``"both"``
+            Fraction + depth-proxy bulk blocks together (bulk's marginal
+            information on top of fractions).
 
     Returns the structured dict described in the module docstring.
     """
-    label = "Harvard Forest"
+    if pool_14c_source not in ("fraction", "bulk", "mixture", "perlayer", "both"):
+        raise ValueError(
+            f"pool_14c_source must be 'fraction', 'bulk', 'mixture', 'perlayer', "
+            f"or 'both'; got {pool_14c_source!r}"
+        )
+    label = f"Harvard Forest [{pool_14c_source} ¹⁴C]"
     print(f"\n══ {label} — canonical OE inversion ══════════════════════════════")
     atm14C = load_full_14C_record(
         hua_path=HUA_PATH, graven_path=GRAVEN_PATH, intcal_path=INTCAL_PATH,
@@ -294,24 +326,38 @@ def run_hf_canonical() -> dict:
     time_years = 1970.0 + np.array(forcing.time) / 365.25
     print(f"  Forcing: {T} days  ({time_years[0]:.1f}–{time_years[-1]:.1f})")
 
-    # Pool Δ¹⁴C: use only ISRaD density-fraction blocks (built below).
-    # We deliberately do NOT load hf212-03 horizon-bulk Δ¹⁴C here:
-    # those horizon means are computed from the same physical NWN profiles
-    # that feed the ISRaD Gaudinski_2000 / Savage_unpub fraction entries,
-    # so including both would treat correlated samples as independent.
+    # Pool Δ¹⁴C: carried entirely by ISRaD ObsBlocks (built below), so the
+    # standard pool-Δ¹⁴C obs vector stays empty.  We deliberately do NOT load
+    # hf212-03 horizon-bulk Δ¹⁴C here: those horizon means come from the same
+    # physical NWN profiles that feed the ISRaD entries, so including both
+    # would treat correlated samples as independent.
     delta14C_obs  = {}
     delta14C_resp = hf_build_resp_14C_obs(HF_RESP_14C_PATH, forcing.time)
     n_resp_obs = int(jnp.sum(~jnp.isnan(delta14C_resp)))
-    print(f"  Pool Δ¹⁴C: ISRaD blocks only  Resp Δ¹⁴C: {n_resp_obs}")
+    print(f"  Resp Δ¹⁴C: {n_resp_obs}")
 
     # C stocks from ISRaD (one entry per pool — goes through standard c_stock block)
     print("  Building HF C-stock obs from ISRaD H1–H5…")
     c_pools_obs = build_hf_c_stocks_israd(model)
 
-    # ISRaD fraction Δ¹⁴C blocks (extra)
-    israd_blocks = hf_build_israd_blocks(ISRAD_FRAC_PATH, forcing.time, idx)
-    print(f"  ISRaD fraction Δ¹⁴C blocks: {len(israd_blocks)}")
-    extra_blocks = list(israd_blocks)
+    # Pool Δ¹⁴C ISRaD blocks — source selectable for the bulk-vs-fraction test.
+    extra_blocks = []
+    if pool_14c_source in ("fraction", "both"):
+        israd_blocks = hf_build_israd_blocks(ISRAD_FRAC_PATH, forcing.time, idx)
+        print(f"  ISRaD fraction Δ¹⁴C blocks: {len(israd_blocks)}")
+        extra_blocks += list(israd_blocks)
+    if pool_14c_source in ("bulk", "both"):
+        bulk_blocks = hf_build_bulk_blocks(HF_ISRAD_LAYER_PATH, forcing.time, idx)
+        print(f"  ISRaD bulk-layer Δ¹⁴C blocks: {len(bulk_blocks)}")
+        extra_blocks += list(bulk_blocks)
+    if pool_14c_source == "mixture":
+        mix_blocks = hf_build_bulk_mixture_blocks(HF_ISRAD_LAYER_PATH, forcing.time, idx)
+        print(f"  ISRaD bulk-mixture Δ¹⁴C blocks: {len(mix_blocks)}")
+        extra_blocks += list(mix_blocks)
+    if pool_14c_source == "perlayer":
+        perlayer_blocks = hf_build_bulk_perlayer_blocks(HF_ISRAD_LAYER_PATH, forcing.time, idx)
+        print(f"  ISRaD per-layer mixture Δ¹⁴C blocks: {len(perlayer_blocks)}")
+        extra_blocks += list(perlayer_blocks)
 
     obs_full = ObservationData(
         time=forcing.time,
@@ -332,7 +378,7 @@ def run_hf_canonical() -> dict:
         model=model, config=config, idx=idx, opt_fields=opt_fields,
         forcing=forcing, time_years=time_years,
         obs_full=obs_full, extra_blocks=extra_blocks,
-        state0_obs=state0,
+        state0_obs=state0, pool_14c_source=pool_14c_source,
         delta14C_obs=delta14C_obs, delta14C_resp=delta14C_resp,
         c_pools_obs=c_pools_obs,
         **fit,
