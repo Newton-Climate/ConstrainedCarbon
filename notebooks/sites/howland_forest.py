@@ -5,9 +5,7 @@ from __future__ import annotations
 
 import os
 import sys
-import time
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 import pandas as pd
@@ -17,12 +15,15 @@ _NB_ROOT = os.path.dirname(_SITES_ROOT)
 _WORKTREE_ROOT = os.path.dirname(_NB_ROOT)
 _SRC_ROOT = os.path.join(_WORKTREE_ROOT, "src")
 
-if _SRC_ROOT not in sys.path:
-    sys.path.insert(0, _SRC_ROOT)
+for _p in (_SRC_ROOT, _SITES_ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from notebook_utils import find_data_root
 
-from ecosystem_complexity.api import build_model, run_model, optimize_oe, ObsBlock
+from canonical import _run_oe_canonical
+
+from ecosystem_complexity.api import build_model, ObsBlock
 from ecosystem_complexity.data.loaders import load_howland_forest
 from ecosystem_complexity.data.parsers import attach_atm14C, slice_forcing
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
@@ -32,8 +33,7 @@ from ecosystem_complexity.data.israd_observations import (
     add_layer_midpoint,
     build_fraction_obs_blocks,
 )
-from ecosystem_complexity.state import make_default_params, make_initial_state
-from ecosystem_complexity._oe_helpers import _analytical_c12_ss
+from ecosystem_complexity.state import make_initial_state
 
 _REPO_ROOT = (
     os.environ.get("ECOSYSTEM_REPO_ROOT")
@@ -246,31 +246,6 @@ def build_state0(config, pool_index, c_pools_obs: dict, delta14c_obs: dict):
     return base._replace(C12=jnp.array(c12_arr), C14=jnp.array(c14_arr))
 
 
-def _mean_ss_modifier(forcing, params0) -> tuple[float, float]:
-    from ecosystem_complexity.climate import f_temp as _ft_fn, f_moisture as _fm_fn, thawed_frac as _ff_fn
-
-    air_t = np.nan_to_num(np.array(forcing.air_temp), nan=5.0)
-    soil_t = np.where(np.isnan(np.array(forcing.soil_temp[:, 0])), air_t, np.array(forcing.soil_temp[:, 0]))
-    theta = np.where(np.isnan(np.array(forcing.soil_moisture[:, 0])), 0.3, np.array(forcing.soil_moisture[:, 0]))
-    ft = _ft_fn(jnp.array(soil_t, dtype=jnp.float32), params0.log_Q10[0], T_ref=15.0)
-    fm = _fm_fn(jnp.array(theta, dtype=jnp.float32), params0.log_theta_opt[0], params0.log_gamma_moist[0])
-    ff = _ff_fn(jnp.array(soil_t, dtype=jnp.float32))
-    mod = float(jnp.nanmean(ft * fm * ff))
-    mod = mod if (np.isfinite(mod) and mod > 0.05) else 0.05
-    return mod, float(jnp.nanmean(forcing.GPP_obs))
-
-
-def _ss_state_for(model, forcing, state0, params):
-    n_pools = len(model.pool_index)
-    cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
-    mean_mod, mean_gpp = _mean_ss_modifier(forcing, params)
-    mean_input = mean_gpp * cue
-    target_names = list(model.config.external_inputs.partition.keys())
-    target_idx = [model.pool_index[n] for n in target_names] or None
-    c12_ss = _analytical_c12_ss(params, n_pools, mean_input, mean_mod, target_indices=target_idx)
-    return state0._replace(C12=c12_ss)
-
-
 def run_howland_canonical() -> dict:
     label = "Howland Forest"
     print(f"\n══ {label} — canonical OE inversion ═══════════════════════════════")
@@ -321,24 +296,9 @@ def run_howland_canonical() -> dict:
     state0 = build_state0(config, idx, c_pools_obs, delta14c_obs)
     print(f"  State0 total C12: {float(jnp.sum(state0.C12)):.0f} gC m⁻²")
 
-    params_prior = make_default_params(model.config)
-    print(f"\n[{label}] prior forward simulation…")
-    out_prior = run_model(model, forcing, state0=state0, params=params_prior)
-    jax.block_until_ready(out_prior.delta14C)
-
-    print(f"[{label}] optimize_oe  fields={opt_fields}  extras={[b.name for b in extra_blocks]}")
-    t0 = time.perf_counter()
-    result = optimize_oe(
-        model, forcing, obs_full, state0=state0,
-        fields=opt_fields, extra_obs_blocks=extra_blocks,
+    fit = _run_oe_canonical(
+        model, forcing, state0, obs_full, extra_blocks, opt_fields, label,
     )
-    ch = np.array(result.cost_history)
-    print(f"  Done [{time.perf_counter()-t0:.1f}s]  J {ch[0]:.2f} → {ch[-1]:.2f}  ({result.n_iter} iter, converged={result.converged})")
-
-    params_opt = result.params_opt
-    state_at_map = _ss_state_for(model, forcing, state0, params_opt)
-    out_opt = run_model(model, forcing, state0=state_at_map, params=params_opt)
-    jax.block_until_ready(out_opt.delta14C)
 
     return dict(
         model=model, config=config, idx=idx, opt_fields=opt_fields,
@@ -347,10 +307,7 @@ def run_howland_canonical() -> dict:
         state0_obs=state0,
         delta14C_obs=delta14c_obs, delta14C_resp=delta14c_resp,
         c_pools_obs=c_pools_obs,
-        params_prior=params_prior, params_opt=params_opt,
-        out_prior=out_prior, out_opt=out_opt,
-        state_at_map=state_at_map,
-        oe_result=result,
+        **fit,
     )
 
 

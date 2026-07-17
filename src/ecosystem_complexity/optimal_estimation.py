@@ -27,6 +27,7 @@ from ._oe_helpers import (
     _analytical_c12_ss,
     _build_obs_blocks,
     _build_sa_diag,
+    apply_ss_c12,
 )
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
@@ -227,11 +228,12 @@ def optimize_oe(  # noqa: C901
     def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = _vector_to_params(x_vec, params0, opt_fields)
 
-        # Replace C12 with analytical steady-state to eliminate spinup drift.
+        # Replace C12 with analytical steady-state to eliminate spinup drift,
+        # rescaling C14 so the initial Δ¹⁴C stays fixed as τ (hence c12_ss) moves.
         c12_ss = _analytical_c12_ss(
             p, _n_pools, _mean_input, _mean_modifier, target_indices=_ext_target_idx
         )
-        state_ss = state0._replace(C12=c12_ss)
+        state_ss = apply_ss_c12(state0, c12_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
 
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
