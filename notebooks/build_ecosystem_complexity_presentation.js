@@ -100,7 +100,7 @@ function placeholderBox(slide, x, y, w, h, label) {
   });
 }
 
-const TOTAL = 20;
+const TOTAL = 24;
 let n = 1;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -969,13 +969,54 @@ let n = 1;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SLIDE 15 — Complexity ladder: diminishing returns
+// SLIDE 15b — Bulk + respired ¹⁴C on par with fraction ¹⁴C
 // ═══════════════════════════════════════════════════════════════════════════
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
   n++;
   addSlideHeader(s, "INFORMATION CONTENT  ·  04",
+    "Bulk + respired ¹⁴C is on par with density-fraction ¹⁴C");
+
+  s.addImage({
+    path: fig("bulk_respired_on_par_with_fraction_14c.png"),
+    x: 0.5, y: 1.7, w: 12.3, h: 3.5,
+    sizing: { type: "contain", w: 12.3, h: 3.5 },
+  });
+
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 5.55, w: 12.3, h: 1.55,
+    fill: { color: C.bgLight }, line: { color: C.accent, width: 1 },
+  });
+  s.addText("WHY IT MATTERS", {
+    x: 0.75, y: 5.62, w: 2.4, h: 0.3,
+    fontSize: 12, fontFace: FONT_BODY, bold: true,
+    color: C.secondary, charSpacing: 4, margin: 0,
+  });
+  s.addText([
+    { text: "Bulk ¹⁴C alone cannot resolve the pool structure — a 3-pool model caps it. However you weight the layers (one collapsed mixture 1.0, honest per-layer mass-weighting 1.65, or a depth→pool proxy 2.0), bulk-alone stays below fractions (2.95). ",
+      options: { fontSize: 12.5 } },
+    { text: "But bulk is stock-weighted (slow + passive) and respiration flux-weighted (active), so ",
+      options: { fontSize: 12.5 } },
+    { text: "bulk + respired ≈ fractions (≈3.0). ",
+      options: { fontSize: 12.5, bold: true, color: C.secondary } },
+    { text: "That matters because density fractionation is rare — and absent for permafrost (Barrow), where bulk + respired is the only option and still nearly saturates (2.86).",
+      options: { fontSize: 12.5 } },
+  ], {
+    x: 0.75, y: 5.95, w: 12.0, h: 1.1,
+    fontFace: FONT_HEAD, italic: true, color: C.primary, margin: 0, valign: "top",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 16 — Complexity ladder: diminishing returns
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "INFORMATION CONTENT  ·  05",
     "Information saturates at ~3 DFS — matched to the 3-pool model dimensionality");
 
   // complexity_ladder native AR 2.62 — size container to match (8.5 × 3.24)
@@ -1341,6 +1382,218 @@ let n = 1;
     x: 0.9, y: 7.0, w: 12.0, h: 0.3,
     fontSize: 11, fontFace: FONT_BODY, color: C.accent, margin: 0,
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 22 — Multi-site extension: observation utility across 14 ecosystems
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "MULTI-SITE  ·  OBSERVATION UTILITY",
+    "One recipe, 14 ecosystems — turnover is never fully identified");
+
+  s.addImage({
+    path: fig("fig08_panelC_dfs_by_site.png"),
+    x: 0.55, y: 1.65, w: 8.8, h: 4.25,
+    sizing: { type: "contain", w: 8.8, h: 4.25 },
+  });
+
+  s.addText("THE HEADLINE", {
+    x: 9.55, y: 1.85, w: 3.4, h: 0.35,
+    fontSize: 11, fontFace: FONT_BODY, bold: true,
+    color: C.secondary, charSpacing: 3, margin: 0,
+  });
+  s.addText("Stacking observation types lifts the fast pool — but never the passive pool.", {
+    x: 9.55, y: 2.2, w: 3.4, h: 1.0,
+    fontSize: 14, fontFace: FONT_HEAD, italic: true,
+    color: C.primary, margin: 0, valign: "top",
+  });
+
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 9.55, y: 3.45, w: 3.4, h: 2.35,
+    fill: { color: C.primary }, line: { color: C.primary },
+  });
+  s.addText("τ uncertainty reduction (MO Ozark)", {
+    x: 9.7, y: 3.53, w: 3.15, h: 0.3,
+    fontSize: 9.5, fontFace: FONT_BODY, bold: true, color: C.accent, margin: 0,
+  });
+  const urRows = [
+    ["",          "Frac", "+Bulk", "+Stk"],
+    ["τ active",  "0.68", "0.74",  "0.82"],
+    ["τ slow",    "0.46", "0.46",  "0.45"],
+    ["τ passive", "0.27", "0.27",  "0.27"],
+  ];
+  let uy = 3.95;
+  urRows.forEach((r, i) => {
+    const isHead = i === 0;
+    const isPass = r[0] === "τ passive";
+    const tc = isHead ? C.accent : (isPass ? C.accent : "FFFFFF");
+    s.addText(r[0], { x: 9.68, y: uy, w: 1.1, h: 0.4,
+      fontSize: 12, fontFace: FONT_BODY, bold: true, color: tc, valign: "middle", margin: 0 });
+    [1, 2, 3].forEach((k) => {
+      s.addText(r[k], { x: 10.78 + (k - 1) * 0.68, y: uy, w: 0.66, h: 0.4,
+        fontSize: isHead ? 9.5 : 12.5, fontFace: FONT_BODY, bold: true,
+        color: tc, align: "right", valign: "middle", margin: 0 });
+    });
+    uy += 0.44;
+  });
+
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 6.05, w: 12.35, h: 1.1,
+    fill: { color: C.bgLight }, line: { color: C.accent, width: 1 },
+  });
+  s.addText("WHY?", {
+    x: 0.75, y: 6.1, w: 1.0, h: 0.3,
+    fontSize: 12, fontFace: FONT_BODY, bold: true,
+    color: C.secondary, charSpacing: 4, margin: 0,
+  });
+  s.addText("New sites (UMBS, Ozark, Bartlett) run a combined pathway — density-fraction + bulk-layer depth Δ¹⁴C + measured SOC stocks. Across all 14 ecosystems turnover DFS saturates near 2.1–2.5, never reaching 3: the century-scale passive pool is structurally unidentifiable from single-epoch ¹⁴C, because τ_passive trades off with the slow→passive transfer flux. Even a −272 ‰ deep layer plus a tight measured stock leaves passive uncertainty reduction at ≈ 0.27.", {
+    x: 0.75, y: 6.4, w: 12.05, h: 0.72,
+    fontSize: 11.5, fontFace: FONT_HEAD, italic: true,
+    color: C.primary, margin: 0, valign: "top",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 23 — GPP time structure carries almost no turnover information
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "FORCING  ·  GPP TIME STRUCTURE",
+    "GPP's seasonal structure carries almost no turnover information");
+
+  s.addImage({
+    path: fig("harvard_forest_gpp_ladder.png"),
+    x: 0.55, y: 1.65, w: 8.8, h: 4.25,
+    sizing: { type: "contain", w: 8.8, h: 4.25 },
+  });
+
+  s.addText("THE HEADLINE", {
+    x: 9.55, y: 1.85, w: 3.4, h: 0.35,
+    fontSize: 11, fontFace: FONT_BODY, bold: true,
+    color: C.secondary, charSpacing: 3, margin: 0,
+  });
+  s.addText("Same mean GPP, with vs without seasonal structure: identical information.", {
+    x: 9.55, y: 2.2, w: 3.4, h: 1.0,
+    fontSize: 14, fontFace: FONT_HEAD, italic: true,
+    color: C.primary, margin: 0, valign: "top",
+  });
+
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 9.55, y: 3.45, w: 3.4, h: 2.35,
+    fill: { color: C.primary }, line: { color: C.primary },
+  });
+  s.addText("Harvard Forest — tower vs mean GPP", {
+    x: 9.7, y: 3.53, w: 3.15, h: 0.3,
+    fontSize: 9.5, fontFace: FONT_BODY, bold: true, color: C.accent, margin: 0,
+  });
+  const gppRows = [
+    ["",           "Tower", "Mean"],
+    ["Total DFS",  "3.14",  "3.14"],
+    ["UR τ-act",   "98%",   "98%"],
+    ["UR τ-slow",  "41%",   "41%"],
+    ["UR τ-pass",  "31%",   "31%"],
+  ];
+  let gy = 3.9;
+  gppRows.forEach((r, i) => {
+    const isHead = i === 0;
+    const tc = isHead ? C.accent : "FFFFFF";
+    s.addText(r[0], { x: 9.68, y: gy, w: 1.6, h: 0.36,
+      fontSize: 12, fontFace: FONT_BODY, bold: true, color: tc, valign: "middle", margin: 0 });
+    s.addText(r[1], { x: 11.3, y: gy, w: 0.8, h: 0.36,
+      fontSize: isHead ? 10.5 : 12.5, fontFace: FONT_BODY, bold: true,
+      color: tc, align: "right", valign: "middle", margin: 0 });
+    s.addText(r[2], { x: 12.1, y: gy, w: 0.75, h: 0.36,
+      fontSize: isHead ? 10.5 : 12.5, fontFace: FONT_BODY, bold: true,
+      color: tc, align: "right", valign: "middle", margin: 0 });
+    gy += 0.38;
+  });
+
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 6.05, w: 12.35, h: 1.1,
+    fill: { color: C.bgLight }, line: { color: C.accent, width: 1 },
+  });
+  s.addText("WHY?", {
+    x: 0.75, y: 6.1, w: 1.0, h: 0.3,
+    fontSize: 12, fontFace: FONT_BODY, bold: true,
+    color: C.secondary, charSpacing: 4, margin: 0,
+  });
+  s.addText("Both treatments share the same record-mean GPP, so the steady-state operating point is identical; only the transient trajectory differs. The near-zero ΔDFS (+0.003 over all observations) shows turnover information comes from the mean carbon-input magnitude and the ¹⁴C + stock data — not the seasonal or interannual structure of GPP. Total information saturates near 3 DFS, so a 3-pool model is the right complexity for single-epoch data.", {
+    x: 0.75, y: 6.4, w: 12.05, h: 0.72,
+    fontSize: 11.5, fontFace: FONT_HEAD, italic: true,
+    color: C.primary, margin: 0, valign: "top",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 24 — Extended conclusions (multi-site + combined-obs synthesis)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bgDark };
+  n++;
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0, y: 0, w: 0.25, h: H, fill: { color: C.accent }, line: { color: C.accent },
+  });
+  s.addText("EXTENDED CONCLUSIONS", {
+    x: 0.9, y: 0.6, w: 12.0, h: 0.4,
+    fontSize: 13, fontFace: FONT_BODY, bold: true,
+    color: C.accent, charSpacing: 6, margin: 0,
+  });
+  s.addText("What the multi-site + combined-observation analysis adds", {
+    x: 0.9, y: 1.0, w: 12.0, h: 0.7,
+    fontSize: 28, fontFace: FONT_HEAD, italic: true,
+    color: "FFFFFF", margin: 0,
+  });
+
+  const ext = [
+    {
+      n: "05",
+      bold: "Passive turnover is prior-dominated in every biome.",
+      sub: "Across 14 ecosystems the passive-pool uncertainty reduction sits at ≈ 0.25–0.30. Adding deep depleted bulk-layer Δ¹⁴C (−272 ‰) and tight measured SOC stocks moves it < 0.01 — τ_passive trades off with the slow→passive transfer flux, an identifiability limit, not a data-volume one.",
+    },
+    {
+      n: "06",
+      bold: "Observation value is complementarity-driven — and capped.",
+      sub: "Combining soil and respired Δ¹⁴C helps only where they constrain different modes (Harvard +0.20) and is redundant elsewhere (Howland −0.04). Combined value tops out near 0.8–0.9 and never reaches 1, because the deep pool that governs century-scale loss stays unconstrained.",
+    },
+    {
+      n: "07",
+      bold: "GPP time-structure is information-free; ≈ 3 DFS is the ceiling.",
+      sub: "Time-varying vs record-mean GPP give identical information (ΔDFS +0.003). Turnover information lives in the mean operating point and the ¹⁴C/stock data. Breaking the passive degeneracy needs multi-decadal or pre-bomb Δ¹⁴C — not more observation types at one epoch.",
+    },
+  ];
+
+  const cardW = 12.35, cardH = 1.5, gapY = 0.24;
+  ext.forEach((c, i) => {
+    const cy = 2.0 + i * (cardH + gapY);
+    s.addShape(pres.shapes.RECTANGLE, {
+      x: 0.9, y: cy, w: cardW, h: cardH,
+      fill: { color: "FFFFFF" }, line: { color: C.accent, width: 0.5 },
+    });
+    s.addText(c.n, {
+      x: 1.1, y: cy + 0.2, w: 1.3, h: 1.1,
+      fontSize: 40, fontFace: FONT_HEAD, bold: true,
+      color: C.accent, margin: 0, valign: "top",
+    });
+    s.addText(c.bold, {
+      x: 2.5, y: cy + 0.18, w: cardW - 1.8, h: 0.4,
+      fontSize: 15, fontFace: FONT_HEAD, bold: true,
+      color: C.primary, margin: 0, valign: "top",
+    });
+    s.addText(c.sub, {
+      x: 2.5, y: cy + 0.62, w: cardW - 1.8, h: 0.82,
+      fontSize: 11, fontFace: FONT_BODY, color: C.body,
+      margin: 0, valign: "top", italic: true,
+    });
+  });
+  addPageNumber(s, n, TOTAL);
 }
 
 pres.writeFile({ fileName: fig("ecosystem_complexity_soil_carbon_canonical_presentation.pptx") })
