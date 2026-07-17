@@ -207,10 +207,21 @@ def _run_oe_canonical(
     opt_fields: tuple,
     site_label: str,
 ) -> dict:
-    """Single canonical optimize_oe call with structured return."""
+    """Single canonical optimize_oe call with structured return.
+
+    This is THE shared inversion driver for every canonical site (HF, Barrow,
+    EML, Howland).  It runs the prior and the MAP from their own analytical
+    steady state — the exact operating points ``optimize_oe`` costs against —
+    so the returned diagnostics are self-consistent regardless of site.
+    """
     params_prior = make_default_params(model.config)
     print(f"\n[{site_label}] prior forward simulation…")
-    out_prior = run_model(model, forcing, state0=state0, params=params_prior)
+    # Run the prior from its own analytical steady state — the same operating
+    # point optimize_oe costs the prior against (y_prior = _forward(xa)).  Using
+    # the observed-stock state0 here would plot a "prior" that is not at steady
+    # state and does not match the prior the inversion actually sees.
+    state_at_prior = _ss_state_for(model, forcing, state0, params_prior)
+    out_prior = run_model(model, forcing, state0=state_at_prior, params=params_prior)
     jax.block_until_ready(out_prior.delta14C)
 
     print(f"[{site_label}] optimize_oe  fields={opt_fields}  "
@@ -232,7 +243,7 @@ def _run_oe_canonical(
     return dict(
         params_prior=params_prior, params_opt=params_opt,
         out_prior=out_prior, out_opt=out_opt,
-        state_at_map=state_at_map,
+        state_at_prior=state_at_prior, state_at_map=state_at_map,
         oe_result=result,
     )
 
