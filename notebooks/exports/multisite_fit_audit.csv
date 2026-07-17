@@ -1,0 +1,57 @@
+site,tower_id,biome,status,n_iter,J0,J_final,n_obs,rchi2_data,tau_active_yr,tau_slow_yr,tau_passive_yr,GPP_gCm2yr,SOC_gCm2,block,family,block_n,block_rchi2,block_max_abs_z,worst_obs,worst_pred,worst_sigma
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,ok,28,307.2,69.6,6,8.9,1.52,21.16,217.8,127,134116,resp_14C,resp_delta14C,4,12.67,5.7,61.9,-23.6,15.0
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,ok,28,307.2,69.6,6,8.9,1.52,21.16,217.8,127,134116,c_sum,C_stocks,1,2.71,1.64,134116.1,23818.0,67058.1
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,ok,28,307.2,69.6,6,8.9,1.52,21.16,217.8,127,134116,israd_bulk_2012_profile,pool_delta14C,1,0.01,0.08,-716.4,-725.6,120.9
+Appi forest (JP-Api),JP-Api,temperate forest,ok,4,6.7,5.6,12,0.43,1.84,24.88,163.5,1255,12296,resp_14C,resp_delta14C,10,0.48,1.19,38.1,55.9,15.0
+Appi forest (JP-Api),JP-Api,temperate forest,ok,4,6.7,5.6,12,0.43,1.84,24.88,163.5,1255,12296,c_sum,C_stocks,1,0.05,0.22,12295.7,10954.8,6147.8
+Appi forest (JP-Api),JP-Api,temperate forest,ok,4,6.7,5.6,12,0.43,1.84,24.88,163.5,1255,12296,israd_bulk_2005_profile,pool_delta14C,1,0.37,0.6,21.6,4.4,28.4
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,ok,21,41.4,14.8,4,1.28,8.24,16.57,145.3,756,7141,resp_14C,resp_delta14C,2,1.5,1.4,103.4,82.4,15.0
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,ok,21,41.4,14.8,4,1.28,8.24,16.57,145.3,756,7141,c_sum,C_stocks,1,0.19,0.43,7141.3,8678.5,3570.6
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,ok,21,41.4,14.8,4,1.28,8.24,16.57,145.3,756,7141,israd_bulk_2012_profile,pool_delta14C,1,1.96,1.4,90.6,69.6,15.0
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,ok,8,1.2,0.8,4,0.15,1.84,17.57,216.9,3059,8052,resp_14C,resp_delta14C,2,0.29,0.66,-2.8,7.2,15.0
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,ok,8,1.2,0.8,4,0.15,1.84,17.57,216.9,3059,8052,c_sum,C_stocks,1,0.0,0.04,8052.1,8196.8,4026.0
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,ok,8,1.2,0.8,4,0.15,1.84,17.57,216.9,3059,8052,israd_bulk_2017_profile,pool_delta14C,1,0.03,0.18,-74.3,-68.5,32.5
+Blodgett Forest (US-Blo),,,ERROR: FileNotFoundError: No flux DD file under data/AMF_US-Blo_FLUXNET_FULLSET_*,,,,,,,,,,,,,,,,,,
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,ok,6,6.8,2.4,3,0.47,1.67,15.56,154.4,289,4470,resp_14C,resp_delta14C,1,0.62,0.79,85.3,97.1,15.0
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,ok,6,6.8,2.4,3,0.47,1.67,15.56,154.4,289,4470,c_sum,C_stocks,1,0.78,0.88,4469.5,6445.2,2234.8
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,ok,6,6.8,2.4,3,0.47,1.67,15.56,154.4,289,4470,israd_bulk_2002_profile,pool_delta14C,1,0.0,0.07,-110.1,-116.1,87.5
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,ok,19,29.0,24.4,3,7.21,3.96,20.08,208.0,655,9450,resp_14C,resp_delta14C,1,21.54,4.64,169.4,99.8,15.0
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,ok,19,29.0,24.4,3,7.21,3.96,20.08,208.0,655,9450,c_sum,C_stocks,1,0.07,0.27,9450.4,8159.3,4725.2
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,ok,19,29.0,24.4,3,7.21,3.96,20.08,208.0,655,9450,israd_bulk_2002_profile,pool_delta14C,1,0.0,0.02,35.2,36.3,47.6
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,ok,18,72.6,15.5,14,0.7,1.49,28.9,143.7,412,281717,resp_14C,resp_delta14C,12,0.49,2.1,13.3,44.9,15.0
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,ok,18,72.6,15.5,14,0.7,1.49,28.9,143.7,412,281717,c_sum,C_stocks,1,3.31,1.82,281716.8,25552.0,140858.4
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,ok,18,72.6,15.5,14,0.7,1.49,28.9,143.7,412,281717,israd_bulk_2004_profile,pool_delta14C,1,0.63,0.8,-196.2,-275.2,99.2
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,ok,17,16.2,9.2,5,1.41,3.46,17.63,246.9,3131,8664,resp_14C,resp_delta14C,3,2.33,1.99,106.0,76.2,15.0
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,ok,17,16.2,9.2,5,1.41,3.46,17.63,246.9,3131,8664,c_sum,C_stocks,1,0.04,0.21,8663.9,7774.4,4332.0
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,ok,17,16.2,9.2,5,1.41,3.46,17.63,246.9,3131,8664,israd_bulk_1999_profile,pool_delta14C,1,0.02,0.14,-165.2,-160.7,31.1
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,ok,18,76.0,27.6,35,0.52,5.13,13.98,132.2,735,6665,resp_14C,resp_delta14C,33,0.4,1.5,131.0,108.5,15.0
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,ok,18,76.0,27.6,35,0.52,5.13,13.98,132.2,735,6665,c_sum,C_stocks,1,0.71,0.84,6664.6,3849.4,3332.3
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,ok,18,76.0,27.6,35,0.52,5.13,13.98,132.2,735,6665,israd_bulk_1997_profile,pool_delta14C,1,4.31,2.08,120.2,89.0,15.0
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,resp_14C,resp_delta14C,17,2.15,4.71,184.3,113.6,15.0
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,c_sum,C_stocks,1,0.26,0.51,9632.9,7154.2,4816.4
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,israd_bulk_1986_profile,pool_delta14C,1,137.73,11.74,284.0,108.0,15.0
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,israd_bulk_1987_profile,pool_delta14C,1,0.22,0.46,137.0,108.0,62.4
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,israd_bulk_1996_profile,pool_delta14C,1,0.08,0.29,101.7,107.6,20.5
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,israd_bulk_1997_profile,pool_delta14C,1,1.34,1.16,33.8,106.8,63.0
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,ok,28,1071.0,213.0,23,7.91,8.28,11.94,63.8,915,9633,israd_bulk_2007_profile,pool_delta14C,1,5.64,2.37,43.2,100.0,23.9
+UMBS (US-UMB),US-UMB,temperate mixed forest,ok,8,2.3,1.7,5,0.25,1.88,25.45,170.8,1387,17556,c_sum,C_stocks,1,0.0,0.03,17555.6,17315.1,8777.8
+UMBS (US-UMB),US-UMB,temperate mixed forest,ok,8,2.3,1.7,5,0.25,1.88,25.45,170.8,1387,17556,israd_fraction_soil_active_2007,pool_delta14C,1,0.01,0.09,35.0,36.4,15.0
+UMBS (US-UMB),US-UMB,temperate mixed forest,ok,8,2.3,1.7,5,0.25,1.88,25.45,170.8,1387,17556,israd_fraction_soil_passive_2007,pool_delta14C,1,0.0,0.01,39.2,39.1,15.0
+UMBS (US-UMB),US-UMB,temperate mixed forest,ok,8,2.3,1.7,5,0.25,1.88,25.45,170.8,1387,17556,israd_fraction_soil_slow_2007,pool_delta14C,1,0.0,0.01,-12.1,-11.8,20.9
+UMBS (US-UMB),US-UMB,temperate mixed forest,ok,8,2.3,1.7,5,0.25,1.88,25.45,170.8,1387,17556,israd_bulk_2007_profile,pool_delta14C,1,1.24,1.11,-5.2,11.5,15.0
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,ok,15,31.3,29.6,5,5.67,3.09,15.85,240.0,1630,10355,c_sum,C_stocks,1,0.02,0.13,10354.6,11013.6,5177.3
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,ok,15,31.3,29.6,5,5.67,3.09,15.85,240.0,1630,10355,israd_fraction_soil_active_2007,pool_delta14C,1,6.9,2.63,109.6,70.2,15.0
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,ok,15,31.3,29.6,5,5.67,3.09,15.85,240.0,1630,10355,israd_fraction_soil_passive_2007,pool_delta14C,1,0.0,0.01,62.8,62.7,15.0
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,ok,15,31.3,29.6,5,5.67,3.09,15.85,240.0,1630,10355,israd_fraction_soil_slow_2007,pool_delta14C,1,0.01,0.07,84.7,83.6,15.0
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,ok,15,31.3,29.6,5,5.67,3.09,15.85,240.0,1630,10355,israd_bulk_2007_profile,pool_delta14C,1,21.43,4.63,-21.3,70.5,19.8
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,ok,11,3.6,3.5,5,0.67,2.2,21.83,207.1,1315,12118,c_sum,C_stocks,1,0.05,0.23,12118.1,13484.1,6059.1
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,ok,11,3.6,3.5,5,0.67,2.2,21.83,207.1,1315,12118,israd_fraction_soil_active_2007,pool_delta14C,1,1.51,1.23,22.1,40.5,15.0
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,ok,11,3.6,3.5,5,0.67,2.2,21.83,207.1,1315,12118,israd_fraction_soil_passive_2007,pool_delta14C,1,0.0,0.03,-16.3,-16.7,15.0
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,ok,11,3.6,3.5,5,0.67,2.2,21.83,207.1,1315,12118,israd_fraction_soil_slow_2007,pool_delta14C,1,0.07,0.27,-19.9,-15.9,15.0
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,ok,11,3.6,3.5,5,0.67,2.2,21.83,207.1,1315,12118,israd_bulk_2007_profile,pool_delta14C,1,1.74,1.32,-26.8,-7.0,15.0
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,ok,3,0.0,0.0,3,0.0,2.0,20.02,203.8,1377,9390,resp_14C,resp_delta14C,1,0.01,0.1,102.1,100.6,15.0
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,ok,3,0.0,0.0,3,0.0,2.0,20.02,203.8,1377,9390,c_sum,C_stocks,1,0.0,0.04,9389.8,9187.3,4694.9
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,ok,3,0.0,0.0,3,0.0,2.0,20.02,203.8,1377,9390,israd_bulk_2004_profile,pool_delta14C,1,0.0,0.03,-66.5,-64.9,54.6
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,ok,13,6.0,1.8,3,0.27,2.55,24.02,158.0,3247,8748,resp_14C,resp_delta14C,1,0.53,0.73,93.8,82.9,15.0
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,ok,13,6.0,1.8,3,0.27,2.55,24.02,158.0,3247,8748,c_sum,C_stocks,1,0.04,0.21,8747.7,7832.8,4373.9
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,ok,13,6.0,1.8,3,0.27,2.55,24.02,158.0,3247,8748,israd_bulk_1999_profile,pool_delta14C,1,0.25,0.5,-16.4,-37.0,41.3
