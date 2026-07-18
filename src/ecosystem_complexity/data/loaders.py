@@ -9,6 +9,7 @@ load_howland_forest()    — AmeriFlux BASE HH → ForcingData + ObservationData
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,40 @@ def _days_since_epoch(dates: pd.DatetimeIndex) -> np.ndarray:
 # A daily flux is only reported when at least this many half-hours are valid,
 # i.e. half of the 48 in a day.
 _MIN_VALID_HH = 24
+
+
+def _read_csv_subset(
+    path: str,
+    *,
+    columns: tuple[str, ...] = (),
+    prefixes: tuple[str, ...] = (),
+    **read_kwargs: Any,
+) -> pd.DataFrame:
+    """Read a FLUXNET csv, parsing only the columns the caller actually uses.
+
+    The FULLSET files carry ~227 columns and the loaders touch ~14 of them, so
+    parsing everything dominated load time once the aggregation was vectorized.
+
+    ``usecols`` cannot simply be the wanted list: several columns are optional
+    (the loaders all guard with ``if col in df.columns``), and pandas raises if
+    ``usecols`` names a column the file lacks. So the header is read first —
+    one row, negligible — and the wanted set intersected against it. A column
+    that is genuinely absent is therefore absent from the result exactly as
+    before, and the downstream guards behave identically.
+
+    ``prefixes`` covers the loaders that discover columns by pattern rather than
+    by name (Howland's ``TS_F_MDS_*`` / ``SWC_F_MDS_*`` sensor sets). The match
+    is deliberately broad — it keeps the ``_QC`` variants too — because the
+    callers filter those themselves, and reproducing that filter here would be
+    a second place for the rule to drift.
+    """
+    available = pd.read_csv(path, nrows=0, **read_kwargs).columns
+    wanted = set(columns)
+    use = [
+        c for c in available
+        if c in wanted or any(c.startswith(p) for p in prefixes)
+    ]
+    return pd.read_csv(path, usecols=use, **read_kwargs)
 
 
 def _aggregate_daily(
@@ -117,7 +152,18 @@ def load_harvard_forest(
         daily GPP series (``GPP_NT_VUT_REF``) so it can be used as an
         external forcing input.  When False (default), ``GPP_obs`` is NaN.
     """
-    df = pd.read_csv(hr_path, na_values=[-9999], low_memory=False)
+    df = _read_csv_subset(
+        hr_path,
+        columns=(
+            "TIMESTAMP_START",
+            "NEE_VUT_REF_QC", "NEE_VUT_REF", "GPP_NT_VUT_REF", "RECO_NT_VUT_REF",
+            "NEE_VUT_REF_RANDUNC",
+            "TA_F", "SW_IN_F", "VPD_F", "P_F",
+            "TS_F_MDS_1", "TS_F_MDS_2", "TS_F_MDS_3", "TS_F_MDS_4",
+        ),
+        na_values=[-9999],
+        low_memory=False,
+    )
 
     # Parse timestamp manually (12-digit integer YYYYMMDDhhmm).
     # Kept as a standalone grouping key rather than assigned into `df`: the
@@ -439,7 +485,17 @@ def load_eight_mile_lake(
     forcing, converts half-hourly carbon fluxes to gC m⁻² day⁻¹, and
     broadcasts the single soil measurement to all model layers.
     """
-    df = pd.read_csv(hh_path, comment="#", na_values=[-9999], low_memory=False)
+    df = _read_csv_subset(
+        hh_path,
+        columns=(
+            "TIMESTAMP_START",
+            "NEE_PI_F", "GPP_PI_F", "RECO_PI_F",
+            "TA", "SW_IN", "P", "D_SNOW", "TS", "SWC",
+        ),
+        comment="#",
+        na_values=[-9999],
+        low_memory=False,
+    )
 
     # Standalone grouping key rather than two inserts into the wide BASE frame
     # — see load_harvard_forest for why.
@@ -534,7 +590,19 @@ def load_howland_forest(
     by the FULLSET package, including `GPP_NT_VUT_REF` for external soil-input
     forcing when `include_gpp_forcing=True`.
     """
-    df = pd.read_csv(dd_path, na_values=[-9999], low_memory=False)
+    df = _read_csv_subset(
+        dd_path,
+        columns=(
+            "TIMESTAMP",
+            "NEE_VUT_REF_QC", "NEE_VUT_REF", "GPP_NT_VUT_REF", "RECO_NT_VUT_REF",
+            "NEE_VUT_REF_RANDUNC",
+            "TA_F_MDS", "SW_IN_F_MDS", "VPD_F_MDS", "P_F",
+        ),
+        # Sensor sets are discovered by prefix downstream.
+        prefixes=("TS_F_MDS_", "SWC_F_MDS_"),
+        na_values=[-9999],
+        low_memory=False,
+    )
     dates = pd.to_datetime(df["TIMESTAMP"].astype(str), format="%Y%m%d")
 
     if "NEE_VUT_REF_QC" in df.columns:
