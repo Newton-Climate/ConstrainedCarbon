@@ -13,7 +13,8 @@ stocks.
 
 ## 1. Site selection — ISRaD eligibility & flux colocation
 
-`export_flux_israd_colocations.py` was expanded from 3 to **all 5 ISRaD flat
+`apps/locate_site.py` now handles the generalized site-lookup workflow across
+**all 5 ISRaD flat
 datatypes** (layer, fraction, flux, incubation, interstitial) and given a
 site-level eligibility rule:
 
@@ -39,7 +40,7 @@ Each inversion is driven by the observed **daily GPP time series** from the
 co-located flux tower (not a constant mean). Two self-contained downloaders were
 written; both are idempotent and delete the archive after extraction.
 
-### `download_ameriflux_sites.py` — AmeriFlux FLUXNET
+### `apps/download_flux.py` — AmeriFlux FLUXNET
 - Uses the AmeriFlux data-download REST API (same endpoint as the `amerifluxr`
   R client). Credentials come from a gitignored `.env`
   (`AMERIFLUX_USER_ID`, `AMERIFLUX_EMAIL`); download requires `--accept-data-policy`.
@@ -49,7 +50,7 @@ written; both are idempotent and delete the archive after extraction.
 - Pulled: **BR-Sa3, BR-Ma2, CA-NS1, CA-NS4** (+ US-Ha2 BASE). US-Ho1 / US-Ha1
   were already in the repo.
 
-### `download_icos_sites.py` — ICOS Carbon Portal (multi-network)
+### `apps/download_flux.py` — ICOS Carbon Portal (multi-network)
 - The ICOS portal is a **multi-network hub**: it serves ONEFlux FLUXNET products
   (same FLUXNET2015 format as AmeriFlux) from several networks by filename prefix:
   `ICOS_` (Europe), `EUF_` (European Fluxes DB), `JPF_` (JapanFlux/Asia).
@@ -176,31 +177,34 @@ limit SOC alone can't remove.
 PY=/Users/newtonnguyen/miniforge3/envs/ecosystem-complexity/bin/python
 
 # 1. site selection
-$PY notebooks/export_flux_israd_colocations.py
+$PY apps/locate_site.py --flux-tower US-Ha1 --out notebooks/exports/flux_tower_israd_colocations.csv
 
 # 2. forcing (needs .env for AmeriFlux; ICOS is CC-BY)
-$PY notebooks/download_ameriflux_sites.py --accept-data-policy
-$PY notebooks/download_icos_sites.py --accept-license
+$PY apps/download_flux.py harvard_forest --accept-policy
+$PY apps/download_flux.py solling --accept-license
 
 # 3. soil-carbon stocks
 $PY notebooks/download_soilgrids_soc.py
 
-# 4. inversions (all configs in configs/multisite/, or name one by stem)
-$PY notebooks/sites/multisite_canonical.py            # all sites
-$PY notebooks/sites/multisite_canonical.py solling    # one site
+# 4. config + inversion + analysis
+$PY apps/build_site_config.py --selector harvard_forest
+$PY apps/optim_site_main.py solling
+$PY apps/analyze_model.py solling
 ```
 
 ## 7. Files
 
 | File | Purpose |
 |---|---|
-| `notebooks/export_flux_israd_colocations.py` | ISRaD eligibility + tower colocation |
-| `notebooks/download_ameriflux_sites.py` | AmeriFlux FLUXNET GPP download (`.env` creds) |
-| `notebooks/download_icos_sites.py` | ICOS/EUF/JPF FLUXNET GPP download (CC-BY) |
+| `apps/locate_site.py` | ISRaD eligibility + tower colocation |
+| `apps/download_flux.py` | AmeriFlux / ICOS / EUF / JPF FLUXNET download |
+| `apps/build_site_config.py` | generate site config YAMLs |
+| `apps/optim_site_main.py` | run the config-driven OE inversion and export artifacts |
+| `apps/analyze_model.py` | compute standardized diagnostics from a site fit or exported artifacts |
 | `notebooks/download_soilgrids_soc.py` | SoilGrids ¹²C SOC stocks by pool |
 | `configs/israd_multisite_3pool_config.yaml` | the shared recipe template (source for the per-site configs) |
 | `configs/multisite/<site>.yaml` | one transparent config per site (recipe + `site`/`datasource`) |
-| `notebooks/sites/multisite_canonical.py` | per-site OE driver: discovers `configs/multisite/*.yaml`, runs, summarizes |
+| `src/ecosystem_complexity/sites/driver.py` | shared per-site OE driver used by the apps |
 | `notebooks/exports/israd_eligible_sites.csv` | eligible ISRaD sites |
 | `notebooks/exports/soilgrids_soc_pools.csv` | SOC stocks per site/pool |
 | `notebooks/exports/multisite_canonical_inversions.csv` | inversion results |

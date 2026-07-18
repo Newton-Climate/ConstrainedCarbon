@@ -215,10 +215,11 @@ Pools are named `{layer}_{som_pool}` (e.g. `organic_litter`); microbial pools ar
 ecosystem-complexity/
 ├── src/ecosystem_complexity/   # the package (see module table above)
 │   └── data/                   # parsers, loaders, schemas, ISRaD observations
+│   └── sites/                  # reusable per-site inversion modules
 ├── configs/                    # per-site YAML configurations
 ├── data/                       # AmeriFlux, ISRaD, CMIP forcing & observations
-├── notebooks/                  # analysis scripts & per-site studies
-│   └── sites/                  # reusable per-site modules
+├── notebooks/                  # remaining analysis scripts & figure studies
+├── apps/                       # reusable CLI apps for lookup, download, config, fit, analysis
 ├── docs/                       # TECHSPEC.md + methodology notes
 ├── tests/                      # pytest suite (unit + integration)
 ├── environment.yaml            # conda environment
@@ -226,9 +227,10 @@ ecosystem-complexity/
 └── Makefile                    # env / install / lint / format / test
 ```
 
-The `notebooks/` directory holds the end-to-end analyses (e.g.
-`harvard_forest_analysis.py`, `barrow_alaska_analysis.py`,
-`cross_site_information.py`) that produce the study's figures and information tables.
+The application entry points under `apps/` now cover the generalized site
+workflows (`locate_site.py`, `download_flux.py`, `build_site_config.py`,
+`optim_site_main.py`, `analyze_model.py`). The `notebooks/` directory remains
+for figure-generation and one-off analyses such as `cross_site_information.py`.
 
 ---
 

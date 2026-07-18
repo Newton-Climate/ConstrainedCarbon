@@ -36,6 +36,10 @@ from ecosystem_complexity._config_validation import (  # noqa: F401
     ConfigValidationError,  # re-exported as public API
     _validate,
 )
+from ecosystem_complexity.site_config import (
+    normalize_analysis_config,
+    normalize_output_config,
+)
 
 # ---------------------------------------------------------------------------
 # Frozen dataclasses
@@ -400,8 +404,8 @@ def load_config(path: str) -> ModelConfig:
         parameters_raw=dict(params),
         data_raw=dict(raw.get("data", {})),
         inversion_raw=dict(raw.get("inversion", {})),
-        analysis_raw=dict(raw.get("analysis", {})),
-        output_raw=dict(raw.get("output", {})),
+        analysis_raw=normalize_analysis_config(raw.get("analysis")),
+        output_raw=normalize_output_config(raw.get("output")),
         # Typed external-inputs config
         external_inputs=external_inputs,
     )
