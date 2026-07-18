@@ -50,9 +50,12 @@ from ecosystem_complexity.sites import (  # noqa: E402
     SiteSpec,
     discover_site_specs,
     load_site_spec,
+    run_site_canonical,
     run_sites,
     summary_row,
 )
+from ecosystem_complexity.site_analysis import export_site_run  # noqa: E402
+from ecosystem_complexity.site_config import render_artifact_dir  # noqa: E402
 
 OBSERVATION_PATHS = ("bulk_resp", "fraction", "combined")
 
@@ -150,6 +153,18 @@ def _build_parser() -> argparse.ArgumentParser:
         "-q", "--quiet", action="store_true",
         help="suppress per-site progress logging",
     )
+    p.add_argument(
+        "--export-dir",
+        help=(
+            "artifact output directory for a single-site run; relative paths are "
+            "resolved from the repo root and may include {config_stem}."
+        ),
+    )
+    p.add_argument(
+        "--no-export-artifacts",
+        action="store_true",
+        help="skip exporting matrices, diagnostics tables, and the site figure",
+    )
     return p
 
 
@@ -191,27 +206,39 @@ def main(argv: list[str] | None = None) -> int:
     # Reduce to summary rows in the worker: the raw result holds the compiled
     # model, which cannot be pickled back from a worker process. Doing it in
     # both modes keeps serial and parallel returning the same shape.
-    results, failures = run_sites(
-        specs,
-        observation_path=args.observation_path,
-        workers=workers,
-        reduce=summary_row,
-    )
+    single_site = len(specs) == 1 and workers == 1
+    if single_site:
+        raw = run_site_canonical(specs[0], observation_path=args.observation_path or specs[0].observation_path)
+        if raw.get("skipped"):
+            results = []
+            failures = []
+            summary_results: list[dict] = []
+        else:
+            results = [raw]
+            failures = []
+            summary_results = [summary_row(raw)]
+    else:
+        summary_results, failures = run_sites(
+            specs,
+            observation_path=args.observation_path,
+            workers=workers,
+            reduce=summary_row,
+        )
+        results = []
 
-    n_skipped = len(specs) - len(results) - len(failures)
+    n_skipped = len(specs) - len(summary_results) - len(failures)
     print(
-        f"\n{len(results)}/{len(specs)} sites inverted"
+        f"\n{len(summary_results)}/{len(specs)} sites inverted"
         + (f", {n_skipped} skipped (insufficient ¹⁴C obs)" if n_skipped else "")
         + (f", {len(failures)} failed" if failures else "")
     )
     for spec, exc in failures:
         print(f"  FAILED  {spec.label}: {exc}")
 
-    if results:
+    if summary_results:
         import pandas as pd
 
-        # `results` are already summary rows — run_sites reduced them.
-        table = pd.DataFrame(results)
+        table = pd.DataFrame(summary_results)
         print()
         print(table.to_string(index=False))
         if args.out:
@@ -219,6 +246,23 @@ def main(argv: list[str] | None = None) -> int:
             os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
             table.to_csv(out, index=False)
             print(f"\nSummary → {os.path.relpath(out, _REPO_ROOT)}")
+        if single_site and results and not args.no_export_artifacts:
+            raw = results[0]
+            export_template = args.export_dir or str(
+                raw["model"].config.output_raw.get("artifact_dir", "results/{config_stem}")
+            )
+            if os.path.isabs(export_template):
+                export_dir = export_template
+            else:
+                export_dir = render_artifact_dir(
+                    export_template,
+                    config_stem=raw["spec"].config_stem,
+                    site_id=raw["model"].config.site_id or raw["spec"].config_stem,
+                )
+            exports = export_site_run(raw, export_dir)
+            print("\nArtifacts:")
+            for label, path in exports.items():
+                print(f"  {label:<18} {os.path.relpath(path, _REPO_ROOT)}")
 
     return 1 if failures else 0
 

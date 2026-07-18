@@ -1,0 +1,95 @@
+# Informal config schema reference for the site optimization applications.
+#
+# Runtime validation still happens in `src/ecosystem_complexity/config.py`.
+# This file exists as a human-readable contract for the major top-level blocks,
+# especially the analysis/export options that drive the application layer.
+
+site:
+  id: string
+  name: string
+  lat: float
+  lon: float
+  tower_id: string
+  biome: string
+
+datasource:
+  israd_name: string
+  forcing_glob: string
+  forcing_kind: daily
+  observation_path: bulk_resp | fraction | combined
+  fraction_rules: {frc_property: soil_pool_name | null}
+
+model:
+  dt_days: float
+  solver: euler | rk4
+  spinup_years: int
+  enable_14C: bool
+  microbial_pool_per_layer: bool
+  aboveground_pools:
+    - name: string
+      is_woody: bool
+      litterfall_to: string
+  soil_layers:
+    - name: string
+      depth_top_m: float
+      depth_bot_m: float
+      permafrost_eligible: bool
+      som_pools:
+        - name: string
+          tau_prior_days: float
+          tau_prior_std: float
+          depth_top_m: float | null
+          depth_bot_m: float | null
+  transfer_rules:
+    - [source_pool_name, destination_pool_name, fraction]
+
+external_inputs:
+  enabled: bool
+  source: GPP_obs | NPP_obs
+  CUE: float
+  optimize_CUE: bool
+  soil_input_fraction: float
+  optimize_soil_input_fraction: bool
+  partition: {soil_pool_name: fraction}
+  optimize_partition: bool
+
+parameters:
+  alloc: {aboveground_pool_name: fraction}
+
+inversion:
+  sigma_soc_fraction: float
+  oe_max_iterations: int
+  sigma_pool_14C: float
+  sigma_resp_14C: float
+  sigma_carbon_gCm2: float
+  f_hetero: float
+  sigma_f_hetero: float
+  sigma_er_frac: float
+  lm_lambda0: float
+  lm_lambda_factor: float
+  oe_convergence_eps: float
+
+analysis:
+  metrics:
+    reduced_chi2: bool
+    rmse: bool
+    degrees_of_freedom: bool
+    averaging_kernel: bool
+    gain_matrix: bool
+    jacobian: bool
+    constraint_ladder: bool
+    shapley: bool
+    ablation: bool
+    orthogonality: bool
+  plots:
+    model_results: bool
+    information_content: bool
+    observation_fit: bool
+
+output:
+  artifact_dir: string
+  summary_json: bool
+  matrices_npz: bool
+  observation_csv: bool
+  diagnostics_csv: bool
+  figure_png: bool

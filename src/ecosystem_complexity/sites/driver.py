@@ -244,17 +244,17 @@ def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> d
     ic_seeds = _bulk_pool_ic_seeds(spec.israd_name)
     state0 = build_state0(model, soc_prior_state, pool_blocks, ic_seeds=ic_seeds)
 
-    t0 = time.perf_counter()
-    result = optimize_oe(
-        model, forcing, obs_full, state0=state0,
-        fields=OPT_FIELDS, extra_obs_blocks=pool_blocks,
+    canonical = run_oe_canonical(
+        model,
+        forcing,
+        state0,
+        obs_full,
+        pool_blocks,
+        OPT_FIELDS,
+        spec.label,
     )
+    result = canonical["oe_result"]
     ch = np.array(result.cost_history)
-    logger.info(
-        "  optimize_oe done [%.1fs]  J %.1f→%.1f  (%d iter, converged=%s)",
-        time.perf_counter() - t0, ch[0], ch[-1], result.n_iter, result.converged,
-    )
-
     tau_days = np.exp(np.array(result.params_opt.log_tau))
     logger.info("%s", "  optimised τ (yr): " + ", ".join(
         f"{n}={t/365.25:.1f}" for n, t in zip(idx.pool_names, tau_days)))
@@ -272,6 +272,14 @@ def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> d
         "cost0": float(ch[0]), "cost_final": float(ch[-1]),
         "converged": bool(result.converged), "n_iter": int(result.n_iter),
         "oe_result": result,
+        "params_prior": canonical["params_prior"],
+        "params_opt": canonical["params_opt"],
+        "out_prior": canonical["out_prior"],
+        "out_opt": canonical["out_opt"],
+        "state_at_prior": canonical["state_at_prior"],
+        "state_at_map": canonical["state_at_map"],
+        "opt_fields": OPT_FIELDS,
+        "extra_blocks": pool_blocks,
         # pieces needed for downstream information diagnostics (constraint ladder)
         "forcing": forcing, "state0": state0,
         "obs_full": obs_full, "pool_blocks": pool_blocks,

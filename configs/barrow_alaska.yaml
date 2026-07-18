@@ -1,108 +1,96 @@
-# config.yaml — Barrow, Alaska (US-Brw)
-
-# ─────────────────────────────────────────────
-# Site
-# ─────────────────────────────────────────────
 site:
-  id: "US-Brw"
-  name: "Barrow Alaska"
+  id: US-Brw
+  name: Barrow Alaska
   lat: 71.3225
   lon: -156.6091
   elevation_m: 3
-  biome: "arctic_tundra"
+  biome: arctic_tundra
   mat_c: -12.0
   map_mm: 110
   permafrost: true
-
-# ─────────────────────────────────────────────
-# Model structure
-# ─────────────────────────────────────────────
 model:
   dt_days: 1.0
-  solver: "euler"
+  solver: euler
   spinup_years: 500
   enable_14C: true
   microbial_pool_per_layer: false
-
-  # No wood pool — graminoid/sedge tundra
   aboveground_pools:
-    - name: leaf
-      is_woody: false
-      litterfall_to: organic_litter
-    - name: root
-      is_woody: false
-      litterfall_to: active_fast
-
+  - name: leaf
+    is_woody: false
+    litterfall_to: organic_litter
+  - name: root
+    is_woody: false
+    litterfall_to: active_fast
   soil_layers:
-    - name: organic
-      depth_top_m: 0.00
-      depth_bot_m: 0.10
-      permafrost_eligible: false
-      som_pools:
-        - name: litter
-          tau_prior_days: 730
-          tau_prior_std: 200
-        - name: fast
-          tau_prior_days: 3650
-          tau_prior_std: 1000
-    - name: active
-      depth_top_m: 0.10
-      depth_bot_m: 0.35
-      permafrost_eligible: true
-      som_pools:
-        - name: fast
-          tau_prior_days: 3650
-          tau_prior_std: 1000
-        - name: slow
-          tau_prior_days: 36500
-          tau_prior_std: 10000
-    - name: permafrost
-      depth_top_m: 0.35
-      depth_bot_m: 2.00
-      permafrost_eligible: true
-      som_pools:
-        - name: slow
-          tau_prior_days: 73000
-          tau_prior_std: 20000
-        - name: passive
-          tau_prior_days: 365000
-          tau_prior_std: 100000
-
-  # Carbon transfer rules: [source, destination, fraction]
-  # Remainder of each source outflux is respired.
+  - name: organic
+    depth_top_m: 0.0
+    depth_bot_m: 0.1
+    permafrost_eligible: false
+    som_pools:
+    - name: litter
+      tau_prior_days: 730
+      tau_prior_std: 200
+    - name: fast
+      tau_prior_days: 3650
+      tau_prior_std: 1000
+  - name: active
+    depth_top_m: 0.1
+    depth_bot_m: 0.35
+    permafrost_eligible: true
+    som_pools:
+    - name: fast
+      tau_prior_days: 3650
+      tau_prior_std: 1000
+    - name: slow
+      tau_prior_days: 36500
+      tau_prior_std: 10000
+  - name: permafrost
+    depth_top_m: 0.35
+    depth_bot_m: 2.0
+    permafrost_eligible: true
+    som_pools:
+    - name: slow
+      tau_prior_days: 73000
+      tau_prior_std: 20000
+    - name: passive
+      tau_prior_days: 365000
+      tau_prior_std: 100000
   transfer_rules:
-    - [leaf,           organic_litter, 0.95]
-    - [root,           active_fast,    0.80]
-    - [organic_litter, organic_fast,   0.40]
-    - [organic_fast,   active_fast,    0.20]
-    - [active_fast,    active_slow,    0.10]
-    - [active_slow,    permafrost_slow, 0.02]
-
-# ─────────────────────────────────────────────
-# Parameters
-# ─────────────────────────────────────────────
+  - - leaf
+    - organic_litter
+    - 0.95
+  - - root
+    - active_fast
+    - 0.8
+  - - organic_litter
+    - organic_fast
+    - 0.4
+  - - organic_fast
+    - active_fast
+    - 0.2
+  - - active_fast
+    - active_slow
+    - 0.1
+  - - active_slow
+    - permafrost_slow
+    - 0.02
 parameters:
   Q10:
     value: 2.5
     prior_std: 0.5
     optimize: true
   theta_opt:
-    value: 0.50
-    prior_std: 0.10
+    value: 0.5
+    prior_std: 0.1
     optimize: true
   gamma_moisture:
     value: 3.0
     prior_std: 1.5
     optimize: true
-
   alloc:
-    leaf: 0.40
-    root: 0.60
+    leaf: 0.4
+    root: 0.6
     optimize: true
-
-# ─────────────────────────────────────────────
-# Data sources
-# ─────────────────────────────────────────────
 data:
   flux:
     type: ameriflux_csv
@@ -110,43 +98,52 @@ data:
     freq: DD
     gap_fill: true
     qc_threshold: 2
-
   meteorology:
     type: era5_netcdf
     path: data/barrow/ERA5_Barrow_2000-2015.nc
-
   radiocarbon_14C:
     type: israd_csv
     path: data/barrow/ISRaD_Barrow.csv
     permafrost_init_from_obs: true
-    permafrost_pools: [permafrost_slow, permafrost_passive]
+    permafrost_pools:
+    - permafrost_slow
+    - permafrost_passive
     pool_name_map:
-      free_light:    organic_fast
-      active_bulk:   active_fast
-      passive:       permafrost_passive
-
+      free_light: organic_fast
+      active_bulk: active_fast
+      passive: permafrost_passive
   atmospheric_14C:
     type: hua2013
     hemisphere: NH
     path: data/shared/Hua2013_NH.csv
-
-# ─────────────────────────────────────────────
-# Inversion settings
-# ─────────────────────────────────────────────
 inversion:
   optimizer: adam
-  lr: 5.0e-4
+  lr: 0.0005
   n_steps: 3000
-  target_vars: [NEE, ER, GPP]
+  target_vars:
+  - NEE
+  - ER
+  - GPP
   include_14C: true
   lambda_14C: 2.0
-  lambda_reg: 1.0e-3
-  convergence_tol: 1.0e-6
-
-# ─────────────────────────────────────────────
-# Analysis / complexity metrics
-# ─────────────────────────────────────────────
+  lambda_reg: 0.001
+  convergence_tol: 1.0e-06
 analysis:
+  metrics:
+    reduced_chi2: true
+    rmse: true
+    degrees_of_freedom: true
+    averaging_kernel: true
+    gain_matrix: true
+    jacobian: true
+    constraint_ladder: true
+    shapley: false
+    ablation: false
+    orthogonality: false
+  plots:
+    model_results: true
+    information_content: true
+    observation_fit: true
   compute_fisher_information: true
   compute_posterior_covariance: true
   compute_degrees_of_freedom: true
@@ -156,11 +153,13 @@ analysis:
     ER: 0.3
     GPP: 0.5
     delta14C: 10.0
-
-# ─────────────────────────────────────────────
-# Output
-# ─────────────────────────────────────────────
 output:
+  artifact_dir: results/{config_stem}
+  summary_json: true
+  matrices_npz: true
+  observation_csv: true
+  diagnostics_csv: true
+  figure_png: true
   dir: results/barrow_alaska/
   save_states: true
   save_fluxes: true
