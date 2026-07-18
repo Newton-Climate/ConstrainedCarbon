@@ -65,7 +65,10 @@ def _get_field_shape(params: ModelParams, field_name: str) -> tuple[int, ...]:
 
 def flatten_params(params: ModelParams, fields: Sequence[str]) -> np.ndarray:
     """Flatten selected ModelParams fields into a 1-D vector."""
-    parts = [np.ravel(getattr(params, f)) for f in fields]
+    parts = []
+    for f in fields:
+        val = getattr(params, f)
+        parts.append(np.ravel(val[:, :-1]) if f == "log_f_transfer" else np.ravel(val))
     return np.concatenate(parts) if parts else np.zeros(0)
 
 
@@ -82,8 +85,15 @@ def unflatten_params(
     offset = 0
     for f in fields:
         shape = _get_field_shape(template, f)
-        size = int(math.prod(shape)) if shape else 1
-        updates[f] = jnp.asarray(flat[offset : offset + size]).reshape(shape)
+        if f == "log_f_transfer":
+            size = int(math.prod(template.log_f_transfer[:, :-1].shape))
+            block = jnp.asarray(flat[offset : offset + size]).reshape(
+                template.log_f_transfer[:, :-1].shape
+            )
+            updates[f] = template.log_f_transfer.at[:, :-1].set(block)
+        else:
+            size = int(math.prod(shape)) if shape else 1
+            updates[f] = jnp.asarray(flat[offset : offset + size]).reshape(shape)
         offset += size
     return template._replace(**updates)
 
@@ -110,11 +120,9 @@ def get_param_names(  # noqa: C901
             names.extend(f"log_tau[{p}]" for p in pool_names)
 
         elif f == "log_f_transfer":
-            # shape: (n_pools, n_pools + 1); last column = respiration
             for i, src in enumerate(pool_names):
                 for j in range(n_pools):
                     names.append(f"log_f_transfer[{src}→{pool_names[j]}]")
-                names.append(f"log_f_transfer[{src}→resp]")
 
         elif f == "log_alloc":
             ag_names = [p.name for p in model.config.aboveground_pools]
@@ -192,8 +200,11 @@ def get_param_groups(
     offset = 0
     for f in fields:
         val = getattr(params, f)
-        shape = val.shape
-        size = int(math.prod(shape)) if shape else 1
+        if f == "log_f_transfer":
+            size = int(math.prod(val[:, :-1].shape))
+        else:
+            shape = val.shape
+            size = int(math.prod(shape)) if shape else 1
         grp = _group_map.get(f, PARAM_GROUP_ENV)
         groups[grp].extend(range(offset, offset + size))
         offset += size
@@ -241,11 +252,14 @@ def make_prior_covariance(
     for f in fields:
         val = getattr(params, f)
         shape = val.shape
-        size = int(math.prod(shape)) if shape else 1
 
         if f == "log_tau":
             sigmas.extend(tau_sigma.get(p, default_sigma) for p in pool_names)
+        elif f == "log_f_transfer":
+            size = int(math.prod(val[:, :-1].shape))
+            sigmas.extend([default_sigma] * size)
         else:
+            size = int(math.prod(shape)) if shape else 1
             sigmas.extend([default_sigma] * size)
 
     return np.array(sigmas, dtype=np.float64)

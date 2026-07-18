@@ -189,7 +189,14 @@ def test_flatten_length(hf_params, hf_model):
     """Flat vector length equals sum of field sizes."""
     fields = _default_fields(hf_model)
     flat = flatten_params(hf_params, fields)
-    expected = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    expected = 0
+    for f in fields:
+        val = getattr(hf_params, f)
+        expected += (
+            int(math.prod(val[:, :-1].shape))
+            if f == "log_f_transfer"
+            else int(math.prod(val.shape))
+        )
     assert flat.shape == (expected,)
 
 
@@ -200,7 +207,7 @@ def test_param_names_length(hf_params, hf_model):
     """get_param_names returns one label per flat-vector element."""
     fields = _default_fields(hf_model)
     names = get_param_names(hf_params, fields, hf_model)
-    n_params = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    n_params = flat_len = len(flatten_params(hf_params, fields))
     assert len(names) == n_params
 
 
@@ -217,7 +224,7 @@ def test_param_names_nonempty_strings(hf_params, hf_model):
 def test_param_groups_cover_all_params(hf_params, hf_model):
     """Union of all param group indices covers every element of the flat vector."""
     fields = _default_fields(hf_model)
-    n_params = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    n_params = len(flatten_params(hf_params, fields))
     groups = get_param_groups(hf_params, fields, hf_model)
     all_idxs = sorted(idx for idxs in groups.values() for idx in idxs)
     assert all_idxs == list(range(n_params)), "Groups do not cover all params"
@@ -240,7 +247,7 @@ def test_param_groups_disjoint(hf_params, hf_model):
 def test_prior_covariance_shape(hf_params, hf_model):
     """Prior sigma has the same length as the flat parameter vector."""
     fields = _default_fields(hf_model)
-    n_params = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    n_params = len(flatten_params(hf_params, fields))
     sigma = make_prior_covariance(hf_params, fields, hf_model)
     assert sigma.shape == (n_params,)
 
@@ -459,10 +466,10 @@ def test_build_oe_prior_sigma_transfer_and_tau_values(hf_3pool_model):
     idx_slow = pool_names.index("soil_slow")
     idx_passive = pool_names.index("soil_passive")
 
-    explicit_active_to_slow = idx_active * (n_pools + 1) + idx_slow
-    explicit_slow_to_passive = idx_slow * (n_pools + 1) + idx_passive
-    structural_active_to_passive = idx_active * (n_pools + 1) + idx_passive
-    structural_passive_to_active = idx_passive * (n_pools + 1) + idx_active
+    explicit_active_to_slow = idx_active * n_pools + idx_slow
+    explicit_slow_to_passive = idx_slow * n_pools + idx_passive
+    structural_active_to_passive = idx_active * n_pools + idx_passive
+    structural_passive_to_active = idx_passive * n_pools + idx_active
 
     assert transfer_sigma[explicit_active_to_slow] == pytest.approx(0.5)
     assert transfer_sigma[explicit_slow_to_passive] == pytest.approx(0.5)

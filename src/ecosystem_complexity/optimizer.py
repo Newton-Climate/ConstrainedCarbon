@@ -26,6 +26,13 @@ _OE_CORE_FIELDS = (
 )
 
 
+def _field_vector_size(val: jnp.ndarray, field_name: str) -> int:
+    """Number of optimized scalars contributed by one parameter field."""
+    if field_name == "log_f_transfer":
+        return int(math.prod(val[:, :-1].shape))
+    return int(math.prod(val.shape))
+
+
 def get_opt_fields(config: ModelConfig) -> tuple[str, ...]:
     """Fields for the gradient-based optimiser."""
     fields = list(_CORE_OPTIMIZED_FIELDS)
@@ -59,7 +66,10 @@ def get_oe_fields(
 
 def params_to_vector(params: ModelParams, opt_fields: tuple[str, ...]) -> jnp.ndarray:
     """Flatten optimised parameter fields into a 1-D vector."""
-    parts = [jnp.ravel(getattr(params, f)) for f in opt_fields]
+    parts = []
+    for f in opt_fields:
+        val = getattr(params, f)
+        parts.append(jnp.ravel(val[:, :-1]) if f == "log_f_transfer" else jnp.ravel(val))
     return jnp.concatenate(parts) if parts else jnp.zeros((0,), dtype=jnp.float32)
 
 
@@ -71,8 +81,12 @@ def vector_to_params(
     offset = 0
     for f in opt_fields:
         val = getattr(template, f)
-        size = int(math.prod(val.shape))
-        updates[f] = vec[offset : offset + size].reshape(val.shape)
+        size = _field_vector_size(val, f)
+        if f == "log_f_transfer":
+            block = vec[offset : offset + size].reshape(val[:, :-1].shape)
+            updates[f] = val.at[:, :-1].set(block)
+        else:
+            updates[f] = vec[offset : offset + size].reshape(val.shape)
         offset += size
     return template._replace(**updates)
 

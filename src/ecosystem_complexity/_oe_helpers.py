@@ -275,7 +275,6 @@ def build_oe_prior_sigma(
     sigma_parts = []
     for f in opt_fields:
         val = getattr(params0, f)
-        n = int(math.prod(val.shape))
 
         if f == "log_tau":
             sigma = np.array(
@@ -289,21 +288,25 @@ def build_oe_prior_sigma(
             sigma_parts.append(jnp.array(sigma))
 
         elif f == "log_f_transfer":
+            n = int(math.prod(val[:, :-1].shape))
             sigma = np.full(n, 0.02, dtype=np.float32)
             for si, dj in real_transfer_pairs:
-                flat_i = si * (n_pools + 1) + dj
+                flat_i = si * n_pools + dj
                 sigma[flat_i] = 0.5
             sigma_parts.append(jnp.array(sigma))
 
         elif f == "log_external_input_partition":
+            n = int(math.prod(val.shape))
             sigma_parts.append(jnp.full(n, 0.30))
 
         elif f == "log_f_hetero":
+            n = int(math.prod(val.shape))
             # f_hetero prior ≈ 0.55, σ_f ≈ 0.08 (absolute).
             # In logit-space: σ_logit = σ_f / (f(1-f)) = 0.08 / (0.55×0.45) ≈ 0.323.
             sigma_parts.append(jnp.full(n, 0.323))
 
         else:
+            n = int(math.prod(val.shape))
             sigma_parts.append(jnp.full(n, 0.5))
 
     return jnp.concatenate(sigma_parts)
