@@ -83,6 +83,9 @@ def _build_obs_blocks(  # noqa: C901
       1. pool_14C    — pool-level Δ¹⁴C at sparse (time, pool) pairs
       2. resp_14C    — flux-weighted respired Δ¹⁴C at sparse time indices
       3. c_stock     — time-mean carbon stocks, one entry per constrained pool
+      3b. c_sum      — time-mean TOTAL column carbon stock Σ_i C12_i; the correct
+                       stock constraint when pools are co-located kinetic
+                       fractions (per-pool stock is then unobservable)
       4. er_annual   — annual mean ecosystem respiration from FluxNet ER;
                        model prediction is Rh_sim / sigmoid(log_f_hetero)
 
@@ -181,6 +184,30 @@ def _build_obs_blocks(  # noqa: C901
                 y=jnp.array(y_c, dtype=jnp.float32),
                 Se=jnp.array(se_c, dtype=jnp.float32),
                 predict=lambda out, p, col=_c_col: jnp.mean(out.C12, axis=0)[col],
+            )
+        )
+
+    # ── Block 3b: total column carbon stock (Σ_i C12_i) ─────────────────────
+    # The counterpart to Block 3 for co-located kinetic pools: when the pools are
+    # density/kinetic fractions rather than depth horizons, a measured SOC stock
+    # cannot be attributed to one pool by depth — only the column total is
+    # observable. Given a known input I, this constrains the C-mass-weighted mean
+    # turnover (Σ C_i = I·⟨τ⟩) rather than any individual τ_i.
+    if observations.C_total_obs is not None:
+        c_total_mean, c_total_sigma = observations.C_total_obs
+        sigma_tot = (
+            float(c_total_sigma)
+            if (c_total_sigma and c_total_sigma > 0)
+            else (sigma_carbon or 1000.0)
+        )
+        blocks.append(
+            ObsBlock(
+                name="c_sum",
+                y=jnp.array([float(c_total_mean)], dtype=jnp.float32),
+                Se=jnp.array([sigma_tot**2], dtype=jnp.float32),
+                predict=lambda out, p: jnp.sum(
+                    jnp.mean(out.C12, axis=0), keepdims=True
+                ),
             )
         )
 

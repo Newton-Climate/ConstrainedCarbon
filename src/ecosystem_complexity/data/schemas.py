@@ -38,3 +38,8 @@ class ObservationData(NamedTuple):
     # Optional — flux-weighted respired CO₂ Δ¹⁴C (T,); NaN at unmeasured days.
     # Defaults to None so existing ObservationData constructors need no change.
     delta14C_resp: Optional[jnp.ndarray] = None
+    # Optional — (gC m⁻², 1-sigma) total column SOC, i.e. Σ_i C12_i.
+    # When the pools are co-located kinetic fractions rather than depth horizons,
+    # no observation can attribute stock to an individual pool; only the column
+    # total is observable. Use this in preference to C_pools_obs in that case.
+    C_total_obs: Optional[tuple[float, float]] = None
