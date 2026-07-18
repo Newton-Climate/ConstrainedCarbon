@@ -1,0 +1,96 @@
+# Shared 3-pool soil-carbon configuration for the ISRaD field-flux + respiration
+# multi-site inversion (notebooks/sites/multisite_canonical.py).
+#
+# ONE recipe applied identically at every site so results are comparable:
+#   - 3 SOM pools (active / slow / passive) with the canonical depth structure
+#     and tau priors (matches the Harvard / Barrow / Howland canonical configs)
+#   - external soil input driven by observed daily GPP (real time series, not a
+#     constant mean) via source: GPP_obs
+#   - inversion fields (log_tau, log_f_transfer); partition fixed
+#
+# The only things that differ across sites are the forcing file (per-tower GPP +
+# climate) and the ISRaD radiocarbon obs (site-specific), supplied by the driver.
+# Site lat/lon here are placeholders — the soil-only inversion does not use them.
+site:
+  id: "ISRaD-multisite-3pool"
+  name: "ISRaD field-flux + respiration — shared 3-Pool recipe"
+  lat: 0.0
+  lon: 0.0
+
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+
+  aboveground_pools: []
+
+  soil_layers:
+    - name: soil
+      depth_top_m: 0.00
+      depth_bot_m: 1.30
+      permafrost_eligible: false
+      som_pools:
+        - name: active
+          # Organic surface horizon.
+          depth_top_m: 0.00
+          depth_bot_m: 0.10
+          tau_prior_days: 730
+          tau_prior_std: 365
+        - name: slow
+          # Upper mineral / mixed horizon.
+          depth_top_m: 0.10
+          depth_bot_m: 0.30
+          tau_prior_days: 7300
+          tau_prior_std: 3650
+        - name: passive
+          # Deeper mineral-protected pool.
+          depth_top_m: 0.30
+          depth_bot_m: 1.30
+          tau_prior_days: 73000
+          tau_prior_std: 36500
+
+  transfer_rules:
+    - [soil_active, soil_slow, 0.25]
+    - [soil_slow, soil_passive, 0.10]
+
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+
+  partition:
+    soil_active: 1.0
+    soil_slow: 0.0
+  optimize_partition: false
+
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+
+inversion:
+  # Per-pool uncertainty on the annual-mean steady-state SOC prior.
+  # 0.50 matches the sigma=0.5 OE prior on log_tau. The model-derived SOC prior
+  # (build_soc_prior) sets obs = C(prior params), and C = I*tau/modifier at steady
+  # state with I fixed by the GPP forcing — so a tighter sigma here would restate
+  # the tau prior at MORE confidence than the prior itself, i.e. double-count it.
+  # At 0.50 the fallback is a genuine no-op; real stock data comes from ISRaD or
+  # SoilGrids instead.
+  sigma_soc_fraction: 0.50
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

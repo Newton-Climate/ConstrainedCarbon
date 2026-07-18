@@ -1,0 +1,10 @@
+x,y,label
+0.08,0.82,Prior ensemble
+0.08,0.66,Observation subsets
+0.08,0.5,Bayesian inversion
+0.08,0.34,Posterior turnover modes
+0.08,0.18,Information metrics
+0.56,0.58,"Standardized
+warming experiment"
+0.56,0.3,"Projected carbon-loss
+uncertainty"

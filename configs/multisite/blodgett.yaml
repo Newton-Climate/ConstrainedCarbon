@@ -1,0 +1,97 @@
+# Per-site canonical 3-pool OE inversion config (ISRaD field-flux + respiration).
+#
+# NEW site from notebooks/exports/flux_tower_israd_best_sites.csv. Uses the
+# `fraction` observation path (density-fraction Δ¹⁴C → pools; no field-flux
+# Δ¹⁴C required), since these ISRaD sites have interpretable free-light /
+# occluded-light / heavy fractions but no respiration Δ¹⁴C. The `model` /
+# `external_inputs` / `parameters` / `inversion` sections are the SHARED
+# canonical recipe (identical across sites). Driven by
+# notebooks/sites/multisite_canonical.py.
+#
+# NOT RUNNABLE (as of this download): AmeriFlux has no gap-filled FLUXNET
+# release for US-Blo — only the BASE-BADM product, which carries no GPP
+# partition. The GPP-forced recipe needs daily GPP, so this site is staged for
+# transparency but skips at runtime until a GPP-bearing forcing is available
+# (a FLUXNET release, or NEE→GPP partitioning of the BASE file). `forcing_glob`
+# below targets the FLUXNET product it would use if released.
+site:
+  id: israd-multisite-blodgett
+  name: Blodgett Forest (US-Blo)
+  lat: 38.8953
+  lon: -120.6328
+  tower_id: US-Blo
+  biome: Mediterranean conifer forest
+datasource:
+  israd_name: Blodgett
+  forcing_glob: AMF_US-Blo_FLUXNET_FULLSET_*
+  forcing_kind: daily
+  observation_path: combined
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+  soil_layers:
+  - name: soil
+    depth_top_m: 0.0
+    depth_bot_m: 1.3
+    permafrost_eligible: false
+    som_pools:
+    - name: active
+      depth_top_m: 0.0
+      depth_bot_m: 0.1
+      tau_prior_days: 730
+      tau_prior_std: 365
+    - name: slow
+      depth_top_m: 0.1
+      depth_bot_m: 0.3
+      tau_prior_days: 7300
+      tau_prior_std: 3650
+    - name: passive
+      depth_top_m: 0.3
+      depth_bot_m: 1.3
+      tau_prior_days: 73000
+      tau_prior_std: 36500
+  transfer_rules:
+  - - soil_active
+    - soil_slow
+    - 0.25
+  - - soil_slow
+    - soil_passive
+    - 0.1
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+  partition:
+    soil_active: 1.0
+    soil_slow: 0.0
+  optimize_partition: false
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+inversion:
+  # 0.50 matches the sigma=0.5 OE prior on log_tau. The model-derived SOC prior
+  # (build_soc_prior) sets obs = C(prior params), and C = I*tau/modifier at steady
+  # state with I fixed by the GPP forcing — so a tighter sigma here would restate
+  # the tau prior at MORE confidence than the prior itself, i.e. double-count it.
+  # At 0.50 the fallback is a genuine no-op; real stock data comes from ISRaD or
+  # SoilGrids instead.
+  sigma_soc_fraction: 0.50
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

@@ -1,0 +1,61 @@
+site,site_id,biome,mean_GPP_gCm2yr,family,n_obs,present,shapley_dfs,shapley_share,dfs_standalone,dfs_unique_last,dfs_joint_total
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,C_stocks,1,True,0.2919,0.1489,0.5915,0.002,1.96
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,bulk_14C,1,True,0.6765,0.3452,0.9639,0.3989,1.96
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,fraction_14C,0,False,0.0,0.0,0.0,0.0,1.96
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,resp_14C,1,True,0.9916,0.5059,0.9986,0.9943,1.96
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,C_stocks,1,True,0.2439,0.1393,0.51,0.0371,1.7518
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,bulk_14C,1,True,0.5903,0.337,0.8324,0.4074,1.7518
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,fraction_14C,0,False,0.0,0.0,0.0,0.0,1.7518
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,resp_14C,4,True,0.9175,0.5238,0.9997,0.8945,1.7518
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,C_stocks,1,True,0.02,0.0071,0.066,0.0,2.8214
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,bulk_14C,1,True,0.7227,0.2561,0.9959,0.234,2.8214
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,fraction_14C,1,True,0.7488,0.2654,0.9988,0.2765,2.8214
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,resp_14C,10,True,1.3299,0.4714,1.5967,0.8413,2.8214
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,C_stocks,1,True,0.0073,0.0034,0.0176,0.0001,2.1373
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,bulk_14C,1,True,0.9878,0.4622,0.9991,0.9796,2.1373
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,fraction_14C,0,False,0.0,0.0,0.0,0.0,2.1373
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,resp_14C,2,True,1.1423,0.5344,1.1501,1.1376,2.1373
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,C_stocks,1,True,0.1605,0.0536,0.4783,0.0,2.9938
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,bulk_14C,1,True,0.4209,0.1406,0.9989,0.0002,2.9938
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,fraction_14C,3,True,2.4124,0.8058,2.9936,1.9885,2.9938
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,resp_14C,0,False,0.0,0.0,0.0,0.0,2.9938
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,C_stocks,1,True,0.182,0.1026,0.4656,0.0092,1.7737
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,bulk_14C,1,True,0.7185,0.4051,0.942,0.6058,1.7737
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,fraction_14C,0,False,0.0,0.0,0.0,0.0,1.7737
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,resp_14C,12,True,0.8732,0.4923,1.0282,0.8289,1.7737
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,C_stocks,1,True,0.0103,0.0031,0.0357,0.0,3.304
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,bulk_14C,1,True,0.7379,0.2233,0.9992,0.3082,3.304
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,fraction_14C,4,True,1.2772,0.3866,2.0659,0.3186,3.304
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,resp_14C,33,True,1.2786,0.387,2.0151,0.3704,3.304
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,C_stocks,1,True,0.3028,0.0804,0.8617,0.0001,3.768
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,bulk_14C,5,True,0.9836,0.2611,1.9361,0.5554,3.768
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,fraction_14C,7,True,1.2911,0.3427,2.2232,0.7683,3.768
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,resp_14C,17,True,1.1905,0.3159,2.0071,0.6706,3.768
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,C_stocks,1,True,0.2413,0.1245,0.5502,0.0193,1.9373
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,bulk_14C,1,True,0.8222,0.4244,0.9904,0.741,1.9373
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,fraction_14C,0,False,0.0,0.0,0.0,0.0,1.9373
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,resp_14C,2,True,0.8738,0.4511,0.9702,0.8644,1.9373
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,C_stocks,1,True,0.1331,0.0681,0.3188,0.0008,1.9552
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,bulk_14C,1,True,0.8746,0.4473,0.9925,0.81,1.9552
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,fraction_14C,0,False,0.0,0.0,0.0,0.0,1.9552
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,resp_14C,1,True,0.9475,0.4846,0.9869,0.9613,1.9552
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,C_stocks,1,True,0.1651,0.0634,0.4881,0.0013,2.6042
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,bulk_14C,1,True,0.4196,0.1611,0.9981,0.0003,2.6042
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,fraction_14C,3,True,2.0196,0.7755,2.6027,1.5958,2.6042
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,resp_14C,0,False,0.0,0.0,0.0,0.0,2.6042
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,C_stocks,1,True,0.2319,0.1168,0.4887,0.0001,1.9855
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,bulk_14C,1,True,0.7709,0.3883,0.9913,0.5755,1.9855
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,fraction_14C,0,False,0.0,0.0,0.0,0.0,1.9855
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,resp_14C,1,True,0.9827,0.495,0.9975,0.993,1.9855
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,C_stocks,1,True,0.2206,0.0753,0.4886,0.0,2.9296
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,bulk_14C,1,True,0.7844,0.2677,0.9952,0.6211,2.9296
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,fraction_14C,0,False,0.0,0.0,0.0,0.0,2.9296
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,resp_14C,3,True,1.9247,0.657,1.9625,1.9344,2.9296
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,C_stocks,1,True,0.0338,0.0112,0.1044,0.0,3.0233
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,bulk_14C,1,True,0.4772,0.1578,0.9871,0.0008,3.0233
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,fraction_14C,3,True,1.9965,0.6604,2.9874,1.0391,3.0233
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,resp_14C,1,True,0.5158,0.1706,0.999,0.0356,3.0233
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,C_stocks,1,True,0.159,0.0531,0.477,0.0,2.9976
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,bulk_14C,1,True,0.4202,0.1402,0.999,0.0003,2.9976
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,fraction_14C,3,True,2.4184,0.8068,2.9973,1.9985,2.9976
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,resp_14C,0,False,0.0,0.0,0.0,0.0,2.9976

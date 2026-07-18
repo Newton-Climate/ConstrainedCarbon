@@ -1,0 +1,106 @@
+site,site_id,biome,mean_GPP_gCm2yr,ladder,rung,constraint_label,added_family,n_obs_added_family,n_obs_cumulative,dfs_cumulative,dfs_increment
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9639,0.9639
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.9639,0.0
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,1,2,1.958,0.9941
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.5915,0.5915
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9657,0.3742
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.9657,0.0
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,1,3,1.96,0.9943
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.8324,0.8324
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.8324,0.0
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,4,5,1.7146,0.8823
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.51,0.51
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.8573,0.3473
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.8573,0.0
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,4,6,1.7518,0.8945
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9959,0.9959
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,1,2,1.9794,0.9835
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,10,12,2.8214,0.842
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.066,0.066
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9968,0.9309
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,1,3,1.9801,0.9833
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,10,13,2.8214,0.8413
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9991,0.9991
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.9991,0.0
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,2,3,2.1372,1.1381
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.0176,0.0176
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9997,0.9821
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.9997,0.0
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,2,4,2.1373,1.1376
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9989,0.9989
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,3,4,2.9938,1.995
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,0,4,2.9938,0.0
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.4783,0.4783
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,1.0054,0.527
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,3,5,2.9938,1.9885
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,0,5,2.9938,0.0
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.942,0.942
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.942,0.0
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,12,13,1.7645,0.8225
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.4656,0.4656
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9448,0.4793
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.9448,0.0
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,12,14,1.7737,0.8289
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9992,0.9992
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,4,5,2.9336,1.9343
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,33,38,3.304,0.3704
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.0357,0.0357
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9999,0.9642
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,4,6,2.9336,1.9336
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,33,39,3.304,0.3704
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,no_12C_stocks,1,bulk_14C,bulk_14C,5,5,1.9361,1.9361
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,7,12,3.0972,1.1612
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,17,29,3.7679,0.6707
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.8617,0.8617
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,5,6,1.9362,1.0745
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,7,13,3.0974,1.1612
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,17,30,3.768,0.6706
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9904,0.9904
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.9904,0.0
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,2,3,1.9179,0.9275
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.5502,0.5502
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,1.0728,0.5226
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,1.0728,0.0
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,2,4,1.9373,0.8644
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9925,0.9925
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.9925,0.0
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,1,2,1.9545,0.962
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.3188,0.3188
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.994,0.6752
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.994,0.0
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,1,3,1.9552,0.9613
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9981,0.9981
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,3,4,2.6029,1.6048
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,0,4,2.6029,0.0
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.4881,0.4881
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,1.0084,0.5203
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,3,5,2.6042,1.5958
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,0,5,2.6042,0.0
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9913,0.9913
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.9913,0.0
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,1,2,1.9854,0.9941
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.4887,0.4887
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9926,0.5039
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.9926,0.0
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,1,3,1.9855,0.993
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9952,0.9952
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,0,1,0.9952,0.0
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,3,4,2.9296,1.9344
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.4886,0.4886
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9952,0.5066
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,0,2,0.9952,0.0
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,3,5,2.9296,1.9344
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.9871,0.9871
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,3,4,2.9877,2.0005
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,1,5,3.0233,0.0356
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.1044,0.1044
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9872,0.8828
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,3,5,2.9877,2.0005
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,1,6,3.0233,0.0356
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,no_12C_stocks,1,bulk_14C,bulk_14C,1,1,0.999,0.999
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,no_12C_stocks,2,bulk_14C+fraction_14C,fraction_14C,3,4,2.9976,1.9986
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,no_12C_stocks,3,bulk_14C+fraction_14C+resp_14C,resp_14C,0,4,2.9976,0.0
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,with_12C_stocks,1,C_stocks,C_stocks,1,1,0.477,0.477
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,with_12C_stocks,2,C_stocks+bulk_14C,bulk_14C,1,2,0.9991,0.5221
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,with_12C_stocks,3,C_stocks+bulk_14C+fraction_14C,fraction_14C,3,5,2.9976,1.9985
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,with_12C_stocks,4,C_stocks+bulk_14C+fraction_14C+resp_14C,resp_14C,0,5,2.9976,0.0

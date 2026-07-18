@@ -1,0 +1,242 @@
+site_name,lat,lon,layer_obs,layer_entries,layer_entry_names,fraction_obs,fraction_entries,fraction_entry_names,flux_obs,flux_entries,flux_entry_names,incubation_obs,incubation_entries,incubation_entry_names,interstitial_obs,interstitial_entries,interstitial_entry_names,has_layer,has_fraction,has_respiration,has_interstitial,eligible_fraction,eligible_pool_resp,eligible,eligibility_path
+AMA,-3.82,-70.27,3,1,Posada_2011,0,0,,0,0,,4,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+ANpp,38.710133,-120.550133,5,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+ANrf,38.628367,-120.2252167,6,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+ANwf,38.698467,-120.397983,5,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+ARL,43.295833,-89.38,24,1,Szymanski_2019,0,0,,0,0,,24,1,Szymanski_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+AZ_Mollisol,35.15944,-111.6097,4,1,Heckman_2018,34,1,Heckman_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Acquarossa,46.4466412388683,8.92230950847422,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Adventdalen Valley,78.17,16.1,17,1,Lupascu_2018,0,0,,20,1,Lupascu_2018,0,0,,25,1,Lupascu_2018,True,False,True,True,False,True,True,pool+respiration
+Agnelli_2002_Cavalla,43.7,11.6,10,1,Agnelli_2002,6,1,Agnelli_2002,0,0,,2,1,Agnelli_2002,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Alpthal,47.0479198165054,8.71251924569432,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Andrews Experimental Forest,44.25,-122.13,2,2,Sollins_2006|Sollins_2009,12,2,Sollins_2006|Sollins_2009,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Angelo_SouthMeadow,38.86,-123.630333333333,3,1,Foley_2023,0,0,,0,0,,3,1,Foley_2023,0,0,,True,False,True,False,False,True,True,pool+respiration
+Ankasa,5.213894,-2.591406,12,1,Chiti_2010,1,1,Chiti_2010,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Appi forest,40.0,140.56,12,1,Koarashi_2009,22,1,Koarashi_2009,49,1,Atarashi-Andoh_2012,0,0,,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Apuí,-7.217,-59.832861,6,1,Kuhnen_2019,0,0,,0,0,,6,1,Kuhnen_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Ari Mas,72.484093,101.671208,6,1,Gentsch_2018,13,1,Gentsch_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Arvigo,46.2908672228976,9.09327811628297,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Atlantic Coast Flatwoods,34.589,-77.271,16,1,Butnor_2017,16,1,Butnor_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Auchencorth Moss,55.792778,-3.243056,10,1,Leith_2014,0,0,,14,1,Leith_2014,0,0,,38,1,Leith_2014,True,False,True,True,False,True,True,pool+respiration
+BB-450-C,-23.31659419,31.453665514,6,1,Khomo_2017,12,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+BCI,9.16,-79.85,3,1,Posada_2011,0,0,,0,0,,3,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+BSpp,40.5005,-121.921467,4,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+BSrf,40.5864167,-121.38267,4,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+BSwf,40.535383,-121.6234,4,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Balgach,47.408145373637,9.58985481176815,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Baram Basin,4.47777778,114.30527778,8,1,Lupascu_2020,0,0,,14,1,Lupascu_2020,0,0,,0,0,,True,False,True,False,False,True,True,pool+respiration
+Barrow,71.275,-156.55,27,1,Vaughn_2018,0,0,,49,1,Vaughn_2018,91,1,Vaughn_2018,14,1,Vaughn_2018,True,False,True,True,False,True,True,pool+respiration
+Beatenberg,46.7008633043892,7.76106964464845,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Belp,46.8630793100156,7.52178123160686,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Benken (SG),47.1835381402071,9.00675018400384,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Berg (SG),47.4835007781006,9.42102796308959,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Biadaski,51.24783,18.10583,37,1,Mueller_2010,0,0,,0,0,,37,1,Mueller_2010,0,0,,True,False,True,False,False,True,True,pool+respiration
+Blodgett,38.89715,-120.631767,6,1,Rasmussen_2005,18,1,Rasmussen_2005,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Blodgett Forest,38.908122,-120.660771,9,1,HicksPries_2017,30,2,Hicks Pries_2017b|HicksPries_2017,0,0,,8,1,HicksPries_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Bodenburg,61.63194444,-149.17555556,0,0,,8,1,Clark_2002,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Breil/Brigels,46.8049799056669,9.03700379700121,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Bugac,46.8,18.9,0,0,,8,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+CA_Mollisol,36.9679,-122.0862,4,1,Heckman_2018,36,1,Heckman_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+CZ_1930burn,55.90497,-98.52572,15,1,Czimczik_2007,0,0,,0,0,,9,1,Czimczik_2007,4,1,Czimczik_2007,True,False,True,True,False,True,True,pool+respiration
+CZ_1964burn_NSA,55.91398,-98.382698,11,1,Czimczik_2007,0,0,,2,1,Czimczik_2007,11,1,Czimczik_2007,3,1,Czimczik_2007,True,False,True,True,False,True,True,pool+respiration
+CZ_1981burn,55.864,-98.484,5,1,Czimczik_2007,0,0,,0,0,,7,1,Czimczik_2007,0,0,,True,False,True,False,False,True,True,pool+respiration
+CZ_1989_Footprint_Fire,55.9169,-98.964,4,1,Czimczik_2007,0,0,,0,0,,3,1,Czimczik_2007,0,0,,True,False,True,False,False,True,True,pool+respiration
+CZ_Old_Black_Spruce,55.877,-98.484,6,1,Czimczik_2007,0,0,,1,1,Czimczik_2007,15,1,Czimczik_2007,1,1,Czimczik_2007,True,False,True,True,False,True,True,pool+respiration
+Camp_Osceola,34.1709,-116.875,9,1,Nowinski_2009,53,1,Nowinski_2009,0,0,,26,1,Nowinski_2009,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Camp_Paivika,34.237,-117.325,9,1,Nowinski_2009,54,1,Nowinski_2009,0,0,,27,1,Nowinski_2009,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Carlow,52.85,-6.9,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Carpathian Basin_1,46.82304,16.4029,2,1,Fekete_2020,0,0,,0,0,,2,1,Fekete_2020,0,0,,True,False,True,False,False,True,True,pool+respiration
+Carpathian Basin_25,47.02811,18.27196,2,1,Fekete_2020,0,0,,0,0,,3,1,Fekete_2020,0,0,,True,False,True,False,False,True,True,pool+respiration
+Carpathian Basin_29,47.83065,20.35568,3,1,Fekete_2020,0,0,,0,0,,4,1,Fekete_2020,0,0,,True,False,True,False,False,True,True,pool+respiration
+Carpathian Basin_3,46.73973,16.65213,2,1,Fekete_2020,0,0,,0,0,,2,1,Fekete_2020,0,0,,True,False,True,False,False,True,True,pool+respiration
+Carpathian Basin_5,46.75515,16.80596,2,1,Fekete_2020,0,0,,0,0,,2,1,Fekete_2020,0,0,,True,False,True,False,False,True,True,pool+respiration
+Catalina CZO conifer,32.4261,-110.765501,5,1,Lybrand_2017,18,1,Lybrand_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Catalina CZO desert,32.555896,-110.839755,4,1,Lybrand_2017,15,1,Lybrand_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Catalina CZO ponderosa,32.450616,-110.744095,4,1,Lybrand_2017,15,1,Lybrand_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Cherskiy,69.446123,161.751543,3,1,Gentsch_2018,9,1,Gentsch_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+China Hat,37.46444,-120.36906,5,1,Baisden_2002,21,1,Baisden_2002,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Chiricahua Rhyolite,31.8875,-109.28,6,1,Heckman_2010,18,1,Heckman_2010,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Chur,46.8788835399998,9.55555821465673,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+DRC_mafic_Cropland,-2.23755,28.80599,13,1,Doetterl_2021,0,0,,0,0,,13,1,Doetterl_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+DRC_mafic_Forest,-2.31439,28.75246,12,1,Doetterl_2021,0,0,,0,0,,12,1,Doetterl_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Davos,46.8148903401798,9.85551784823246,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Dinesen,41.70977568,-95.2797263,37,1,Harden_2002,18,1,Harden_2002,7,1,Harden_2002,6,1,Harden_2002,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+EML,63.87836111,-149.2535833,9,1,Hicks_Pries_2012,29,1,Hicks_Pries_2012,289,1,Hicks_Pries_2013,135,2,Hicks_Pries_2013|Pegoraro_2019,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+EarlyEvansCreek1,46.55065,-112.52791,6,1,Trumbore_2021,0,0,,0,0,,4,1,Trumbore_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Easter Bush,55.86667,-3.166667,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Eschenbach (LU),47.1267621314869,8.31309093457047,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+FLONA,-3.017,-54.9707,44,2,Telles_2003|Trumbore_2006,0,0,,22,1,Trumbore_2006,44,1,Trumbore_2006,33,1,Perez_2006,True,False,True,True,False,True,True,pool+respiration
+FP1,-12.8767833333333,-52.3648,10,1,Nagy_2017,0,0,,0,0,,2,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+FP3,-13.0856,-52.3945833333333,10,1,Nagy_2017,0,0,,0,0,,3,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+FP4,-12.85495,-52.3671,10,1,Nagy_2017,0,0,,0,0,,3,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+FP7,-12.8342833333333,-52.3346333333333,10,1,Nagy_2017,0,0,,0,0,,2,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+Faido,46.4469235568531,8.81106999757823,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Fallbrook,36.7166667,-119.283333333333,4,1,Ewing_2006,0,0,,2,1,Ewing_2006,8,1,Ewing_2006,0,0,,True,False,True,False,False,True,True,pool+respiration
+Fazenda Victoria,-2.98333333,-47.51666667,8,2,Camargo_1999|Telles_2011,84,3,Camargo_1999|Telles_2011|Trumbore_1995,0,0,,0,0,,51,1,Trumbore_1995,True,True,False,True,True,False,True,fraction
+Fichtelgeberge,50.133,11.867,21,1,Schulze_2009,45,1,Schulze_2009,6,1,Muhr_2009,9,1,Muhr_2009,20,1,Schulze_2011,True,True,True,True,True,True,True,fraction|pool+respiration
+Flagstaff Basalt,35.159444,-111.740833,4,1,Heckman_2010,12,1,Heckman_2010,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Flagstaff Dolostone,35.084444,-111.609722,2,1,Heckman_2010,6,1,Heckman_2010,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Fläsch,47.0388138900752,9.48961179683413,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+GA-450-C,-23.055389125,31.2621483258,12,1,Khomo_2017,23,1,Khomo_2017,0,0,,4,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GA-550-C,-25.0294766148,31.35001142602,2,1,Khomo_2017,4,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GA-740-C,-25.1441617869,31.304820266,8,1,Khomo_2017,24,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GORG,2.98,-78.18,4,1,Posada_2011,0,0,,0,0,,4,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+GR-450-C,-23.02962842,31.269864807,2,1,Khomo_2017,4,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GR-550-C,-25.020261477,31.5002865298,5,1,Khomo_2017,7,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GR-550-S,-25.020097641,31.501051534,7,1,Khomo_2017,9,1,Khomo_2017,0,0,,5,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GR-550-T,-25.020141345,31.501804108,5,1,Khomo_2017,7,1,Khomo_2017,0,0,,5,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GR-740-C,-25.20153497,31.2811929881,8,1,Khomo_2017,7,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+GRpp,37.0612167,-119.3722833,4,1,Rasmussen_2018,6,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+GRrf,37.162517,-119.1995,5,1,Rasmussen_2018,4,1,Rasmussen_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Gebesee,51.1,10.91667,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Goodwin Creek,34.375,-89.9083333333333,30,1,Harden_1999,0,0,,0,0,,6,1,Harden_1999,0,0,,True,False,True,False,False,True,True,pool+respiration
+Grignon,48.85,1.966667,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+HI_Andisol,19.945,-155.262,4,1,Heckman_2018,30,1,Heckman_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Hainich,51.06667,10.45,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Harvard Forest,42.54,-72.18,8,1,Gaudinski_2001,88,2,Gaudinski_2000|Savage_unpub,156,1,Gaudinski_2001,15,2,Gaudinski_2000|Savage_unpub,192,1,Gaudinski_2001,True,True,True,True,True,True,True,fraction|pool+respiration
+Haut-Intyamon,46.5276212229171,7.04763907203417,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Heidelberg,49.4,8.67,9,1,Dorr_1986,0,0,,61,1,Dorr_1986,0,0,,0,0,,True,False,True,False,False,True,True,pool+respiration
+Hess Creek,65.56758,-148.92487,41,1,O'Donnell_2011,22,1,O'Donnell_2011,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Hesse,48.66667,7.083333,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Hopland_Buck,39.0018333,-123.069666666666,3,1,Foley_2023,0,0,,0,0,,3,1,Foley_2023,0,0,,True,False,True,False,False,True,True,pool+respiration
+Howland Forest,45.167,-68.667,38,3,Fernandez_1993a|Gaudinski_2001|Trumbore_unpub,148,2,Gaudinski_2001|Trumbore_unpub,182,1,Gaudinski_2001,47,2,Gaudinski_2001|Trumbore_unpub,60,2,Gaudinski_2001|Trumbore_unpub,True,True,True,True,True,True,True,fraction|pool+respiration
+Itatinga Experimental Forest,-23.034028,-48.626222,0,0,,8,1,James_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Joshua_Tree,33.83159,-116.394754,12,1,Nowinski_2021,0,0,,0,0,,21,1,Nowinski_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Judgeford,-41.1,175.0,4,1,Goh_1977,12,1,Goh_1977,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Jussy,46.2290420571949,6.28631892498732,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Kaisten,47.5428284947625,8.00878002312361,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Kellogg Biological Station,42.406,-85.4,1,1,Sollins_2009,7,1,Sollins_2009,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Kinabalu National Park,6.207,116.64,1,1,Sollins_2009,7,1,Sollins_2009,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Kivu,2.31314,28.75471,20,1,Drake_2019,0,0,,19,1,Drake_2019,0,0,,0,0,,True,False,True,False,False,True,True,pool+respiration
+Kursk,51.5799327590473,36.0935456372952,22,1,Mikhailova_2018,3,1,Mikhailova_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+La Campana,-33.0285593333333,-71.0440496666667,19,1,Scheibe_2022,0,0,,0,0,,44,1,Scheibe_2022,0,0,,True,False,True,False,False,True,True,pool+respiration
+Lageado Farm,-22.837222,-48.421861,0,0,,8,1,James_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Laqueuille,45.63333,2.73333,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+LatestPleistocene,46.48661,-122.7037,6,1,Trumbore_2021,0,0,,0,0,,4,1,Trumbore_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Lausanne,46.5832949894714,6.65883946066971,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Le Flon,46.6038747409885,6.88850475121258,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Lens,46.2680262363379,7.43600131385098,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Les Genevez (JU),47.2475447589112,7.14802760859935,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Logata,73.421871,98.45439,6,1,Gentsch_2018,9,1,Gentsch_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Londrina_2,-23.32,-51.37,3,1,Pessenda_2001,3,1,Pessenda_2001,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Losone,46.1607560776831,8.75915620195629,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Luquillo_Experimental_Forest,18.3157,-65.7487,0,0,,30,1,Hall_2015,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+M123,49.2,8.4,0,0,,11,1,Tegen_1996,0,0,,0,0,,13,1,Tegen_1996,False,True,False,True,True,False,True,fraction
+M4,49.2,8.5,0,0,,5,1,Tegen_1996,0,0,,0,0,,3,1,Tegen_1996,False,True,False,True,True,False,True,fraction
+MA Harvard Forest,42.5377,-72.1715,36,1,McFarlane_2013,30,1,McFarlane_2013,0,0,,7,1,Trumbore_inc_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+MG-550-C,-25.016156497,31.4272091641,8,1,Khomo_2017,12,1,Khomo_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+MI-Coarse UMBS,45.5598,-84.7138,48,1,McFarlane_2013,30,1,McFarlane_2013,0,0,,13,1,Trumbore_inc_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+MI_Spodosol,45.64611,-84.9722,4,1,Heckman_2018,33,1,Heckman_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+MO Ozark BREA,38.7441,-92.2,34,1,McFarlane_2013,30,1,McFarlane_2013,0,0,,8,1,Trumbore_inc_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Malans,46.98977531683,9.56848027429031,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Manacapuru,-3.278917,-60.501833,6,1,Kuhnen_2019,0,0,,0,0,,6,1,Kuhnen_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Manawatu,-40.4,175.3,14,1,Goh_1976,12,1,Goh_1976,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Matador,50.798452,-107.899323,1,1,Martel_1974,9,1,Martel_1974,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Maui,20.80833,-156.25,36,1,Schuur_2001,18,1,Schuur_2001,0,0,,90,1,Schuur_2001,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Medvezhka,69.65,162.516667,1,1,Dutta_2006,4,1,Dutta_2006,0,0,,1,1,Dutta_2006,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Meggen,47.0585378530504,8.37503103052933,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Meiringen,46.7571541359037,8.13968410645333,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Metzerlen-Mariastein,47.4556756580239,7.47973226119748,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Mi-Fine Colonial Point,45.4846,-84.6843,37,1,McFarlane_2013,30,1,McFarlane_2013,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+MiddleHayden,46.4987294,-122.7244703,11,1,Trumbore_2021,0,0,,0,0,,3,1,Trumbore_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Moor House Nature Reserve,55.08333,-2.75,0,0,,11,1,Bol_1996,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mount Acuto 1,43.471,12.68,0,0,,12,1,De_Feudis_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mount Acuto 2,43.472,12.68,0,0,,12,1,De_Feudis_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mount San Vicino 1,42.321,13.05,0,0,,12,1,De_Feudis_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mount San Vicino 2,42.322,13.05,0,0,,12,1,De_Feudis_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mount Terminillo 1,42.471,12.98,0,0,,12,1,De_Feudis_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mount Terminillo 2,42.472,12.98,0,0,,12,1,De_Feudis_2019,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Mt. Lemmon Granite,32.418889,-110.735278,3,1,Heckman_2010,9,1,Heckman_2010,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Musick_Amador,38.5,-120.5,0,0,,28,1,Trumbore_1993,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+NE-450-C,-23.51110799,31.39929655,3,1,Khomo_2017,8,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+NERP,41.841667,-88.241667,0,0,,23,1,Obrien_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+NH Bartlett Forest,44.0647,-71.288,37,1,McFarlane_2013,30,1,McFarlane_2013,0,0,,6,1,Trumbore_inc_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+NSA_FenTower,55.9148,-98.42072,0,0,,77,1,Trumbore_1999,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Nahuelbuta,-37.793595,-72.95066,40,1,Scheibe_2022,0,0,,0,0,,57,1,Scheibe_2022,0,0,,True,False,True,False,False,True,True,pool+respiration
+Nelson Farm,34.6888888888889,-90.0333333333333,21,1,Harden_1999,0,0,,0,0,,5,1,Harden_1999,0,0,,True,False,True,False,False,True,True,pool+respiration
+Neunkirch,47.6841827906742,8.53482211980122,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Nilgiri,11.333333,76.75,17,1,Caner_2003,17,1,Caner_2003,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Nods,47.1133830244307,7.0417027994582,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Norunda,60.08333,17.48333,0,0,,6,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Novaggio,46.0222509462979,8.83334136057998,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Oak Ridge Reservation,35.970138,-84.2996,4,1,Swanston_2005,12,1,Swanston_2005,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Olsberg,47.5352163486519,7.7839199016858,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Othmarsingen,47.3990315571444,8.22592763858263,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+PACU,5.68,-76.6,4,1,Posada_2011,0,0,,0,0,,4,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+Palmerston_North,-40.35,175.5,0,0,,18,1,Goh_1977,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Pessenda_2001_Botucata I,-23.0,-48.0,3,1,Pessenda_2001,3,1,Pessenda_2001,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Pessenda_2001_Humaita IId,-7.52,-63.03,2,1,Pessenda_2001,2,1,Pessenda_2001,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Pessenda_2001_Jaguariuna,-22.67,-47.02,3,1,Pessenda_2001,3,1,Pessenda_2001,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Pfeffingen,47.4637022745467,7.57125145866232,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Piracicaba_2,-22.68,-47.67,3,1,Pessenda_2001,3,1,Pessenda_2001,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Polar Desert,76.4272222,-68.9836111111111,6,1,Czimczik_2010,2,1,Czimczik_2010,0,0,,11,1,Czimczik_2010,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+RB-450-C,-23.306279189,31.4756084961,5,1,Khomo_2017,19,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+RH-450-C,-23.307657278,31.546531286,4,1,Khomo_2017,6,1,Khomo_2017,0,0,,6,1,Khomo_2017,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+RITA,9.37,-79.7,3,1,Posada_2011,0,0,,0,0,,3,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+RW_mixed_Cropland,-2.39338,29.22039,13,1,Doetterl_2021,0,0,,0,0,,13,1,Doetterl_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+RW_mixed_Forest,-2.46381,29.09542,12,1,Doetterl_2021,0,0,,0,0,,8,1,Doetterl_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Rapperswil-Jona_a,47.228767233926,8.90612033693338,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Rapperswil-Jona_b,47.2415403818684,8.84861230809763,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Riverbank,37.52,-120.59,14,2,Baisden_2002|Baisden_2007,21,1,Baisden_2002,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Romont (FR),46.679933380506,6.89779221653977,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Roveredo (GR),46.2250916638445,9.12692944151064,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+S1_Bog_MEF,47.506,-93.454,178,1,McFarlane_2018,27,1,McFarlane_2018,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+SELVA,10.43,-84.0,7,1,Posada_2011,0,0,,0,0,,6,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+SHER,9.28,-79.97,3,1,Posada_2011,0,0,,0,0,,3,1,Posada_2011,0,0,,True,False,True,False,False,True,True,pool+respiration
+SO3P1,-12.6923833333333,-52.3654666666666,10,1,Nagy_2017,0,0,,0,0,,3,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+SO3P6,-12.73805,-52.3925666666666,1,1,Nagy_2017,0,0,,0,0,,1,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+SO7P2,-13.0689166666666,-52.38695,5,1,Nagy_2017,0,0,,0,0,,3,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+SO8P3,-12.9777333333333,-52.3456833333333,10,1,Nagy_2017,0,0,,0,0,,2,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+SO8P5,-12.9977666666666,-52.3490333333333,5,1,Nagy_2017,0,0,,0,0,,2,1,Nagy_2017,0,0,,True,False,True,False,False,True,True,pool+respiration
+Saint-Cergue,46.4485532471578,6.11111859438691,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+San Dimas Experimental Forest,34.2,-117.75,2,1,Quideau_2001,8,1,Quideau_2001,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Santa Gracia,-29.7594236666667,-71.1602996666667,34,1,Scheibe_2022,0,0,,0,0,,36,1,Scheibe_2022,0,0,,True,False,True,False,False,True,True,pool+respiration
+Saubraz,46.5227583554496,6.3178370263857,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Schänis,47.1644120123761,9.06609898870338,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Sedgwick Reserve,34.7,-120.05,13,1,Fierer_2005,8,1,Fierer_2005,9,1,Fierer_2005,0,0,,29,1,Fierer_2005,True,True,True,True,True,True,True,fraction|pool+respiration
+Sedgwick_weatherstation,34.7116667,-120.038833333333,3,1,Foley_2023,0,0,,0,0,,3,1,Foley_2023,0,0,,True,False,True,False,False,True,True,pool+respiration
+Sent,46.8163667110869,10.3692036602978,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Sierra de Cayey,18.016667,-66.083333,0,0,,18,1,Marin-Spiotta_2008,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Site_1,50.761528,4.735378,3,1,Doetterl_2012,9,1,Doetterl_2012,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Siviriez,46.6286307919012,6.89216957021569,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Solling,51.516667,9.566667,18,1,Lemke_2006,33,1,Lemke_2006,6,1,Lemke_2006,2,1,Lemke_2006,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Sorø,55.48333,11.63333,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Soubey,47.3191837232659,7.04182031913108,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+South Mountain,76.5102778,-68.6705555555555,3,1,Czimczik_2010,0,0,,0,0,,9,1,Czimczik_2010,0,0,,True,False,True,False,False,True,True,pool+respiration
+Southern Piedmont,32.4,-84.87,20,1,Butnor_2017,20,1,Butnor_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+St. Gallen_a,47.4043686961747,9.39754095817132,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+St. Gallen_b,47.4283104271685,9.35400800153776,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+St. Stephan,46.5036483214704,7.42352881753707,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Steinhausen,47.2087416832883,8.48702732069661,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Susua State Forest,18.072,-66.916,1,1,Sollins_2009,8,1,Sollins_2009,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+TH_1964Gillam,55.9055,-97.7087,43,1,Trumbore_Harden_1997,31,1,Trumbore_Harden_1997,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+TH_Old_Black_Spruce,55.877274,-98.484025,26,1,Trumbore_Harden_1997,16,1,Trumbore_Harden_1997,0,0,,0,0,,7,1,Trumbore_Harden_1997,True,True,False,True,True,False,True,fraction
+Takayama Forest Research Station,36.11277778,137.42305556,2,1,Kondo_2010,10,1,Kondo_2010,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Tama_County_Iowa,42.15,-92.31,2,1,Trumbore_1990,12,1,Trumbore_1990,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Tamins,46.8449134457592,9.41225562287149,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Tarasp,46.7711873272217,10.2324607603807,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Taupo,-38.7,176.1,4,1,Goh_1977,12,1,Goh_1977,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Tennessee Valley,37.848,-122.5318,0,0,,88,1,Berhe_2012,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Treynor,41.16574593,-95.64329535,46,1,Harden_2002,0,0,,9,1,Harden_2002,9,1,Harden_2002,0,0,,True,False,True,False,False,True,True,pool+respiration
+Troistorrents,46.238858909996,6.84228910627744,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Trumbore Ahwahnee,37.016153,-119.327733,10,2,Trumbore_1996|Trumbore_unpublished,12,2,Trumbore_1996|Trumbore_unpublished,0,0,,5,1,Trumbore_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Trumbore Chiquito,37.261593,-119.146739,11,2,Trumbore_1996|Trumbore_unpublished,33,3,Koarashi_2012|Trumbore_1996|Trumbore_unpublished,0,0,,6,1,Trumbore_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Trumbore Corbett,37.086598,-119.212314,0,0,,26,1,Trumbore_1996,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Trumbore Falbrook,36.725967,-119.2954,14,2,Trumbore_1996|Trumbore_unpublished,31,3,Koarashi_2012|Trumbore_1996|Trumbore_unpublished,0,0,,5,1,Trumbore_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Trumbore Musick,37.0287,-119.271017,3,1,Trumbore_unpublished,51,3,Koarashi_2012|Trumbore_1996|Trumbore_unpublished,0,0,,6,1,Trumbore_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Trumbore Shaver,37.03182,-119.188,12,2,Trumbore_1996|Trumbore_unpublished,53,3,Koarashi_2012|Trumbore_1996|Trumbore_unpublished,0,0,,6,1,Trumbore_unpublished,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Turlock Lake,37.62577,-120.59085,6,1,Baisden_2002,19,1,Baisden_2002,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+UG_felsic_Cropland,0.5216,30.16291,13,1,Doetterl_2021,0,0,,0,0,,13,1,Doetterl_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+UG_felsic_Forest,0.45994,30.37355,12,1,Doetterl_2021,0,0,,0,0,,10,1,Doetterl_2021,0,0,,True,False,True,False,False,True,True,pool+respiration
+Val-de-Travers,46.9571736411248,6.62408630913996,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Vordemwald,47.2742919772411,7.88868976266124,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+W14C,51.6,7.4,0,0,,4,1,Tegen_1996,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Western Coastal Plain,30.944,-93.162,20,1,Butnor_2017,20,1,Butnor_2017,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction
+Wettingen,47.4775998595358,8.36661793864162,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Wetzstein,50.45,11.45,0,0,,9,1,Schrumpf_2013,0,0,,0,0,,0,0,,False,True,False,False,True,False,True,fraction
+Willow Creek,45.8059,-90.0799,23,1,phillips_2013,0,0,,0,0,,26,1,phillips_2013,0,0,,True,False,True,False,False,True,True,pool+respiration
+ZF2,-2.55,-60.1091,16,1,Telles_2003,0,0,,5,1,Trumbore_2006,0,0,,0,0,,True,False,True,False,False,True,True,pool+respiration
+Zeiningen,47.5348515940413,7.8901632038916,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+Zelenyi Mys,68.8,161.383333,2,1,Dutta_2006,8,1,Dutta_2006,0,0,,3,1,Dutta_2006,0,0,,True,True,True,False,True,True,True,fraction|pool+respiration
+Zernez,46.6623540039575,10.2291502149723,1,1,González-Domínguez_2019,0,0,,0,0,,1,1,González-Domínguez_2019,0,0,,True,False,True,False,False,True,True,pool+respiration
+forest Nagoya,35.15,136.97,11,1,Koarashi_2005,16,1,Koarashi_2005,0,0,,0,0,,0,0,,True,True,False,False,True,False,True,fraction

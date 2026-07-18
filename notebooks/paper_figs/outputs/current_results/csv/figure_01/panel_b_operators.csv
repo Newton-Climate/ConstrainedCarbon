@@ -1,0 +1,11 @@
+node,x,y,width,height,label
+stocks,0.04,0.76,0.28,0.12,Carbon stocks
+fluxes,0.04,0.57,0.28,0.12,Flux measurements
+soil14c,0.04,0.38,0.28,0.12,Soil radiocarbon
+resp14c,0.04,0.19,0.28,0.12,Respired radiocarbon
+stored,0.54,0.66,0.32,0.14,"Stored-carbon
+amount"
+stored_age,0.54,0.43,0.32,0.14,"Stored-carbon
+age structure"
+resp_age,0.54,0.2,0.32,0.14,"Respiring-carbon
+age structure"

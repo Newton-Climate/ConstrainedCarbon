@@ -1,0 +1,29 @@
+ecosystem,observation_subset,degrees_of_freedom
+Harvard Forest,prior_only,0.7508029218268979
+Harvard Forest,stocks_only,2.8994692226611987
+Harvard Forest,soil14c_only,2.970091268954141
+Harvard Forest,resp14c_only,2.866616675132143
+Harvard Forest,stocks_soil14c,2.9183875402282
+Harvard Forest,stocks_resp14c,2.9343599779515177
+Harvard Forest,all_observations,2.961408507719248
+Barrow,prior_only,0.2991066157226445
+Barrow,stocks_only,2.8043072504139595
+Barrow,soil14c_only,2.891398628528326
+Barrow,resp14c_only,2.7244093155932765
+Barrow,stocks_soil14c,2.9484859162820536
+Barrow,stocks_resp14c,2.874062574215836
+Barrow,all_observations,2.9628115973006617
+Howland Forest,prior_only,0.8765048974678084
+Howland Forest,stocks_only,2.898499318670368
+Howland Forest,soil14c_only,2.8721123997891005
+Howland Forest,resp14c_only,2.749872986062509
+Howland Forest,stocks_soil14c,2.974679702755414
+Howland Forest,stocks_resp14c,2.9732868463245774
+Howland Forest,all_observations,2.9228301987008725
+Eight-mile Lake,prior_only,0.8622824314921914
+Eight-mile Lake,stocks_only,2.88554822650544
+Eight-mile Lake,soil14c_only,2.8742013421676282
+Eight-mile Lake,resp14c_only,2.4375218265228376
+Eight-mile Lake,stocks_soil14c,2.8668329468031857
+Eight-mile Lake,stocks_resp14c,2.7619074135409027
+Eight-mile Lake,all_observations,2.9092887498805062
