@@ -1,5 +1,0 @@
-ecosystem,respired14c_value,soil14c_value,combined_value,combined_minus_best_single,baseline_subset,soil_subset,respired_subset,combined_subset
-Harvard Forest,0.5301754922577455,0.242259963077204,0.729316667188686,0.19914117493094052,stocks_only,stocks_soil14c,stocks_resp14c,all_observations
-Barrow,0.10384250098753545,0.825981725515163,0.8911408813432217,0.06515915582805865,stocks_only,stocks_soil14c,stocks_resp14c,all_observations
-Howland Forest,0.6629760184684683,0.8670806555071267,0.8289274419053372,-0.03815321360178947,stocks_only,stocks_soil14c,stocks_resp14c,all_observations
-Eight-mile Lake,0.5650123786614658,0.731262552816957,0.780529618127459,0.04926706531050207,stocks_only,stocks_soil14c,stocks_resp14c,all_observations

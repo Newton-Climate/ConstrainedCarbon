@@ -63,6 +63,12 @@ results/
 node_modules/
 package-lock.json
 
+# Generated paper figures and their exported CSV/alt-text sidecars.
+# Rebuilt by notebooks/paper_figs/build_current_results_figures.py; ~10 MB of
+# SVG/PDF that nothing in the tree reads. Scoped to the outputs/ dir only so
+# the paper_figs source modules stay tracked.
+/notebooks/paper_figs/outputs/
+
 # R
 .Rhistory
 

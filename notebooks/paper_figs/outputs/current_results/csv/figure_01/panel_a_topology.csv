@@ -1,9 +1,0 @@
-node,x,y,width,height,label
-inputs,0.05,0.45,0.18,0.12,"Carbon
-inputs"
-fast,0.33,0.68,0.2,0.14,Fast mode
-intermediate,0.33,0.43,0.2,0.14,Intermediate mode
-slow,0.33,0.18,0.2,0.14,Slow mode
-rf,0.73,0.68,0.2,0.12,Respiration
-ri,0.73,0.43,0.2,0.12,Respiration
-rs,0.73,0.18,0.2,0.12,Respiration
