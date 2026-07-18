@@ -47,6 +47,9 @@ def test_summarize_by_depth():
     assert summary["soil_active"][0] == pytest.approx(50.0)
     assert summary["soil_slow"][0] == pytest.approx(-10.0)
     assert summary["soil_passive"][0] == pytest.approx(-220.0)
+    assert summary["soil_active"][1] == pytest.approx(25.0)
+    assert summary["soil_slow"][1] == pytest.approx(25.0)
+    assert summary["soil_passive"][1] == pytest.approx(28.284271247461902)
 
 
 def test_obs_dict_and_blocks_from_single_year_summary(hf_3pool_model):
