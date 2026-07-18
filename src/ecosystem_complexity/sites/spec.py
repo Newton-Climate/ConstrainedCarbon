@@ -2,7 +2,7 @@
 
 Each site is defined entirely by a config YAML under ``configs/multisite/``.
 Adding a site is a new YAML, not new code — see
-:mod:`ecosystem_complexity.sites.fraction_mapping` for the one piece that used
+:mod:`ecosystem_complexity.data.fraction_mapping` for the one piece that used
 to require a code change and no longer does.
 """
 from __future__ import annotations

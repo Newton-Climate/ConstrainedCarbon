@@ -1,7 +1,7 @@
 """ISRaD radiocarbon observations: bulk mixtures, density fractions, respired ¹⁴C.
 
 The property → pool mapping lives in
-:mod:`ecosystem_complexity.sites.fraction_mapping`, which keys it on the ISRaD
+:mod:`ecosystem_complexity.data.fraction_mapping`, which keys it on the ISRaD
 fractionation vocabulary rather than on the site, so a new site needs no code.
 """
 from __future__ import annotations
@@ -12,19 +12,21 @@ import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity.api import ObsBlock
+# ObsBlock from its defining module, not the `api` facade: `api` imports
+# data.schemas, so routing through it makes data -> api -> data a cycle.
+from ecosystem_complexity._oe_helpers import ObsBlock
+from ecosystem_complexity.data.fraction_mapping import (
+    BULK_PROPERTIES,
+    build_fraction_mapping,
+    normalize,
+)
 from ecosystem_complexity.data.israd_observations import (
     FractionMappingRule,
     add_layer_midpoint,
     build_fraction_obs_blocks,
     bulk_mixture_obs_block,
 )
-from ecosystem_complexity.sites.fraction_mapping import (
-    BULK_PROPERTIES,
-    build_fraction_mapping,
-    normalize,
-)
-from ecosystem_complexity.sites.paths import ISRAD_FLUX, ISRAD_FRACTION, ISRAD_LAYER
+from ecosystem_complexity.data.paths import ISRAD_FLUX, ISRAD_FRACTION, ISRAD_LAYER
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +242,7 @@ def build_fraction_14C_blocks(
 
     Which ``frc_property`` values carry a kinetic interpretation is a property of
     the ISRaD fractionation vocabulary, so the mapping is resolved by
-    :func:`~ecosystem_complexity.sites.fraction_mapping.build_fraction_mapping`
+    :func:`~ecosystem_complexity.data.fraction_mapping.build_fraction_mapping`
     against whatever properties this site actually reports. ``fraction_rules``
     (from the config's ``datasource.fraction_rules``) overrides the default for
     a site with an unusual protocol — no code change, and no per-site branch.
