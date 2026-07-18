@@ -12,13 +12,42 @@ diagnostics are self-consistent regardless of site.
 from __future__ import annotations
 
 import logging
+import os
 import time
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 
-from ecosystem_complexity.api import optimize_oe, run_model
+from ecosystem_complexity.api import build_model, optimize_oe, run_model
+from ecosystem_complexity.data.parsers import attach_atm14C
+from ecosystem_complexity.data.parsers_14C import load_full_14C_record
+from ecosystem_complexity.data.schemas import ObservationData
 from ecosystem_complexity.oe_utils import ss_state_for_params
+from ecosystem_complexity.sites.forcing import (
+    _load_site_forcing,
+    _resolve_forcing_file,
+)
+from ecosystem_complexity.sites.israd_14c import (
+    _bulk_pool_ic_seeds,
+    build_bulk_14C_blocks,
+    build_fraction_14C_blocks,
+    build_resp_14C_obs,
+)
+from ecosystem_complexity.sites.paths import (
+    GRAVEN_PATH,
+    HUA_PATH,
+    INTCAL_PATH,
+)
+from ecosystem_complexity.sites.paths import (
+    REPO_ROOT as _REPO_ROOT,
+)
+from ecosystem_complexity.sites.soc import (
+    build_measured_soc_total,
+    build_soc_prior,
+    build_soilgrids_soc_total,
+)
+from ecosystem_complexity.sites.spec import SiteSpec
 from ecosystem_complexity.state import make_default_params
 
 logger = logging.getLogger(__name__)
@@ -71,3 +100,232 @@ def run_oe_canonical(
         "state_at_prior": state_at_prior, "state_at_map": state_at_map,
         "oe_result": result,
     }
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Config-driven multi-site driver
+# ════════════════════════════════════════════════════════════════════════════
+
+_R_STD = 1.176e-12
+OPT_FIELDS = ("log_tau", "log_f_transfer")
+# Fallback initial Δ¹⁴C per pool role (‰) when a pool has no layer obs.
+_FALLBACK_D14C_BY_ROLE = {"active": 120.0, "slow": 60.0, "passive": 0.0}
+
+def build_state0(model, state_ss, pool_blocks, ic_seeds=None):
+    """Use the site SOC prior state and seed ¹⁴C from the first available obs.
+
+    Per-pool ¹⁴C seeding priority: (1) a fraction block that names the pool
+    (``israd_fraction_soil_slow`` → ``soil_slow``); (2) ``ic_seeds`` — profile-
+    derived seeds for whole-sample bulk sites, whose block names carry no pool
+    (see ``_bulk_pool_ic_seeds``); (3) a modern fallback keyed on the pool's
+    kinetic *role* rather than its full name, so a config whose layer is not
+    called "soil" still gets the intended seed instead of silently falling
+    through to 0‰. Bulk-only sites previously skipped straight to (3),
+    initialising even the passive pool at a modern value — wrong for
+    aged/permafrost carbon.
+    """
+    ic_seeds = ic_seeds or {}
+    # first observed Δ¹⁴C per pool (blocks are ordered by year)
+    first_d14c: dict[str, float] = {}
+    for b in pool_blocks:
+        for pool in model.pool_index.pool_names:
+            if pool in b.name and pool not in first_d14c:
+                first_d14c[pool] = float(np.array(b.y)[0])
+    c12 = np.array(state_ss.C12, dtype=float)
+    c14 = np.zeros_like(c12)
+    for name in model.pool_index.pool_names:
+        i = model.pool_index[name]
+        role = name.rsplit("_", 1)[-1]
+        d14 = first_d14c.get(
+            name, ic_seeds.get(name, _FALLBACK_D14C_BY_ROLE.get(role, 0.0))
+        )
+        c14[i] = c12[i] * _R_STD * (1.0 + d14 / 1000.0)
+    return state_ss._replace(C14=jnp.array(c14, dtype=jnp.float32))
+
+
+def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> dict:
+    if observation_path not in {"bulk_resp", "fraction", "combined"}:
+        raise ValueError(
+            "observation_path must be 'bulk_resp', 'fraction', or 'combined'"
+        )
+    logger.info(
+        "\n══ %s — %s OE inversion ══════════════════════",
+        spec.label, observation_path,
+    )
+    config_path = spec.config_path
+    model = build_model(config_path)
+    idx = model.pool_index
+    logger.info("%s", f"  Config: {os.path.relpath(config_path, _REPO_ROOT)}")
+
+    forcing_path = _resolve_forcing_file(spec)
+    logger.info("%s", f"  Forcing: {os.path.relpath(forcing_path, _REPO_ROOT)}")
+    forcing = _load_site_forcing(spec, forcing_path, model)
+    mean_gpp = float(np.nanmean(np.array(forcing.GPP_obs)))
+
+    hemisphere = "NH" if spec.lat >= 0 else "SH"
+    years_daily, d14c_daily = load_full_14C_record(
+        hua_path=HUA_PATH, graven_path=GRAVEN_PATH, intcal_path=INTCAL_PATH,
+        hemisphere=hemisphere, start_year=1500.0, end_year=2025.0,
+    )
+    forcing = attach_atm14C(forcing, d14c_daily, years_daily)
+    time_years = 1970.0 + np.array(forcing.time) / 365.25
+    logger.info(
+        "  Record: %d days (%.1f–%.1f)  mean GPP %.0f gC m⁻² yr⁻¹  [%s]",
+        len(time_years), time_years[0], time_years[-1], mean_gpp * 365, hemisphere,
+    )
+
+    soc_prior_state, _c_pools_prior, ss_years, c_total_obs = build_soc_prior(
+        model, forcing
+    )
+    # Co-located kinetic pools ⇒ per-pool stock is unobservable; the stock
+    # constraint is the column total Σ_i C12_i only (ObservationData.C_total_obs).
+    soc_source = "model steady state (self-referential)"
+    if observation_path == "fraction":
+        pool_blocks = build_fraction_14C_blocks(
+            spec.israd_name, forcing.time, model, spec.fraction_rules
+        )
+        resp = jnp.full(forcing.time.shape[0], jnp.nan, dtype=jnp.float32)
+        block_label = "fraction"
+    elif observation_path == "combined":
+        pool_blocks = (
+            build_fraction_14C_blocks(
+                spec.israd_name, forcing.time, model, spec.fraction_rules
+            )
+            + build_bulk_14C_blocks(spec.israd_name, forcing.time, model)
+        )
+        resp = build_resp_14C_obs(spec.israd_name, forcing.time)
+        # Stock-source priority: a direct ISRaD measurement at the site beats a
+        # SoilGrids prediction, which in turn beats the model's own steady state
+        # (which is self-referential and carries no independent information — at
+        # σ=0.50 it is a deliberate no-op).
+        measured = build_measured_soc_total(spec.israd_name, model)
+        soilgrids = build_soilgrids_soc_total(spec.israd_name, model)
+        if measured is not None:
+            mean_soc, sigma_soc, depth_cov = measured
+            c_total_obs = (mean_soc, sigma_soc)
+            soc_source = f"ISRaD MEASURED total ({depth_cov:.0%} of column)"
+        elif soilgrids is not None:
+            mean_soc, sigma_soc, depth_cov = soilgrids
+            c_total_obs = (mean_soc, sigma_soc)
+            soc_source = f"SoilGrids total ({depth_cov:.0%} of column)"
+        block_label = "fraction+bulk"
+    else:
+        pool_blocks = build_bulk_14C_blocks(spec.israd_name, forcing.time, model)
+        resp = build_resp_14C_obs(spec.israd_name, forcing.time)
+        block_label = "bulk"
+    n_resp = int(jnp.sum(~jnp.isnan(resp)))
+    soc_total = c_total_obs[0] if c_total_obs else 0.0
+    logger.info(
+        "  Obs: %d %s Δ¹⁴C blocks, %d respiration Δ¹⁴C, 1 total-SOC constraint "
+        "(Σ=%.0f±%.0f gC m⁻² — %s; %s annual-mean years)",
+        len(pool_blocks), block_label, n_resp,
+        soc_total, c_total_obs[1], soc_source, ss_years,
+    )
+    if not pool_blocks or (observation_path == "bulk_resp" and n_resp == 0):
+        logger.info("%s", "  SKIP — insufficient radiocarbon obs.")
+        return {"spec": spec, "skipped": True}
+
+    T = int(forcing.time.shape[0])
+    obs_full = ObservationData(
+        time=forcing.time,
+        NEE=jnp.full(T, jnp.nan), GPP=jnp.full(T, jnp.nan),
+        ER=jnp.full(T, jnp.nan), NEE_unc=jnp.full(T, jnp.nan),
+        delta14C_obs={}, deltaD14C_obs={}, C_pools_obs={}, delta14C_resp=resp,
+        C_total_obs=c_total_obs,
+    )
+
+    # Whole-sample bulk sites carry no per-pool ¹⁴C split in their block names,
+    # so seed the pool ICs from the observed layer profile (aged carbon → passive)
+    # instead of the modern _FALLBACK_D14C. Fraction blocks still win by name.
+    ic_seeds = _bulk_pool_ic_seeds(spec.israd_name)
+    state0 = build_state0(model, soc_prior_state, pool_blocks, ic_seeds=ic_seeds)
+
+    t0 = time.perf_counter()
+    result = optimize_oe(
+        model, forcing, obs_full, state0=state0,
+        fields=OPT_FIELDS, extra_obs_blocks=pool_blocks,
+    )
+    ch = np.array(result.cost_history)
+    logger.info(
+        "  optimize_oe done [%.1fs]  J %.1f→%.1f  (%d iter, converged=%s)",
+        time.perf_counter() - t0, ch[0], ch[-1], result.n_iter, result.converged,
+    )
+
+    tau_days = np.exp(np.array(result.params_opt.log_tau))
+    logger.info("%s", "  optimised τ (yr): " + ", ".join(
+        f"{n}={t/365.25:.1f}" for n, t in zip(idx.pool_names, tau_days)))
+
+    return {
+        "spec": spec, "skipped": False, "model": model,
+        "observation_path": observation_path,
+        "config_path": config_path,
+        "mean_gpp_gCm2yr": mean_gpp * 365.0,
+        "soc_total_gCm2": soc_total,
+        "n_cstock": 1 if c_total_obs else 0,
+        "soc_source": soc_source,
+        "n_pool_blocks": len(pool_blocks), "n_resp": n_resp,
+        "tau_years": {n: float(t / 365.25) for n, t in zip(idx.pool_names, tau_days)},
+        "cost0": float(ch[0]), "cost_final": float(ch[-1]),
+        "converged": bool(result.converged), "n_iter": int(result.n_iter),
+        "oe_result": result,
+        # pieces needed for downstream information diagnostics (constraint ladder)
+        "forcing": forcing, "state0": state0,
+        "obs_full": obs_full, "pool_blocks": pool_blocks,
+        "params_opt": result.params_opt,
+    }
+
+
+def summary_row(result: dict) -> dict:
+    """Flatten one ``run_site_canonical`` result into a summary-table row.
+
+    Per-pool τ columns are emitted for whichever pools the site's config
+    defines, so a non-3-pool config still summarises instead of raising a
+    KeyError on the canonical active/slow/passive names.
+    """
+    spec = result["spec"]
+    row = {
+        "site": spec.israd_name, "label": spec.label,
+        "tower_id": spec.tower_id, "biome": spec.biome,
+        "mean_GPP_gCm2yr": round(result["mean_gpp_gCm2yr"]),
+        "SOC_gCm2": round(result["soc_total_gCm2"]),
+        "n_cstock": result["n_cstock"],
+        "n_pool_blocks": result["n_pool_blocks"], "n_resp": result["n_resp"],
+    }
+    for pool, tau in result["tau_years"].items():
+        # soil_active → tau_active_yr; passive is slow-moving so keep 1 decimal.
+        short = pool.replace("soil_", "")
+        row[f"tau_{short}_yr"] = round(tau, 1 if tau >= 100 else 2)
+    row.update({
+        "J0": round(result["cost0"], 1),
+        "J_final": round(result["cost_final"], 1),
+        "converged": result["converged"], "n_iter": result["n_iter"],
+    })
+    return row
+
+
+def run_sites(
+    specs: list[SiteSpec], observation_path: str | None = None
+) -> tuple[list[dict], list[tuple[SiteSpec, Exception]]]:
+    """Run the canonical inversion over several sites, isolating failures.
+
+    Returns ``(results, failures)``. One site blowing up (missing forcing file,
+    empty ISRaD selection) must not abandon the remaining sites, so exceptions
+    are captured per site and returned for the caller to report and to set an
+    exit status from — the previous ``main`` printed them and still exited 0.
+
+    ``observation_path`` overrides each spec's configured path when given.
+    """
+    results: list[dict] = []
+    failures: list[tuple[SiteSpec, Exception]] = []
+    for spec in specs:
+        path = observation_path or spec.observation_path
+        try:
+            result = run_site_canonical(spec, observation_path=path)
+        except Exception as exc:  # noqa: BLE001 — keep going across sites
+            logger.error("ERROR at %s: %s", spec.label, exc)
+            failures.append((spec, exc))
+            continue
+        if result.get("skipped"):
+            continue
+        results.append(result)
+    return results, failures
