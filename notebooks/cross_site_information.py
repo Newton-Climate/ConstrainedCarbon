@@ -37,8 +37,9 @@ for _p in (_SRC_ROOT, _NB_ROOT):
 os.chdir(_SCRIPT_ROOT)
 
 from sites.canonical import (
-    run_hf_canonical, run_barrow_canonical, oe_style_ablation,
+    run_hf_canonical, run_barrow_canonical,
 )
+from ecosystem_complexity.oe_diagnostics import oe_style_ablation
 from ecosystem_complexity.information import (
     OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C,
 )

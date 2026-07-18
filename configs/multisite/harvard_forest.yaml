@@ -14,8 +14,8 @@ site:
   biome: temperate deciduous forest
 datasource:
   israd_name: Harvard Forest
-  forcing_glob: harvard_forest/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/*_HR_*.csv
-  forcing_kind: harvard_hr
+  forcing_glob: AMF_US-Ha1_FLUXNET_1991-2025_v1.3_r1
+  forcing_kind: daily
 model:
   dt_days: 1.0
   solver: euler

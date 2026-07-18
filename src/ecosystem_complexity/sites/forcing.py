@@ -14,8 +14,6 @@ import numpy as np
 import pandas as pd
 
 from ecosystem_complexity.data.loaders import (
-    load_eight_mile_lake,
-    load_harvard_forest,
     load_howland_forest,
 )
 from ecosystem_complexity.data.schemas import ForcingData
@@ -51,16 +49,31 @@ def _resolve_forcing_file(spec: SiteSpec) -> str:
 
 
 def _load_site_forcing(spec: SiteSpec, path: str, model):
-    if spec.forcing_kind == "harvard_hr":
-        forcing, _ = load_harvard_forest(
-            path, config=model.config, qc_threshold=2, include_gpp_forcing=True,
+    """Load a site's forcing from its FLUXNET daily product.
+
+    Every configured site now uses the same ``daily`` product, so this no longer
+    dispatches. The two site-specific branches it used to carry —
+    ``harvard_hr`` (FULLSET HR) and ``eml_hh`` (BASE HH) — went away when
+    Harvard and EML were migrated onto their FLUXNET daily releases.
+
+    Dropping Harvard's HR branch also fixed a silent halving of its fluxes:
+    AmeriFlux "HR" is an *hourly* product (24 records/day), but
+    ``load_harvard_forest`` applies the half-hourly 1800 s conversion — correct
+    for genuine half-hourly input, which is what its tests cover, and wrong by
+    2x for that file. Harvard's mean GPP was 735 gC m⁻² yr⁻¹ against a
+    literature value near 1400; on the daily product it is 1500.
+
+    An unrecognised ``forcing_kind`` raises rather than falling through to the
+    daily reader, because that silent fallthrough is exactly how a product
+    mismatch like the above goes unnoticed.
+    """
+    if spec.forcing_kind != "daily":
+        raise ValueError(
+            f"{spec.config_stem}: unsupported forcing_kind {spec.forcing_kind!r}; "
+            "the multisite recipe reads FLUXNET daily products only. Load a "
+            "one-off half-hourly product with the site loaders in "
+            "ecosystem_complexity.data.loaders instead."
         )
-        return _sanitize_forcing(forcing, np.array(forcing.GPP_obs, dtype=float))
-    if spec.forcing_kind == "eml_hh":
-        forcing, _ = load_eight_mile_lake(
-            path, config=model.config, include_gpp_forcing=True,
-        )
-        return _sanitize_forcing(forcing, np.array(forcing.GPP_obs, dtype=float))
     forcing, _ = load_howland_forest(path, config=model.config, include_gpp_forcing=True)
     return _sanitize_forcing(forcing, _load_gpp_series(path))
 
