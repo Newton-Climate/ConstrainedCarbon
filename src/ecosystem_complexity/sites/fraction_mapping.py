@@ -79,15 +79,29 @@ SCHEME_POLICY: dict[str, str] = {
 #   because it tracks recent photosynthate, and against free light in the same
 #   layer it scatters −73…+157‰ — no stable kinetic relationship. Folding it
 #   into bulk biases bulk enriched, so it is excluded.
-# * ``plant material (non-root)`` — litter. It would belong in a litter pool,
-#   but the canonical configs set ``aboveground_pools: []`` and the fastest pool
-#   is soil_active (τ prior 730 d), which the free light density fraction
-#   already maps to. Mapping litter there too would double-count a pool that is
-#   only ~31‰ away in the three layers where both are measured, for 8 rows
-#   globally. Excluded until the model grows a litter pool.
+# * ``plant material (non-root)`` — litter, and therefore *inside* the active
+#   pool by construction. The configs set ``aboveground_pools: []`` and
+#   ``external_inputs.partition.soil_active: 1.0``, so there is no separate
+#   litter reservoir: 100% of fresh plant carbon enters soil_active directly.
+#   The pool is defined as litter + fast-cycling SOM, so litter is a valid
+#   observation of it. This is borne out at Harvard 2007, the only site with
+#   the property: the MAP active pool sits at +78‰, against +101‰ for plant
+#   material and +16‰ for free light — the fast pool looks far more like litter
+#   than like the free light fraction it was previously constrained by alone.
+#   Both map to active and are aggregated per (pool, year), so their spread is
+#   carried into the block's σ (84‰ combined vs 88‰ for free light alone —
+#   free light is already the more heterogeneous of the two).
+# * ``roots`` — excluded, on reservoir membership rather than isotopic grounds.
+#   Live root biomass is not part of the soil carbon stock the model tracks, and
+#   the standard protocol removes roots before fractionation, so using it as an
+#   observation of a *soil* pool equates that pool with living biomass. Note the
+#   empirical case is weak in isolation: roots (+75‰) match the MAP active pool
+#   (+78‰) closely, because a pool fed entirely by fresh input and a live root
+#   both track recent atmosphere. The exclusion is a definitional call.
 # * ``pyrogenic c`` — charcoal; distinct kinetics, 1 row.
 PROPERTY_POLICY: dict[str, str] = {
     "macrofossil": BULK,
+    "plant material (non-root)": MAP,
 }
 
 # Kinetic role per property, for the schemes whose policy is MAP. Roles resolve
@@ -110,6 +124,9 @@ PROPERTY_ROLES: dict[str, str] = {
     "fine": "passive",
     "clay": "passive",
     "silt+clay": "passive",
+    # litter — the active pool receives 100% of fresh plant input, so litter is
+    # the leading edge of that pool rather than a reservoir of its own
+    "plant material (non-root)": "active",
 }
 
 
