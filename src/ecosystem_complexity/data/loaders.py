@@ -9,7 +9,6 @@ load_howland_forest()    — AmeriFlux BASE HH → ForcingData + ObservationData
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -31,6 +30,63 @@ def _days_since_epoch(dates: pd.DatetimeIndex) -> np.ndarray:
     return np.asarray(
         ((dates - _EPOCH) / pd.Timedelta("1D")).values, dtype=np.float64
     )
+
+
+# A daily flux is only reported when at least this many half-hours are valid,
+# i.e. half of the 48 in a day.
+_MIN_VALID_HH = 24
+
+
+def _aggregate_daily(
+    df: pd.DataFrame,
+    date_key: pd.Series,
+    *,
+    flux_cols: dict[str, str] | None = None,
+    mean_cols: dict[str, str] | None = None,
+    sum_cols: dict[str, str] | None = None,
+) -> pd.DataFrame:
+    """Aggregate half-hourly rows to daily, using pandas' vectorized reducers.
+
+    Each mapping is ``{output_name: source_column}``. The three reducers below
+    are exact replacements for the per-group Python lambdas this used to run —
+    ``min_count`` expresses "NaN unless at least N values are valid", which is
+    precisely the rule those lambdas hand-coded:
+
+    ``flux_cols``  sum, NaN unless ≥ ``_MIN_VALID_HH`` valid half-hours
+                   (was: ``valid.sum() if len(valid) >= 24 else nan``)
+    ``mean_cols``  mean, NaN when the whole day is NaN
+                   (was: ``nanmean(s.dropna()) if s.notna().any() else nan``;
+                   pandas' mean already skips NaN and yields NaN for an
+                   all-NaN group, so the guard is redundant)
+    ``sum_cols``   sum, NaN when the whole day is NaN — ``min_count=1`` matters
+                   here, because a bare ``sum()`` returns 0 for an all-NaN
+                   group where the old guard returned NaN
+
+    Aggregating column-wise rather than group-wise keeps the work inside
+    pandas' Cython paths; the lambdas were re-entering Python once per day per
+    column (~10k days × ~10 columns at Harvard).
+    """
+    flux_cols, mean_cols, sum_cols = flux_cols or {}, mean_cols or {}, sum_cols or {}
+    grouped = df.groupby(date_key, sort=True)
+
+    parts: list[pd.DataFrame] = []
+    for mapping, reducer in (
+        (flux_cols, lambda g, c: g[c].sum(min_count=_MIN_VALID_HH)),
+        (mean_cols, lambda g, c: g[c].mean()),
+        (sum_cols, lambda g, c: g[c].sum(min_count=1)),
+    ):
+        present = {out: src for out, src in mapping.items() if src in df.columns}
+        if not present:
+            continue
+        # Reduce on the source columns, then rename to the output names. Done in
+        # one call per reducer so each is a single vectorized pass.
+        block = reducer(grouped, list(present.values()))
+        block.columns = list(present.keys())
+        parts.append(block)
+
+    if not parts:
+        return pd.DataFrame({"date": pd.Series(dtype="object")})
+    return pd.concat(parts, axis=1).reset_index()
 
 
 # ---------------------------------------------------------------------------
@@ -87,59 +143,30 @@ def load_harvard_forest(
             df[col] = df[col] * _HH_TO_GC
 
     # ── Daily aggregation ────────────────────────────────────────────────────
-    def _daily_flux_sum(series: pd.Series) -> float:
-        """Sum if ≥ 24 valid half-hours, else NaN."""
-        valid = series.dropna()
-        return float(valid.sum()) if len(valid) >= 24 else np.nan
-
-    agg_dict: dict[str, Any] = {}
-
-    # Fluxes: sum with ≥ 24 valid HH
-    for raw, out in [
-        ("NEE_VUT_REF", "NEE"),
-        ("GPP_NT_VUT_REF", "GPP"),
-        ("RECO_NT_VUT_REF", "ER"),
-    ]:
-        if raw in df.columns:
-            agg_dict[out] = pd.NamedAgg(column=raw, aggfunc=_daily_flux_sum)
-
-    # Uncertainty: daily mean of available values.
-    # Guarded like the met aggregators below: a day whose half-hours are all NaN
-    # (gap-filled uncertainty is absent for whole days early in the record) makes
-    # np.nanmean warn "Mean of empty slice" and return NaN anyway. Returning NaN
-    # explicitly keeps the same value without the warning — and, unlike silencing
-    # it, still leaves a genuinely empty day as NaN rather than a fabricated 0.
-    if "NEE_VUT_REF_RANDUNC" in df.columns:
-        agg_dict["NEE_unc_hh"] = pd.NamedAgg(
-            column="NEE_VUT_REF_RANDUNC",
-            aggfunc=lambda s: (
-                float(np.nanmean(s.dropna())) * _HH_TO_GC * 48
-                if s.notna().any()
-                else np.nan
-            ),
-        )
-
-    # Met: daily mean / sum
-    for met_col, out_name, method in [
-        ("TA_F", "air_temp", "mean"),
-        ("SW_IN_F", "sw_radiation", "mean"),
-        ("VPD_F", "vpd", "mean"),
-        ("P_F", "precip", "sum"),
-    ]:
-        if met_col in df.columns:
-            aggfunc = np.nanmean if method == "mean" else np.nansum
-            agg_dict[out_name] = pd.NamedAgg(column=met_col, aggfunc=lambda s, f=aggfunc: float(f(s.dropna())) if s.notna().any() else np.nan)
-
-    # Soil temperature: daily mean
     ts_cols = ["TS_F_MDS_1", "TS_F_MDS_2", "TS_F_MDS_3", "TS_F_MDS_4"]
-    ts_present = [c for c in ts_cols if c in df.columns]
-    for ts_col in ts_present:
-        agg_dict[ts_col] = pd.NamedAgg(
-            column=ts_col,
-            aggfunc=lambda s: float(np.nanmean(s.dropna())) if s.notna().any() else np.nan,
-        )
-
-    daily = df.groupby(date_key).agg(**agg_dict).reset_index()
+    daily = _aggregate_daily(
+        df,
+        date_key,
+        flux_cols={
+            "NEE": "NEE_VUT_REF",
+            "GPP": "GPP_NT_VUT_REF",
+            "ER": "RECO_NT_VUT_REF",
+        },
+        mean_cols={
+            "NEE_unc_hh": "NEE_VUT_REF_RANDUNC",
+            "air_temp": "TA_F",
+            "sw_radiation": "SW_IN_F",
+            "vpd": "VPD_F",
+            # soil temperature, one column per sensor depth
+            **{c: c for c in ts_cols},
+        },
+        sum_cols={"precip": "P_F"},
+    )
+    # The uncertainty column is a half-hourly mean; scale it to a daily total
+    # here rather than inside the aggregator, so the aggregator stays a plain
+    # reducer. NaN days stay NaN.
+    if "NEE_unc_hh" in daily.columns:
+        daily["NEE_unc_hh"] = daily["NEE_unc_hh"] * _HH_TO_GC * 48
     daily["date"] = pd.to_datetime(daily["date"])
     daily = daily.sort_values("date").reset_index(drop=True)
 
@@ -424,35 +451,19 @@ def load_eight_mile_lake(
         if col in df.columns:
             df[col] = df[col] * _HH_TO_GC
 
-    def _daily_flux_sum(series: pd.Series) -> float:
-        valid = series.dropna()
-        return float(valid.sum()) if len(valid) >= 24 else np.nan
-
-    agg_dict: dict[str, Any] = {}
-    for raw, out in [
-        ("NEE_PI_F", "NEE"),
-        ("GPP_PI_F", "GPP"),
-        ("RECO_PI_F", "ER"),
-    ]:
-        if raw in df.columns:
-            agg_dict[out] = pd.NamedAgg(column=raw, aggfunc=_daily_flux_sum)
-
-    for met_col, out_name, method in [
-        ("TA", "air_temp", "mean"),
-        ("SW_IN", "sw_radiation", "mean"),
-        ("P", "precip", "sum"),
-        ("D_SNOW", "snow_depth", "mean"),
-        ("TS", "soil_temp", "mean"),
-        ("SWC", "soil_moisture", "mean"),
-    ]:
-        if met_col in df.columns:
-            aggfunc = np.nanmean if method == "mean" else np.nansum
-            agg_dict[out_name] = pd.NamedAgg(
-                column=met_col,
-                aggfunc=lambda s, f=aggfunc: float(f(s.dropna())) if s.notna().any() else np.nan,
-            )
-
-    daily = df.groupby(date_key).agg(**agg_dict).reset_index()
+    daily = _aggregate_daily(
+        df,
+        date_key,
+        flux_cols={"NEE": "NEE_PI_F", "GPP": "GPP_PI_F", "ER": "RECO_PI_F"},
+        mean_cols={
+            "air_temp": "TA",
+            "sw_radiation": "SW_IN",
+            "snow_depth": "D_SNOW",
+            "soil_temp": "TS",
+            "soil_moisture": "SWC",
+        },
+        sum_cols={"precip": "P"},
+    )
     daily["date"] = pd.to_datetime(daily["date"])
     daily = daily.sort_values("date").reset_index(drop=True)
 
