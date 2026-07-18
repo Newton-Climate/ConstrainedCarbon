@@ -16,7 +16,7 @@ for _p in (os.path.join(_REPO_ROOT, "src"), _NB_ROOT):
 
 from ecosystem_complexity._oe_helpers import build_oe_prior_sigma
 from ecosystem_complexity.state import make_default_params
-from ecosystem_complexity.sites import (
+from sites.multisite_canonical import (
     OPT_FIELDS,
     discover_site_specs,
     run_site_canonical,

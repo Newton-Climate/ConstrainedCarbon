@@ -1,6 +1,6 @@
 """
-One shared OE inversion recipe applied to every ISRaD field-flux + respiration
-site.
+sites/multisite_canonical.py — One shared OE inversion recipe applied to every
+ISRaD field-flux + respiration site.
 
 Each site is defined by its own transparent, version-controlled config YAML in
 ``configs/multisite/<site>.yaml``. Every config carries the SAME canonical model
@@ -40,31 +40,33 @@ ICOS/EUF/JPF FLUXMET) share the same column convention, so a single loader
 To add a site: drop a new ``configs/multisite/<site>.yaml`` (copy an existing one
 and edit the ``site`` + ``datasource`` blocks); no code change required.
 
-Run via the CLI (this module is a library; it has no ``__main__``):
-    python apps/optim_site_main.py --all                     # every config
-    python apps/optim_site_main.py configs/multisite/solling.yaml
-    python apps/optim_site_main.py solling                   # by config stem
+Run:
+    python notebooks/sites/multisite_canonical.py            # all configs
+    python notebooks/sites/multisite_canonical.py solling    # one config (by stem)
 """
 from __future__ import annotations
 
 import glob
-import logging
 import os
+import sys
 import time
 from dataclasses import dataclass
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 import yaml
 
-from ecosystem_complexity.api import ObsBlock, build_model, optimize_oe, run_model
-from ecosystem_complexity.data.israd_observations import (
-    FractionMappingRule,
-    add_layer_midpoint,
-    build_fraction_obs_blocks,
-    bulk_mixture_obs_block,
-)
+_SITES_DIR = os.path.dirname(os.path.abspath(__file__))
+_NB_ROOT = os.path.dirname(_SITES_DIR)
+_REPO_ROOT = os.path.dirname(_NB_ROOT)
+_SRC_ROOT = os.path.join(_REPO_ROOT, "src")
+for _p in (_SRC_ROOT, _NB_ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+from ecosystem_complexity.api import build_model, run_model, optimize_oe, ObsBlock
 from ecosystem_complexity.data.loaders import (
     load_eight_mile_lake,
     load_harvard_forest,
@@ -73,26 +75,24 @@ from ecosystem_complexity.data.loaders import (
 from ecosystem_complexity.data.parsers import attach_atm14C
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.oe_utils import ss_state_for_params
-from ecosystem_complexity.sites.paths import (
-    CONFIG_DIR,
-    GRAVEN_PATH,
-    HUA_PATH,
-    INTCAL_PATH,
-    ISRAD_FLUX,
-    ISRAD_FRACTION,
-    ISRAD_LAYER,
-    SOILGRIDS_CSV,
-)
-from ecosystem_complexity.sites.paths import (
-    REPO_ROOT as _REPO_ROOT,
+from ecosystem_complexity.data.israd_observations import (
+    FractionMappingRule,
+    add_layer_midpoint,
+    build_fraction_obs_blocks,
+    bulk_mixture_obs_block,
 )
 from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.oe_utils import ss_state_for_params
 
-# Library code logs rather than prints; apps/optim_site_main.py attaches a
-# stdout handler so the CLI keeps the progress output this driver has always
-# emitted. Callers that import the driver get silence by default.
-logger = logging.getLogger(__name__)
+CONFIG_DIR = os.path.join(_REPO_ROOT, "configs", "multisite")
+ISRAD_DIR = os.path.join(_REPO_ROOT, "data", "shared", "israd")
+ISRAD_VERSION = "2.6.6.2024-01-25"
+ISRAD_LAYER = os.path.join(ISRAD_DIR, f"ISRaD_data_flat_layer_v {ISRAD_VERSION}.csv")
+ISRAD_FRACTION = os.path.join(ISRAD_DIR, f"ISRaD_data_flat_fraction_v {ISRAD_VERSION}.csv")
+ISRAD_FLUX = os.path.join(ISRAD_DIR, f"ISRaD_data_flat_flux_v {ISRAD_VERSION}.csv")
+HUA_PATH = os.path.join(_REPO_ROOT, "data", "shared", "atm_14C", "Hua_2021.csv")
+GRAVEN_PATH = os.path.join(_REPO_ROOT, "data", "shared", "atm_14C", "Graven_2017.csv")
+INTCAL_PATH = os.path.join(_REPO_ROOT, "data", "shared", "atm_14C", "intcal20.14c")
 
 _R_STD = 1.176e-12
 OPT_FIELDS = ("log_tau", "log_f_transfer")
@@ -493,7 +493,7 @@ def build_bulk_14C_blocks(
         blocks.append(bulk_mixture_obs_block(
             f"israd_bulk_{year}_profile", mean_val, sigma_val, t_idx
         ))
-        logger.info("%s", f"    bulk {year}: {mean_val:7.1f}±{sigma_val:.1f}‰ "
+        print(f"    bulk {year}: {mean_val:7.1f}±{sigma_val:.1f}‰ "
               f"(n={len(vals)}, weight={basis}, profile spread σ={sigma_spread:.0f}‰)")
     return blocks
 
@@ -633,6 +633,7 @@ def build_measured_soc_total(
     return mean_val, sigma, depth_cov
 
 
+SOILGRIDS_CSV = os.path.join(_NB_ROOT, "exports", "soilgrids_soc_pools.csv")
 # SoilGrids is a statistical prediction, not a measurement, and it runs high on
 # organic soils. Above this the value is rejected outright rather than trusted with
 # a wide σ: CZ_Old_Black_Spruce comes back at 416,969 gC m⁻² and Baram Basin at
@@ -770,17 +771,14 @@ def build_state0(model, state_ss, pool_blocks, ic_seeds=None):
 def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> dict:
     if observation_path not in {"bulk_resp", "fraction", "combined"}:
         raise ValueError("observation_path must be 'bulk_resp', 'fraction', or 'combined'")
-    logger.info(
-        "\n══ %s — %s OE inversion ══════════════════════",
-        spec.label, observation_path,
-    )
+    print(f"\n══ {spec.label} — {observation_path} OE inversion ══════════════════════")
     config_path = spec.config_path
     model = build_model(config_path)
     idx = model.pool_index
-    logger.info("%s", f"  Config: {os.path.relpath(config_path, _REPO_ROOT)}")
+    print(f"  Config: {os.path.relpath(config_path, _REPO_ROOT)}")
 
     forcing_path = _resolve_forcing_file(spec)
-    logger.info("%s", f"  Forcing: {os.path.relpath(forcing_path, _REPO_ROOT)}")
+    print(f"  Forcing: {os.path.relpath(forcing_path, _REPO_ROOT)}")
     forcing = _load_site_forcing(spec, forcing_path, model)
     mean_gpp = float(np.nanmean(np.array(forcing.GPP_obs)))
 
@@ -791,10 +789,8 @@ def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> d
     )
     forcing = attach_atm14C(forcing, d14c_daily, years_daily)
     time_years = 1970.0 + np.array(forcing.time) / 365.25
-    logger.info(
-        "  Record: %d days (%.1f–%.1f)  mean GPP %.0f gC m⁻² yr⁻¹  [%s]",
-        len(time_years), time_years[0], time_years[-1], mean_gpp * 365, hemisphere,
-    )
+    print(f"  Record: {len(time_years)} days ({time_years[0]:.1f}–{time_years[-1]:.1f})  "
+          f"mean GPP {mean_gpp*365:.0f} gC m⁻² yr⁻¹  [{hemisphere}]")
 
     soc_prior_state, _c_pools_prior, ss_years, c_total_obs = build_soc_prior(
         model, forcing
@@ -833,14 +829,12 @@ def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> d
         block_label = "bulk"
     n_resp = int(jnp.sum(~jnp.isnan(resp)))
     soc_total = c_total_obs[0] if c_total_obs else 0.0
-    logger.info(
-        "  Obs: %d %s Δ¹⁴C blocks, %d respiration Δ¹⁴C, 1 total-SOC constraint "
-        "(Σ=%.0f±%.0f gC m⁻² — %s; %s annual-mean years)",
-        len(pool_blocks), block_label, n_resp,
-        soc_total, c_total_obs[1], soc_source, ss_years,
-    )
+    print(f"  Obs: {len(pool_blocks)} {block_label} Δ¹⁴C blocks, {n_resp} respiration Δ¹⁴C, "
+          f"1 total-SOC constraint (Σ={soc_total:.0f}±"
+          f"{c_total_obs[1]:.0f} gC m⁻² — {soc_source}; "
+          f"{ss_years} annual-mean years)")
     if not pool_blocks or (observation_path == "bulk_resp" and n_resp == 0):
-        logger.info("%s", "  SKIP — insufficient radiocarbon obs.")
+        print("  SKIP — insufficient radiocarbon obs.")
         return {"spec": spec, "skipped": True}
 
     T = int(forcing.time.shape[0])
@@ -864,13 +858,11 @@ def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> d
         fields=OPT_FIELDS, extra_obs_blocks=pool_blocks,
     )
     ch = np.array(result.cost_history)
-    logger.info(
-        "  optimize_oe done [%.1fs]  J %.1f→%.1f  (%d iter, converged=%s)",
-        time.perf_counter() - t0, ch[0], ch[-1], result.n_iter, result.converged,
-    )
+    print(f"  optimize_oe done [{time.perf_counter()-t0:.1f}s]  J {ch[0]:.1f}→{ch[-1]:.1f}  "
+          f"({result.n_iter} iter, converged={result.converged})")
 
     tau_days = np.exp(np.array(result.params_opt.log_tau))
-    logger.info("%s", "  optimised τ (yr): " + ", ".join(
+    print("  optimised τ (yr): " + ", ".join(
         f"{n}={t/365.25:.1f}" for n, t in zip(idx.pool_names, tau_days)))
 
     return {
@@ -893,57 +885,35 @@ def run_site_canonical(spec: SiteSpec, observation_path: str = "bulk_resp") -> d
     }
 
 
-def summary_row(result: dict) -> dict:
-    """Flatten one ``run_site_canonical`` result into a summary-table row.
-
-    Per-pool τ columns are emitted for whichever pools the site's config
-    defines, so a non-3-pool config still summarises instead of raising a
-    KeyError on the canonical active/slow/passive names.
-    """
-    spec = result["spec"]
-    row = {
-        "site": spec.israd_name, "label": spec.label,
-        "tower_id": spec.tower_id, "biome": spec.biome,
-        "mean_GPP_gCm2yr": round(result["mean_gpp_gCm2yr"]),
-        "SOC_gCm2": round(result["soc_total_gCm2"]),
-        "n_cstock": result["n_cstock"],
-        "n_pool_blocks": result["n_pool_blocks"], "n_resp": result["n_resp"],
-    }
-    for pool, tau in result["tau_years"].items():
-        # soil_active → tau_active_yr; passive is slow-moving so keep 1 decimal.
-        short = pool.replace("soil_", "")
-        row[f"tau_{short}_yr"] = round(tau, 1 if tau >= 100 else 2)
-    row.update({
-        "J0": round(result["cost0"], 1),
-        "J_final": round(result["cost_final"], 1),
-        "converged": result["converged"], "n_iter": result["n_iter"],
-    })
-    return row
-
-
-def run_sites(
-    specs: list[SiteSpec], observation_path: str | None = None
-) -> tuple[list[dict], list[tuple[SiteSpec, Exception]]]:
-    """Run the canonical inversion over several sites, isolating failures.
-
-    Returns ``(results, failures)``. One site blowing up (missing forcing file,
-    empty ISRaD selection) must not abandon the remaining sites, so exceptions
-    are captured per site and returned for the caller to report and to set an
-    exit status from — the previous ``main`` printed them and still exited 0.
-
-    ``observation_path`` overrides each spec's configured path when given.
-    """
-    results: list[dict] = []
-    failures: list[tuple[SiteSpec, Exception]] = []
+def main(names: list[str] | None = None) -> None:
+    specs = select_specs(names)
+    rows = []
     for spec in specs:
-        path = observation_path or spec.observation_path
         try:
-            result = run_site_canonical(spec, observation_path=path)
+            r = run_site_canonical(spec, observation_path=spec.observation_path)
         except Exception as exc:  # noqa: BLE001 — keep going across sites
-            logger.error("ERROR at %s: %s", spec.label, exc)
-            failures.append((spec, exc))
+            print(f"  ERROR at {spec.label}: {exc}")
             continue
-        if result.get("skipped"):
+        if r.get("skipped"):
             continue
-        results.append(result)
-    return results, failures
+        rows.append({
+            "site": spec.israd_name, "label": spec.label,
+            "tower_id": spec.tower_id, "biome": spec.biome,
+            "mean_GPP_gCm2yr": round(r["mean_gpp_gCm2yr"]),
+            "SOC_gCm2": round(r["soc_total_gCm2"]), "n_cstock": r["n_cstock"],
+            "n_pool_blocks": r["n_pool_blocks"], "n_resp": r["n_resp"],
+            "tau_active_yr": round(r["tau_years"]["soil_active"], 2),
+            "tau_slow_yr": round(r["tau_years"]["soil_slow"], 2),
+            "tau_passive_yr": round(r["tau_years"]["soil_passive"], 1),
+            "J0": round(r["cost0"], 1), "J_final": round(r["cost_final"], 1),
+            "converged": r["converged"], "n_iter": r["n_iter"],
+        })
+    if rows:
+        out = os.path.join(_NB_ROOT, "exports", "multisite_canonical_inversions.csv")
+        pd.DataFrame(rows).to_csv(out, index=False)
+        print(f"\nSummary ({len(rows)} sites) → {os.path.relpath(out, _REPO_ROOT)}")
+        print(pd.DataFrame(rows).to_string(index=False))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:] or None)

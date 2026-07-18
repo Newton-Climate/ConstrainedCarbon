@@ -49,8 +49,8 @@ POOL_BINS: list[tuple[str, tuple[float, float]]] = [
     ("soil_passive", (30.0, 130.0)),
 ]
 
-# ISRaD field-flux + respiration sites → (lat, lon).  Mirrors the configs read by
-# ecosystem_complexity.sites (kept local so this script needs no jax).
+# ISRaD field-flux + respiration sites → (lat, lon).  Mirrors
+# sites/multisite_canonical.SITES (kept local so this script needs no jax).
 SITES: dict[str, tuple[float, float]] = {
     "Howland Forest": (45.20, -68.74),
     "Harvard Forest": (42.54, -72.17),
