@@ -83,6 +83,9 @@ def _build_obs_blocks(  # noqa: C901
       1. pool_14C    — pool-level Δ¹⁴C at sparse (time, pool) pairs
       2. resp_14C    — flux-weighted respired Δ¹⁴C at sparse time indices
       3. c_stock     — time-mean carbon stocks, one entry per constrained pool
+      3b. c_sum      — time-mean TOTAL column carbon stock Σ_i C12_i; the correct
+                       stock constraint when pools are co-located kinetic
+                       fractions (per-pool stock is then unobservable)
       4. er_annual   — annual mean ecosystem respiration from FluxNet ER;
                        model prediction is Rh_sim / sigmoid(log_f_hetero)
 
@@ -184,6 +187,30 @@ def _build_obs_blocks(  # noqa: C901
             )
         )
 
+    # ── Block 3b: total column carbon stock (Σ_i C12_i) ─────────────────────
+    # The counterpart to Block 3 for co-located kinetic pools: when the pools are
+    # density/kinetic fractions rather than depth horizons, a measured SOC stock
+    # cannot be attributed to one pool by depth — only the column total is
+    # observable. Given a known input I, this constrains the C-mass-weighted mean
+    # turnover (Σ C_i = I·⟨τ⟩) rather than any individual τ_i.
+    if observations.C_total_obs is not None:
+        c_total_mean, c_total_sigma = observations.C_total_obs
+        sigma_tot = (
+            float(c_total_sigma)
+            if (c_total_sigma and c_total_sigma > 0)
+            else (sigma_carbon or 1000.0)
+        )
+        blocks.append(
+            ObsBlock(
+                name="c_sum",
+                y=jnp.array([float(c_total_mean)], dtype=jnp.float32),
+                Se=jnp.array([sigma_tot**2], dtype=jnp.float32),
+                predict=lambda out, p: jnp.sum(
+                    jnp.mean(out.C12, axis=0), keepdims=True
+                ),
+            )
+        )
+
     # ── Block 4: annual ER from FluxNet (model predicts ER = Rh / f_hetero) ─
     if f_hetero > 0.0 and observations.ER is not None:
         T = len(np.array(observations.time))
@@ -275,7 +302,6 @@ def build_oe_prior_sigma(
     sigma_parts = []
     for f in opt_fields:
         val = getattr(params0, f)
-        n = int(math.prod(val.shape))
 
         if f == "log_tau":
             sigma = np.array(
@@ -289,21 +315,25 @@ def build_oe_prior_sigma(
             sigma_parts.append(jnp.array(sigma))
 
         elif f == "log_f_transfer":
+            n = int(math.prod(val[:, :-1].shape))
             sigma = np.full(n, 0.02, dtype=np.float32)
             for si, dj in real_transfer_pairs:
-                flat_i = si * (n_pools + 1) + dj
+                flat_i = si * n_pools + dj
                 sigma[flat_i] = 0.5
             sigma_parts.append(jnp.array(sigma))
 
         elif f == "log_external_input_partition":
+            n = int(math.prod(val.shape))
             sigma_parts.append(jnp.full(n, 0.30))
 
         elif f == "log_f_hetero":
+            n = int(math.prod(val.shape))
             # f_hetero prior ≈ 0.55, σ_f ≈ 0.08 (absolute).
             # In logit-space: σ_logit = σ_f / (f(1-f)) = 0.08 / (0.55×0.45) ≈ 0.323.
             sigma_parts.append(jnp.full(n, 0.323))
 
         else:
+            n = int(math.prod(val.shape))
             sigma_parts.append(jnp.full(n, 0.5))
 
     return jnp.concatenate(sigma_parts)

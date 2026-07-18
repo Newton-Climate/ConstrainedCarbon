@@ -1,0 +1,37 @@
+site_id,site_label,subset_key,subset_label,sampler,n_obs,converged,cost_final,n_retained_samples,acceptance_rate,proposal_scale_final
+US-Ha1,Harvard Forest,prior_only,Prior,mcmc,0,True,,12,,
+US-Ha1,Harvard Forest,stocks_only,Stocks,mcmc,3,True,4.038032054901123,12,0.8125,0.2683776641936151
+US-Ha1,Harvard Forest,soil14c_only,Pool 14C,mcmc,6,True,9.135560989379883,12,0.84375,0.2683776641936151
+US-Ha1,Harvard Forest,resp14c_only,Resp 14C,mcmc,41,True,21.8480281829834,12,0.6875,0.2683776641936151
+US-Ha1,Harvard Forest,stocks_soil14c,"Stocks+
+Pool 14C",mcmc,9,True,10.65947437286377,12,0.71875,0.2683776641936151
+US-Ha1,Harvard Forest,stocks_resp14c,"Stocks+
+Resp 14C",mcmc,44,True,25.867563247680664,12,0.6875,0.2683776641936151
+US-Ha1,Harvard Forest,all_observations,All,mcmc,50,True,72.02510070800781,12,0.78125,0.2683776641936151
+US-A10,Barrow,prior_only,Prior,mcmc,0,True,,12,,
+US-A10,Barrow,stocks_only,Stocks,mcmc,2,True,2.112804889678955,12,0.78125,0.2683776641936151
+US-A10,Barrow,soil14c_only,Pool 14C,mcmc,6,True,10.311767578125,12,0.6875,0.2683776641936151
+US-A10,Barrow,resp14c_only,Resp 14C,mcmc,14,True,16.34373664855957,12,0.78125,0.2683776641936151
+US-A10,Barrow,stocks_soil14c,"Stocks+
+Pool 14C",mcmc,8,True,17.111316680908203,12,0.75,0.2683776641936151
+US-A10,Barrow,stocks_resp14c,"Stocks+
+Resp 14C",mcmc,16,True,16.74940299987793,12,0.71875,0.2683776641936151
+US-A10,Barrow,all_observations,All,mcmc,19,True,26.926822662353516,12,0.53125,0.21470213135489208
+US-Ho1,Howland Forest,prior_only,Prior,mcmc,0,True,,12,,
+US-Ho1,Howland Forest,stocks_only,Stocks,mcmc,3,True,5.387192726135254,12,0.8125,0.2683776641936151
+US-Ho1,Howland Forest,soil14c_only,Pool 14C,mcmc,12,True,249.78416442871094,12,0.8125,0.2683776641936151
+US-Ho1,Howland Forest,resp14c_only,Resp 14C,mcmc,11,True,11.546977996826172,12,0.65625,0.2683776641936151
+US-Ho1,Howland Forest,stocks_soil14c,"Stocks+
+Pool 14C",mcmc,15,True,250.2127227783203,12,0.6875,0.2683776641936151
+US-Ho1,Howland Forest,stocks_resp14c,"Stocks+
+Resp 14C",mcmc,14,True,13.94961166381836,12,0.6875,0.2683776641936151
+US-Ho1,Howland Forest,all_observations,All,mcmc,26,True,254.8136749267578,12,0.75,0.2683776641936151
+US-EML,Eight-mile Lake,prior_only,Prior,mcmc,0,True,,12,,
+US-EML,Eight-mile Lake,stocks_only,Stocks,mcmc,3,True,6.1840901374816895,12,0.75,0.2683776641936151
+US-EML,Eight-mile Lake,soil14c_only,Pool 14C,mcmc,8,True,216.44883728027344,12,0.84375,0.2683776641936151
+US-EML,Eight-mile Lake,resp14c_only,Resp 14C,mcmc,12,True,20.128623962402344,12,0.875,0.2683776641936151
+US-EML,Eight-mile Lake,stocks_soil14c,"Stocks+
+Pool 14C",mcmc,11,True,217.01473999023438,12,0.75,0.2683776641936151
+US-EML,Eight-mile Lake,stocks_resp14c,"Stocks+
+Resp 14C",mcmc,15,True,20.82069206237793,12,0.65625,0.2683776641936151
+US-EML,Eight-mile Lake,all_observations,All,mcmc,20,True,86.68606567382812,12,0.5625,0.2683776641936151

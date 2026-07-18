@@ -23,6 +23,7 @@ from ecosystem_complexity.data.israd_observations import (
     summarize_by_depth,
     obs_dict_from_single_year_summary,
     obs_blocks_from_single_year_summary,
+    bulk_mixture_obs_block,
     build_fraction_obs_blocks,
 )
 
@@ -46,5 +47,6 @@ __all__ = [
     "summarize_by_depth",
     "obs_dict_from_single_year_summary",
     "obs_blocks_from_single_year_summary",
+    "bulk_mixture_obs_block",
     "build_fraction_obs_blocks",
 ]

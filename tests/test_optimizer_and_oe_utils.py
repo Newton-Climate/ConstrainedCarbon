@@ -8,7 +8,12 @@ import pytest
 
 from ecosystem_complexity.api import build_model
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.oe_diagnostics import oe_constraint_ladder, oe_style_ablation
+from ecosystem_complexity.oe_diagnostics import (
+    fit_param_subset_labels,
+    oe_constraint_ladder,
+    oe_gain_matrix_diagnostics,
+    oe_style_ablation,
+)
 from ecosystem_complexity.oe_utils import (
     build_mean_ss_modifier,
     build_oe_observation_sets,
@@ -152,3 +157,55 @@ def test_oe_diagnostics_outputs(hf_3pool_model, short_forcing):
     labels = [row["label"] for row in ladder]
     assert labels == ["pool_14C", "resp_14C", "c_stock"]
     assert all(row["dfs"] >= 0.0 for row in ladder)
+
+
+def test_oe_gain_matrix_subset_outputs(hf_3pool_model, short_forcing):
+    params = make_default_params(hf_3pool_model.config)
+    state0 = make_initial_state(hf_3pool_model.config, {})
+    obs = _make_obs(
+        int(short_forcing.time.shape[0]), hf_3pool_model.pool_index.pool_names
+    )
+
+    diag = oe_gain_matrix_diagnostics(
+        hf_3pool_model,
+        short_forcing,
+        state0,
+        params,
+        obs,
+        opt_fields=("log_tau", "log_f_transfer"),
+    )
+
+    assert diag["subset_state_names"] == [
+        "log_tau[soil_active]",
+        "log_tau[soil_slow]",
+        "log_tau[soil_passive]",
+        "log_f_transfer[soil_active→soil_slow]",
+        "log_f_transfer[soil_slow→soil_passive]",
+    ]
+    assert fit_param_subset_labels() == [
+        r"$\tau_{\mathrm{active}}$",
+        r"$\tau_{\mathrm{slow}}$",
+        r"$\tau_{\mathrm{passive}}$",
+        r"$f_{\mathrm{a\to s}}$",
+        r"$f_{\mathrm{s\to p}}$",
+    ]
+    assert diag["subset_averaging_kernel"].shape == (5, 5)
+    assert diag["subset_gain_matrix"].shape[0] == 5
+    assert diag["gain_matrix"].shape[0] == diag["averaging_kernel"].shape[0]
+    assert diag["constraint_labels"] and (
+        len(diag["constraint_labels"]) == diag["K"].shape[0]
+    )
+    assert len(diag["obs_annotations"]) == diag["y_obs"].shape[0]
+    assert diag["obs_annotations"][0]["obs_index"] == 0
+    assert {
+        "obs_block_name",
+        "obs_family",
+        "obs_label_full",
+        "y_obs",
+        "y_prior",
+        "y_opt",
+        "obs_sigma",
+        "obs_variance",
+    } <= set(diag["obs_annotations"][0])
+    n_rows = len(diag["obs_annotations"]) * len(diag["subset_state_names"])
+    assert n_rows == diag["subset_gain_matrix"].shape[0] * diag["subset_gain_matrix"].shape[1]

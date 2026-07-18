@@ -1,0 +1,34 @@
+site,pool,soc_gCm2,soc_sigma_gCm2,depth_top_cm,depth_bot_cm
+Howland Forest,soil_active,14559.4,7279.7,0.0,10.0
+Howland Forest,soil_slow,8152.0,4076.0,10.0,30.0
+Howland Forest,soil_passive,12786.8,6393.4,30.0,130.0
+Harvard Forest,soil_active,16034.0,8017.0,0.0,10.0
+Harvard Forest,soil_slow,5803.9,2901.9,10.0,30.0
+Harvard Forest,soil_passive,9721.9,4861.0,30.0,130.0
+FLONA,soil_active,2557.5,1278.8,0.0,10.0
+FLONA,soil_slow,3446.8,1723.4,10.0,30.0
+FLONA,soil_passive,5763.6,2881.8,30.0,130.0
+ZF2,soil_active,2525.9,1263.0,0.0,10.0
+ZF2,soil_slow,3339.8,1669.9,10.0,30.0
+ZF2,soil_passive,7340.6,3670.3,30.0,130.0
+CZ_Old_Black_Spruce,soil_active,22802.0,11401.0,0.0,10.0
+CZ_Old_Black_Spruce,soil_slow,56777.6,28388.8,10.0,30.0
+CZ_Old_Black_Spruce,soil_passive,337389.6,168694.8,30.0,130.0
+CZ_1964burn_NSA,soil_active,6683.4,3341.7,0.0,10.0
+CZ_1964burn_NSA,soil_slow,12210.4,6105.2,10.0,30.0
+CZ_1964burn_NSA,soil_passive,143573.8,71786.9,30.0,130.0
+Auchencorth Moss,soil_active,11201.8,5600.9,0.0,10.0
+Auchencorth Moss,soil_slow,12034.4,6017.2,10.0,30.0
+Auchencorth Moss,soil_passive,24636.8,12318.4,30.0,130.0
+Adventdalen Valley,soil_active,12515.9,6257.9,0.0,10.0
+Adventdalen Valley,soil_slow,19929.5,9964.8,10.0,30.0
+Adventdalen Valley,soil_passive,67827.7,33913.8,30.0,130.0
+Solling,soil_active,5467.3,2733.6,0.0,10.0
+Solling,soil_slow,5419.2,2709.6,10.0,30.0
+Solling,soil_passive,15632.0,7816.0,30.0,130.0
+Appi forest,soil_active,6931.1,3465.5,0.0,10.0
+Appi forest,soil_slow,9819.3,4909.7,10.0,30.0
+Appi forest,soil_passive,27576.6,13788.3,30.0,130.0
+Baram Basin,soil_active,8152.8,4076.4,0.0,10.0
+Baram Basin,soil_slow,32430.6,16215.3,10.0,30.0
+Baram Basin,soil_passive,225697.3,112848.7,30.0,130.0

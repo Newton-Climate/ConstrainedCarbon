@@ -168,11 +168,27 @@ def test_flatten_unflatten_roundtrip(hf_params, hf_model):
         )
 
 
+def _expected_flat_len(params, fields):
+    """Flat parameter-vector length, excluding the log_f_transfer respiration column.
+
+    `log_f_transfer` has shape (n_pools, n_pools+1) with the last column being the
+    to-respiration branch, which is the residual of each row and is not optimized.
+    """
+    total = 0
+    for f in fields:
+        val = getattr(params, f)
+        if f == "log_f_transfer":
+            total += int(math.prod(val[:, :-1].shape))
+        else:
+            total += int(math.prod(val.shape))
+    return total
+
+
 def test_flatten_length(hf_params, hf_model):
-    """Flat vector length equals sum of field sizes."""
+    """Flat vector length equals sum of field sizes (minus the respiration column)."""
     fields = _default_fields(hf_model)
     flat = flatten_params(hf_params, fields)
-    expected = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    expected = _expected_flat_len(hf_params, fields)
     assert flat.shape == (expected,)
 
 
@@ -183,7 +199,7 @@ def test_param_names_length(hf_params, hf_model):
     """get_param_names returns one label per flat-vector element."""
     fields = _default_fields(hf_model)
     names = get_param_names(hf_params, fields, hf_model)
-    n_params = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    n_params = _expected_flat_len(hf_params, fields)
     assert len(names) == n_params
 
 
@@ -200,7 +216,7 @@ def test_param_names_nonempty_strings(hf_params, hf_model):
 def test_param_groups_cover_all_params(hf_params, hf_model):
     """Union of all param group indices covers every element of the flat vector."""
     fields = _default_fields(hf_model)
-    n_params = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    n_params = _expected_flat_len(hf_params, fields)
     groups = get_param_groups(hf_params, fields, hf_model)
     all_idxs = sorted(idx for idxs in groups.values() for idx in idxs)
     assert all_idxs == list(range(n_params)), "Groups do not cover all params"
@@ -223,7 +239,7 @@ def test_param_groups_disjoint(hf_params, hf_model):
 def test_prior_covariance_shape(hf_params, hf_model):
     """Prior sigma has the same length as the flat parameter vector."""
     fields = _default_fields(hf_model)
-    n_params = sum(int(math.prod(getattr(hf_params, f).shape)) for f in fields)
+    n_params = _expected_flat_len(hf_params, fields)
     sigma = make_prior_covariance(hf_params, fields, hf_model)
     assert sigma.shape == (n_params,)
 

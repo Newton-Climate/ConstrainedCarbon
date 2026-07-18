@@ -1,0 +1,87 @@
+# Per-site canonical 3-pool OE inversion config (ISRaD field-flux + respiration).
+#
+# One YAML per site = one transparent, reproducible inversion recipe. The
+# `site` and `datasource` blocks are site-specific; every `model` /
+# `external_inputs` / `parameters` / `inversion` section below is the SHARED
+# canonical recipe (identical across sites) so cross-site results are comparable.
+# Driven by notebooks/sites/multisite_canonical.py.
+site:
+  id: israd-multisite-harvard_forest
+  name: Harvard Forest (US-Ha1)
+  lat: 42.5378
+  lon: -72.1715
+  tower_id: US-Ha1
+  biome: temperate deciduous forest
+datasource:
+  israd_name: Harvard Forest
+  forcing_glob: harvard_forest/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/*_HR_*.csv
+  forcing_kind: harvard_hr
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+  soil_layers:
+  - name: soil
+    depth_top_m: 0.0
+    depth_bot_m: 1.3
+    permafrost_eligible: false
+    som_pools:
+    - name: active
+      depth_top_m: 0.0
+      depth_bot_m: 0.1
+      tau_prior_days: 730
+      tau_prior_std: 365
+    - name: slow
+      depth_top_m: 0.1
+      depth_bot_m: 0.3
+      tau_prior_days: 7300
+      tau_prior_std: 3650
+    - name: passive
+      depth_top_m: 0.3
+      depth_bot_m: 1.3
+      tau_prior_days: 73000
+      tau_prior_std: 36500
+  transfer_rules:
+  - - soil_active
+    - soil_slow
+    - 0.25
+  - - soil_slow
+    - soil_passive
+    - 0.1
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+  partition:
+    soil_active: 1.0
+    soil_slow: 0.0
+  optimize_partition: false
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+inversion:
+  # 0.50 matches the sigma=0.5 OE prior on log_tau. The model-derived SOC prior
+  # (build_soc_prior) sets obs = C(prior params), and C = I*tau/modifier at steady
+  # state with I fixed by the GPP forcing — so a tighter sigma here would restate
+  # the tau prior at MORE confidence than the prior itself, i.e. double-count it.
+  # At 0.50 the fallback is a genuine no-op; real stock data comes from ISRaD or
+  # SoilGrids instead.
+  sigma_soc_fraction: 0.50
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001

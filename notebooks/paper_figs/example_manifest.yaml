@@ -1,0 +1,22 @@
+inputs:
+  observations:
+    - data/derived/observations/*.csv
+  posterior:
+    - data/derived/posterior/*.parquet
+  information_metrics:
+    - data/derived/information_metrics/*.csv
+  warming_output:
+    - data/derived/warming_output/*.parquet
+  cesm_comparison:
+    - data/derived/cesm_comparison/*.csv
+  topology_comparison: data/derived/topology/topology_scores.csv
+  averaging_kernel_matrix:
+    - notebooks/exports/*_averaging_kernel_matrix.csv
+
+figures:
+  figure_03:
+    summary_subset: full_radiocarbon
+  figure_05:
+    summary_subset: full_radiocarbon
+  figure_06:
+    horizon_year: 100

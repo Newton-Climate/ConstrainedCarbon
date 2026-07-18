@@ -175,8 +175,12 @@ def optimize_oe(  # noqa: C901
     state_names = []
     for f in opt_fields:
         val = getattr(params0, f)
-        for i in range(int(math.prod(val.shape))):
-            state_names.append(f"{f}[{i}]")
+        if f == "log_f_transfer":
+            for i in range(int(math.prod(val[:, :-1].shape))):
+                state_names.append(f"{f}[{i}]")
+        else:
+            for i in range(int(math.prod(val.shape))):
+                state_names.append(f"{f}[{i}]")
 
     # Guard: -inf or NaN in the prior vector will corrupt the LM step via
     # prior_r = xa − x = −∞ − −∞ = NaN on iteration 1, poisoning the whole g.
@@ -218,6 +222,13 @@ def optimize_oe(  # noqa: C901
 
     y = jnp.concatenate([b.y for b in obs_blocks])
     Se_diag = jnp.concatenate([b.Se for b in obs_blocks])
+
+    if not bool(jnp.all(jnp.isfinite(Se_diag) & (Se_diag > 0.0))):
+        bad = np.where(~np.array(jnp.isfinite(Se_diag) & (Se_diag > 0.0)))[0]
+        raise ValueError(
+            "optimize_oe: observation variances must be finite and positive; "
+            f"bad indices: {bad.tolist()}"
+        )
 
     block_summary = "  +  ".join(f"{len(b.y)} {b.name}" for b in obs_blocks)
     print(f"  OE obs vector: {block_summary}  =  {int(y.shape[0])} total")  # noqa: T201

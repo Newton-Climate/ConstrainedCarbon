@@ -1,0 +1,4 @@
+site,label,tower_id,biome,mean_GPP_gCm2yr,SOC_gCm2,n_cstock,n_pool_blocks,n_resp,tau_active_yr,tau_slow_yr,tau_passive_yr,J0,J_final,converged,n_iter
+MI-Coarse UMBS,UMBS (US-UMB),US-UMB,temperate mixed forest,1387,2781,3,6,0,2.07,19.6,201.4,223.6,201.6,True,4
+MO Ozark BREA,Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1630,5719,3,6,0,1.84,23.36,219.1,106.8,47.1,True,15
+NH Bartlett Forest,Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1315,13863,3,6,0,2.08,20.07,199.1,62.0,60.2,True,3

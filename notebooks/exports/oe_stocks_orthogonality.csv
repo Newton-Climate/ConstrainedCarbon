@@ -1,0 +1,16 @@
+site,site_id,biome,mean_GPP_gCm2yr,n_obs_12C,n_obs_14C,dfs_12C_alone,dfs_14C_alone,dfs_joint,redundancy,unique_12C_added_last,unique_14C_added_last,uniqueness_12C,uniqueness_14C,min_principal_angle_deg,mean_principal_angle_deg,principal_angles_deg
+1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,288.8,1,2,0.5915,1.958,1.96,0.5894,0.002,1.3685,0.0034,0.6989,0.0,0.0,0.0
+Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127.2,1,5,0.51,1.7146,1.7518,0.4728,0.0371,1.2418,0.0728,0.7242,0.0,0.0,0.0
+Appi forest (JP-Api),JP-Api,temperate forest,1254.8,1,12,0.066,2.8214,2.8214,0.066,0.0,2.7555,0.0,0.9766,0.0,0.0,0.0
+Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,755.8,1,3,0.0176,2.1372,2.1373,0.0175,0.0001,2.1198,0.0058,0.9918,1.22,1.22,1.2
+Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1314.6,1,4,0.4783,2.9938,2.9938,0.4783,0.0,2.5155,0.0,0.8402,0.0,0.0,0.0
+Eight Mile Lake (US-EML),US-EML,tundra/permafrost,411.8,1,13,0.4656,1.7645,1.7737,0.4564,0.0092,1.3082,0.0197,0.7414,0.0,0.0,0.0
+Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,735.2,1,38,0.0357,3.304,3.304,0.0357,0.0,3.2682,0.0,0.9892,0.0,0.0,0.0
+Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915.0,1,29,0.8617,3.7679,3.768,0.8616,0.0001,2.9063,0.0001,0.7713,0.0,0.0,0.0
+Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3058.5,1,3,0.5502,1.9179,1.9373,0.5308,0.0193,1.3871,0.0351,0.7232,7.11,7.11,7.1
+Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247.0,1,2,0.3188,1.9545,1.9552,0.318,0.0008,1.6365,0.0024,0.8373,2.24,2.24,2.2
+Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1629.8,1,4,0.4881,2.6029,2.6042,0.4868,0.0013,2.1161,0.0026,0.813,0.07,0.07,0.1
+Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655.2,1,2,0.4887,1.9854,1.9855,0.4886,0.0001,1.4968,0.0002,0.7539,0.12,0.12,0.1
+Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131.3,1,4,0.4886,2.9296,2.9296,0.4886,0.0,2.441,0.0001,0.8332,0.0,0.0,0.0
+Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1376.8,1,5,0.1044,3.0233,3.0233,0.1044,0.0,2.9189,0.0,0.9655,0.01,0.01,0.0
+UMBS (US-UMB),US-UMB,temperate mixed forest,1386.5,1,4,0.477,2.9976,2.9976,0.477,0.0,2.5206,0.0,0.8409,0.0,0.0,0.0
