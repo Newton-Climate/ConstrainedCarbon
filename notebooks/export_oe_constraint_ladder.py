@@ -82,7 +82,7 @@ from ecosystem_complexity.oe_diagnostics import (  # noqa: E402
     oe_ladder_context,
     shapley_dfs_attribution_from_context,
 )
-from sites.multisite_canonical import (  # noqa: E402
+from ecosystem_complexity.sites import (  # noqa: E402
     OPT_FIELDS,
     select_specs,
     run_site_canonical,

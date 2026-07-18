@@ -30,7 +30,7 @@ for _p in (_SRC_ROOT, _NB_ROOT):
 os.chdir(_REPO_ROOT)
 
 from ecosystem_complexity.oe_diagnostics import oe_constraint_ladder
-from sites.multisite_canonical import (
+from ecosystem_complexity.sites import (
     OPT_FIELDS,
     discover_site_specs,
     run_site_canonical,

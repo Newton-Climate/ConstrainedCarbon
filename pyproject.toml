@@ -57,6 +57,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# CLI entry points: writing results to stdout is the point of the program, so
+# T201 (flake8-print) does not apply. Library code under src/ still logs.
+"apps/*.py" = ["T201"]
 # Scaffold files whose names contain numerals — unavoidable in this domain.
 "src/ecosystem_complexity/tracer_14C.py" = ["N999"]
 "src/ecosystem_complexity/data/parsers_14C.py" = ["N999"]
