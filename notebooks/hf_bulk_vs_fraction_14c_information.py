@@ -44,8 +44,12 @@ os.chdir(_SCRIPT_ROOT)
 import jax.numpy as jnp  # noqa: E402
 
 from sites.canonical import (  # noqa: E402
-    run_hf_canonical, oe_style_ablation, oe_constraint_ladder,
+    run_hf_canonical,
     _canonical_prior_sigma,
+)
+from ecosystem_complexity.oe_diagnostics import (  # noqa: E402
+    oe_constraint_ladder,
+    oe_style_ablation,
 )
 from ecosystem_complexity.information import (  # noqa: E402
     OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C,

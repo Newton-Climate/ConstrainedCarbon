@@ -21,7 +21,7 @@ for _p in (_SRC_ROOT, _SITES_ROOT):
 
 from notebook_utils import find_data_root
 
-from canonical import _run_oe_canonical
+from ecosystem_complexity.sites.driver import run_oe_canonical
 
 from ecosystem_complexity.api import build_model, ObsBlock
 from ecosystem_complexity.data.loaders import load_howland_forest
@@ -296,7 +296,7 @@ def run_howland_canonical() -> dict:
     state0 = build_state0(config, idx, c_pools_obs, delta14c_obs)
     print(f"  State0 total C12: {float(jnp.sum(state0.C12)):.0f} gC m⁻²")
 
-    fit = _run_oe_canonical(
+    fit = run_oe_canonical(
         model, forcing, state0, obs_full, extra_blocks, opt_fields, label,
     )
 

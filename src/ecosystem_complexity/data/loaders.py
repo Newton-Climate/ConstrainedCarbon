@@ -33,6 +33,97 @@ def _days_since_epoch(dates: pd.DatetimeIndex) -> np.ndarray:
     )
 
 
+# A daily flux is only reported when at least this many half-hours are valid,
+# i.e. half of the 48 in a day.
+_MIN_VALID_HH = 24
+
+
+def _read_csv_subset(
+    path: str,
+    *,
+    columns: tuple[str, ...] = (),
+    prefixes: tuple[str, ...] = (),
+    **read_kwargs: Any,
+) -> pd.DataFrame:
+    """Read a FLUXNET csv, parsing only the columns the caller actually uses.
+
+    The FULLSET files carry ~227 columns and the loaders touch ~14 of them, so
+    parsing everything dominated load time once the aggregation was vectorized.
+
+    ``usecols`` cannot simply be the wanted list: several columns are optional
+    (the loaders all guard with ``if col in df.columns``), and pandas raises if
+    ``usecols`` names a column the file lacks. So the header is read first —
+    one row, negligible — and the wanted set intersected against it. A column
+    that is genuinely absent is therefore absent from the result exactly as
+    before, and the downstream guards behave identically.
+
+    ``prefixes`` covers the loaders that discover columns by pattern rather than
+    by name (Howland's ``TS_F_MDS_*`` / ``SWC_F_MDS_*`` sensor sets). The match
+    is deliberately broad — it keeps the ``_QC`` variants too — because the
+    callers filter those themselves, and reproducing that filter here would be
+    a second place for the rule to drift.
+    """
+    available = pd.read_csv(path, nrows=0, **read_kwargs).columns
+    wanted = set(columns)
+    use = [
+        c for c in available
+        if c in wanted or any(c.startswith(p) for p in prefixes)
+    ]
+    return pd.read_csv(path, usecols=use, **read_kwargs)
+
+
+def _aggregate_daily(
+    df: pd.DataFrame,
+    date_key: pd.Series,
+    *,
+    flux_cols: dict[str, str] | None = None,
+    mean_cols: dict[str, str] | None = None,
+    sum_cols: dict[str, str] | None = None,
+) -> pd.DataFrame:
+    """Aggregate half-hourly rows to daily, using pandas' vectorized reducers.
+
+    Each mapping is ``{output_name: source_column}``. The three reducers below
+    are exact replacements for the per-group Python lambdas this used to run —
+    ``min_count`` expresses "NaN unless at least N values are valid", which is
+    precisely the rule those lambdas hand-coded:
+
+    ``flux_cols``  sum, NaN unless ≥ ``_MIN_VALID_HH`` valid half-hours
+                   (was: ``valid.sum() if len(valid) >= 24 else nan``)
+    ``mean_cols``  mean, NaN when the whole day is NaN
+                   (was: ``nanmean(s.dropna()) if s.notna().any() else nan``;
+                   pandas' mean already skips NaN and yields NaN for an
+                   all-NaN group, so the guard is redundant)
+    ``sum_cols``   sum, NaN when the whole day is NaN — ``min_count=1`` matters
+                   here, because a bare ``sum()`` returns 0 for an all-NaN
+                   group where the old guard returned NaN
+
+    Aggregating column-wise rather than group-wise keeps the work inside
+    pandas' Cython paths; the lambdas were re-entering Python once per day per
+    column (~10k days × ~10 columns at Harvard).
+    """
+    flux_cols, mean_cols, sum_cols = flux_cols or {}, mean_cols or {}, sum_cols or {}
+    grouped = df.groupby(date_key, sort=True)
+
+    parts: list[pd.DataFrame] = []
+    for mapping, reducer in (
+        (flux_cols, lambda g, c: g[c].sum(min_count=_MIN_VALID_HH)),
+        (mean_cols, lambda g, c: g[c].mean()),
+        (sum_cols, lambda g, c: g[c].sum(min_count=1)),
+    ):
+        present = {out: src for out, src in mapping.items() if src in df.columns}
+        if not present:
+            continue
+        # Reduce on the source columns, then rename to the output names. Done in
+        # one call per reducer so each is a single vectorized pass.
+        block = reducer(grouped, list(present.values()))
+        block.columns = list(present.keys())
+        parts.append(block)
+
+    if not parts:
+        return pd.DataFrame({"date": pd.Series(dtype="object")})
+    return pd.concat(parts, axis=1).reset_index()
+
+
 # ---------------------------------------------------------------------------
 # Harvard Forest
 # ---------------------------------------------------------------------------
@@ -61,13 +152,29 @@ def load_harvard_forest(
         daily GPP series (``GPP_NT_VUT_REF``) so it can be used as an
         external forcing input.  When False (default), ``GPP_obs`` is NaN.
     """
-    df = pd.read_csv(hr_path, na_values=[-9999], low_memory=False)
-
-    # Parse timestamp manually (12-digit integer YYYYMMDDhhmm)
-    df["datetime"] = pd.to_datetime(
-        df["TIMESTAMP_START"].astype(str), format="%Y%m%d%H%M"
+    df = _read_csv_subset(
+        hr_path,
+        columns=(
+            "TIMESTAMP_START",
+            "NEE_VUT_REF_QC", "NEE_VUT_REF", "GPP_NT_VUT_REF", "RECO_NT_VUT_REF",
+            "NEE_VUT_REF_RANDUNC",
+            "TA_F", "SW_IN_F", "VPD_F", "P_F",
+            "TS_F_MDS_1", "TS_F_MDS_2", "TS_F_MDS_3", "TS_F_MDS_4",
+        ),
+        na_values=[-9999],
+        low_memory=False,
     )
-    df["date"] = df["datetime"].dt.date
+
+    # Parse timestamp manually (12-digit integer YYYYMMDDhhmm).
+    # Kept as a standalone grouping key rather than assigned into `df`: the
+    # FULLSET frame is ~227 columns, and inserting into a frame that wide
+    # fragments its block manager (pandas raises PerformanceWarning, and every
+    # later column access pays for the fragmentation). `datetime` was only ever
+    # used to derive `date`, and `date` only to group, so neither needs to be a
+    # column. The name is what makes `reset_index()` below emit a "date" column.
+    date_key = pd.to_datetime(
+        df["TIMESTAMP_START"].astype(str), format="%Y%m%d%H%M"
+    ).dt.date.rename("date")
 
     # ── QC filter ────────────────────────────────────────────────────────────
     if "NEE_VUT_REF_QC" in df.columns:
@@ -82,49 +189,30 @@ def load_harvard_forest(
             df[col] = df[col] * _HH_TO_GC
 
     # ── Daily aggregation ────────────────────────────────────────────────────
-    def _daily_flux_sum(series: pd.Series) -> float:
-        """Sum if ≥ 24 valid half-hours, else NaN."""
-        valid = series.dropna()
-        return float(valid.sum()) if len(valid) >= 24 else np.nan
-
-    agg_dict: dict[str, Any] = {}
-
-    # Fluxes: sum with ≥ 24 valid HH
-    for raw, out in [
-        ("NEE_VUT_REF", "NEE"),
-        ("GPP_NT_VUT_REF", "GPP"),
-        ("RECO_NT_VUT_REF", "ER"),
-    ]:
-        if raw in df.columns:
-            agg_dict[out] = pd.NamedAgg(column=raw, aggfunc=_daily_flux_sum)
-
-    # Uncertainty: daily mean of available values
-    if "NEE_VUT_REF_RANDUNC" in df.columns:
-        agg_dict["NEE_unc_hh"] = pd.NamedAgg(
-            column="NEE_VUT_REF_RANDUNC", aggfunc=lambda s: float(np.nanmean(s)) * _HH_TO_GC * 48
-        )
-
-    # Met: daily mean / sum
-    for met_col, out_name, method in [
-        ("TA_F", "air_temp", "mean"),
-        ("SW_IN_F", "sw_radiation", "mean"),
-        ("VPD_F", "vpd", "mean"),
-        ("P_F", "precip", "sum"),
-    ]:
-        if met_col in df.columns:
-            aggfunc = np.nanmean if method == "mean" else np.nansum
-            agg_dict[out_name] = pd.NamedAgg(column=met_col, aggfunc=lambda s, f=aggfunc: float(f(s.dropna())) if s.notna().any() else np.nan)
-
-    # Soil temperature: daily mean
     ts_cols = ["TS_F_MDS_1", "TS_F_MDS_2", "TS_F_MDS_3", "TS_F_MDS_4"]
-    ts_present = [c for c in ts_cols if c in df.columns]
-    for ts_col in ts_present:
-        agg_dict[ts_col] = pd.NamedAgg(
-            column=ts_col,
-            aggfunc=lambda s: float(np.nanmean(s.dropna())) if s.notna().any() else np.nan,
-        )
-
-    daily = df.groupby("date").agg(**agg_dict).reset_index()
+    daily = _aggregate_daily(
+        df,
+        date_key,
+        flux_cols={
+            "NEE": "NEE_VUT_REF",
+            "GPP": "GPP_NT_VUT_REF",
+            "ER": "RECO_NT_VUT_REF",
+        },
+        mean_cols={
+            "NEE_unc_hh": "NEE_VUT_REF_RANDUNC",
+            "air_temp": "TA_F",
+            "sw_radiation": "SW_IN_F",
+            "vpd": "VPD_F",
+            # soil temperature, one column per sensor depth
+            **{c: c for c in ts_cols},
+        },
+        sum_cols={"precip": "P_F"},
+    )
+    # The uncertainty column is a half-hourly mean; scale it to a daily total
+    # here rather than inside the aggregator, so the aggregator stays a plain
+    # reducer. NaN days stay NaN.
+    if "NEE_unc_hh" in daily.columns:
+        daily["NEE_unc_hh"] = daily["NEE_unc_hh"] * _HH_TO_GC * 48
     daily["date"] = pd.to_datetime(daily["date"])
     daily = daily.sort_values("date").reset_index(drop=True)
 
@@ -397,46 +485,41 @@ def load_eight_mile_lake(
     forcing, converts half-hourly carbon fluxes to gC m⁻² day⁻¹, and
     broadcasts the single soil measurement to all model layers.
     """
-    df = pd.read_csv(hh_path, comment="#", na_values=[-9999], low_memory=False)
-
-    df["datetime"] = pd.to_datetime(
-        df["TIMESTAMP_START"].astype(str), format="%Y%m%d%H%M"
+    df = _read_csv_subset(
+        hh_path,
+        columns=(
+            "TIMESTAMP_START",
+            "NEE_PI_F", "GPP_PI_F", "RECO_PI_F",
+            "TA", "SW_IN", "P", "D_SNOW", "TS", "SWC",
+        ),
+        comment="#",
+        na_values=[-9999],
+        low_memory=False,
     )
-    df["date"] = df["datetime"].dt.date
+
+    # Standalone grouping key rather than two inserts into the wide BASE frame
+    # — see load_harvard_forest for why.
+    date_key = pd.to_datetime(
+        df["TIMESTAMP_START"].astype(str), format="%Y%m%d%H%M"
+    ).dt.date.rename("date")
 
     for col in ["NEE_PI_F", "GPP_PI_F", "RECO_PI_F"]:
         if col in df.columns:
             df[col] = df[col] * _HH_TO_GC
 
-    def _daily_flux_sum(series: pd.Series) -> float:
-        valid = series.dropna()
-        return float(valid.sum()) if len(valid) >= 24 else np.nan
-
-    agg_dict: dict[str, Any] = {}
-    for raw, out in [
-        ("NEE_PI_F", "NEE"),
-        ("GPP_PI_F", "GPP"),
-        ("RECO_PI_F", "ER"),
-    ]:
-        if raw in df.columns:
-            agg_dict[out] = pd.NamedAgg(column=raw, aggfunc=_daily_flux_sum)
-
-    for met_col, out_name, method in [
-        ("TA", "air_temp", "mean"),
-        ("SW_IN", "sw_radiation", "mean"),
-        ("P", "precip", "sum"),
-        ("D_SNOW", "snow_depth", "mean"),
-        ("TS", "soil_temp", "mean"),
-        ("SWC", "soil_moisture", "mean"),
-    ]:
-        if met_col in df.columns:
-            aggfunc = np.nanmean if method == "mean" else np.nansum
-            agg_dict[out_name] = pd.NamedAgg(
-                column=met_col,
-                aggfunc=lambda s, f=aggfunc: float(f(s.dropna())) if s.notna().any() else np.nan,
-            )
-
-    daily = df.groupby("date").agg(**agg_dict).reset_index()
+    daily = _aggregate_daily(
+        df,
+        date_key,
+        flux_cols={"NEE": "NEE_PI_F", "GPP": "GPP_PI_F", "ER": "RECO_PI_F"},
+        mean_cols={
+            "air_temp": "TA",
+            "sw_radiation": "SW_IN",
+            "snow_depth": "D_SNOW",
+            "soil_temp": "TS",
+            "soil_moisture": "SWC",
+        },
+        sum_cols={"precip": "P"},
+    )
     daily["date"] = pd.to_datetime(daily["date"])
     daily = daily.sort_values("date").reset_index(drop=True)
 
@@ -507,7 +590,19 @@ def load_howland_forest(
     by the FULLSET package, including `GPP_NT_VUT_REF` for external soil-input
     forcing when `include_gpp_forcing=True`.
     """
-    df = pd.read_csv(dd_path, na_values=[-9999], low_memory=False)
+    df = _read_csv_subset(
+        dd_path,
+        columns=(
+            "TIMESTAMP",
+            "NEE_VUT_REF_QC", "NEE_VUT_REF", "GPP_NT_VUT_REF", "RECO_NT_VUT_REF",
+            "NEE_VUT_REF_RANDUNC",
+            "TA_F_MDS", "SW_IN_F_MDS", "VPD_F_MDS", "P_F",
+        ),
+        # Sensor sets are discovered by prefix downstream.
+        prefixes=("TS_F_MDS_", "SWC_F_MDS_"),
+        na_values=[-9999],
+        low_memory=False,
+    )
     dates = pd.to_datetime(df["TIMESTAMP"].astype(str), format="%Y%m%d")
 
     if "NEE_VUT_REF_QC" in df.columns:

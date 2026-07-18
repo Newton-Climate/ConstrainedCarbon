@@ -59,14 +59,11 @@ from ecosystem_complexity.information import (
 )
 from ecosystem_complexity._oe_helpers import ObsBlock, build_oe_prior_sigma
 from ecosystem_complexity.analysis import compute_resp_delta14C, compute_age_diagnostics
-from ecosystem_complexity.oe_utils import (
-    build_mean_ss_modifier as _shared_mean_ss_modifier,
-    ss_state_for_params as _shared_ss_state_for,
-)
 from ecosystem_complexity.oe_diagnostics import (
-    oe_style_ablation as _shared_oe_style_ablation,
-    oe_constraint_ladder as _shared_oe_constraint_ladder,
+    oe_constraint_ladder,
+    oe_style_ablation,
 )
+from ecosystem_complexity.sites.driver import run_oe_canonical
 
 # Per-site helpers already implemented in the site modules
 from sites.barrow import (
@@ -164,92 +161,12 @@ def build_hf_c_stocks_israd(model, csv_path: str = _ISRAD_LAYER_PATH) -> dict:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# OE-style ablation (time-resolved Jacobian at MAP — matches OEResult.A)
+# Shared OE driver and diagnostics
 # ════════════════════════════════════════════════════════════════════════════
-
-def _mean_ss_modifier(forcing, params0) -> tuple[float, float]:
-    """Backward-compatible wrapper around the shared OE steady-state helper."""
-    return _shared_mean_ss_modifier(forcing, params0)
-
-
-def oe_style_ablation(
-    model, forcing, state0, params_opt, observations,
-    opt_fields: tuple,
-    extra_obs_blocks: list | None = None,
-) -> dict:
-    """Backward-compatible wrapper around the shared OE ablation helper."""
-    return _shared_oe_style_ablation(
-        model, forcing, state0, params_opt, observations,
-        opt_fields=opt_fields, extra_obs_blocks=extra_obs_blocks,
-    )
-
-
-def oe_constraint_ladder(
-    model, forcing, state0, params_opt, observations,
-    opt_fields: tuple,
-    extra_obs_blocks: list | None = None,
-) -> list[dict]:
-    """Backward-compatible wrapper around the shared OE ladder helper."""
-    return _shared_oe_constraint_ladder(
-        model, forcing, state0, params_opt, observations,
-        opt_fields=opt_fields, extra_obs_blocks=extra_obs_blocks,
-    )
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# Shared OE driver — single canonical optimize_oe call
-# ════════════════════════════════════════════════════════════════════════════
-
-def _ss_state_for(model, forcing, state0, params):
-    """Backward-compatible wrapper around the shared OE steady-state helper."""
-    return _shared_ss_state_for(model, forcing, state0, params)
-
-
-def _run_oe_canonical(
-    model, forcing, state0, obs_full,
-    extra_blocks: list,
-    opt_fields: tuple,
-    site_label: str,
-) -> dict:
-    """Single canonical optimize_oe call with structured return.
-
-    This is THE shared inversion driver for every canonical site (HF, Barrow,
-    EML, Howland).  It runs the prior and the MAP from their own analytical
-    steady state — the exact operating points ``optimize_oe`` costs against —
-    so the returned diagnostics are self-consistent regardless of site.
-    """
-    params_prior = make_default_params(model.config)
-    print(f"\n[{site_label}] prior forward simulation…")
-    # Run the prior from its own analytical steady state — the same operating
-    # point optimize_oe costs the prior against (y_prior = _forward(xa)).  Using
-    # the observed-stock state0 here would plot a "prior" that is not at steady
-    # state and does not match the prior the inversion actually sees.
-    state_at_prior = _ss_state_for(model, forcing, state0, params_prior)
-    out_prior = run_model(model, forcing, state0=state_at_prior, params=params_prior)
-    jax.block_until_ready(out_prior.delta14C)
-
-    print(f"[{site_label}] optimize_oe  fields={opt_fields}  "
-          f"extras={[b.name for b in extra_blocks]}")
-    t0 = time.perf_counter()
-    result = optimize_oe(
-        model, forcing, obs_full, state0=state0,
-        fields=opt_fields, extra_obs_blocks=extra_blocks,
-    )
-    ch = np.array(result.cost_history)
-    print(f"  Done [{time.perf_counter()-t0:.1f}s]  J {ch[0]:.2f} → {ch[-1]:.2f}  "
-          f"({result.n_iter} iter, converged={result.converged})")
-
-    params_opt = result.params_opt
-    state_at_map = _ss_state_for(model, forcing, state0, params_opt)
-    out_opt = run_model(model, forcing, state0=state_at_map, params=params_opt)
-    jax.block_until_ready(out_opt.delta14C)
-
-    return dict(
-        params_prior=params_prior, params_opt=params_opt,
-        out_prior=out_prior, out_opt=out_opt,
-        state_at_prior=state_at_prior, state_at_map=state_at_map,
-        oe_result=result,
-    )
+# oe_style_ablation / oe_constraint_ladder are imported from
+# ecosystem_complexity.oe_diagnostics above, and the inversion driver from
+# ecosystem_complexity.sites.driver — the pass-through wrappers this module
+# used to re-export were left over from that migration and are gone.
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -370,7 +287,7 @@ def run_hf_canonical(pool_14c_source: str = "fraction") -> dict:
     state0 = hf_build_state0(config, idx)
     print(f"  State0 total C12: {float(jnp.sum(state0.C12)):.0f} gC m⁻²")
 
-    fit = _run_oe_canonical(
+    fit = run_oe_canonical(
         model, forcing, state0, obs_full, extra_blocks, opt_fields, label,
     )
 
@@ -459,7 +376,7 @@ def run_barrow_canonical() -> dict:
     state0 = barrow_build_state0(config, idx)
     print(f"  State0 total C12: {float(jnp.sum(state0.C12)):.0f} gC m⁻²")
 
-    fit = _run_oe_canonical(
+    fit = run_oe_canonical(
         model, forcing, state0, obs_full, extra_blocks, opt_fields, label,
     )
 

@@ -146,7 +146,7 @@ def make_resp_fit_figure(hf, br, out_path: str) -> None:
 
 def make_complexity_ladder_figure(hf, br, out_path: str) -> None:
     """DFS by obs-type combinations (the IT ablation result) presented as a clean stair-step."""
-    from sites.canonical import oe_style_ablation
+    from ecosystem_complexity.oe_diagnostics import oe_style_ablation
     abl_hf = oe_style_ablation(
         hf["model"], hf["forcing"], hf["state_at_map"],
         hf["params_opt"], hf["obs_full"],
