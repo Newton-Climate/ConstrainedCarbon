@@ -223,6 +223,13 @@ def optimize_oe(  # noqa: C901
     y = jnp.concatenate([b.y for b in obs_blocks])
     Se_diag = jnp.concatenate([b.Se for b in obs_blocks])
 
+    if not bool(jnp.all(jnp.isfinite(Se_diag) & (Se_diag > 0.0))):
+        bad = np.where(~np.array(jnp.isfinite(Se_diag) & (Se_diag > 0.0)))[0]
+        raise ValueError(
+            "optimize_oe: observation variances must be finite and positive; "
+            f"bad indices: {bad.tolist()}"
+        )
+
     block_summary = "  +  ".join(f"{len(b.y)} {b.name}" for b in obs_blocks)
     print(f"  OE obs vector: {block_summary}  =  {int(y.shape[0])} total")  # noqa: T201
 
