@@ -51,6 +51,7 @@ from ecosystem_complexity.config import load_config
 from ecosystem_complexity.data.parsers import attach_atm14C, load_barrow_alaska, slice_forcing
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
+from ecosystem_complexity.data.israd_observations import build_perlayer_mixture_obs_blocks
 from ecosystem_complexity.state import make_default_params
 from ecosystem_complexity.analysis import compute_age_diagnostics, compute_resp_delta14C
 
@@ -301,6 +302,47 @@ def build_pool_14C_obs_blocks(
                 jnp.mean(out.delta14C[t, pi], keepdims=True),
         ))
     return blocks, sigma_dict
+
+
+def build_barrow_bulk_perlayer_mixture_14C_obs(
+    forcing_time,
+    pool_index,
+    israd_layer_path: str = ISRAD_LAYER_PATH,
+    print_summary: bool = True,
+) -> list:
+    """Per-layer carbon-mass-weighted mixture bulk Δ¹⁴C for Barrow.
+
+    Thin site adapter around the generalized
+    :func:`ecosystem_complexity.data.israd_observations.build_perlayer_mixture_obs_blocks`.
+    Barrow has no ISRaD density fractions, so every depth bin uses the model
+    C12-partition fallback weighting (``fraction_df=None``) — demonstrating the
+    operator works for sites without fraction data, not only Harvard Forest.
+    """
+    if not os.path.isfile(israd_layer_path):
+        print(f"  ISRaD layer file not found: {israd_layer_path} — skipping")
+        return []
+
+    lay = pd.read_csv(israd_layer_path, low_memory=False)
+    lay = lay[lay["pro_name"].isin(_BARROW_ISRAD_PROFILES)]
+
+    rows = build_perlayer_mixture_obs_blocks(
+        lay, pool_index, forcing_time,
+        depth_bins=_BARROW_ISRAD_DEPTH_TO_POOL,
+        obs_year=_BARROW_ISRAD_OBS_YEAR,
+        fraction_df=None,
+        pool_order=("soil_active", "soil_slow", "soil_passive"),
+        sigma_floor=25.0,
+        name_prefix="israd_perlayer",
+    )
+    if print_summary:
+        for r in rows:
+            z0, z1 = r["depth_cm"]
+            print(
+                f"  Barrow per-layer bulk Δ¹⁴C {r['bin_label']:<14s} "
+                f"({z0:.0f}–{z1:.0f} cm): {r['mean']:+7.1f} ± {r['sigma']:5.1f}‰  "
+                f"weights={r['weight_source']}  (n={r['n']} layers)"
+            )
+    return [r["block"] for r in rows]
 
 
 def build_pool_14C_obs_israd(

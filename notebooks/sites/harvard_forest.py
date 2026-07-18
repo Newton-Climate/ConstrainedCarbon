@@ -56,6 +56,7 @@ from ecosystem_complexity.data.israd_observations import (
     add_layer_midpoint,
     summarize_by_depth,
     obs_blocks_from_single_year_summary,
+    build_perlayer_mixture_obs_blocks,
 )
 from ecosystem_complexity.state import make_default_params
 from ecosystem_complexity.analysis import compute_age_diagnostics, compute_resp_delta14C
@@ -422,6 +423,9 @@ def build_hf_bulk_perlayer_mixture_14C_obs(
     mean.  Such collinear rows add no independent degrees of freedom — which is
     precisely why bulk-alone information is rank-limited (≈1.3 DFS at HF) even
     though many layers are supplied.
+
+    Thin site adapter around the generalized
+    :func:`ecosystem_complexity.data.israd_observations.build_perlayer_mixture_obs_blocks`.
     """
     if not os.path.isfile(israd_layer_path):
         print(f"  ISRaD layer file not found: {israd_layer_path} — skipping")
@@ -431,107 +435,39 @@ def build_hf_bulk_perlayer_mixture_14C_obs(
     lay = lay[
         (lay["entry_name"] == _HF_BULK_ENTRY)
         & lay["pro_name"].isin(_HF_BULK_PROFILES)
-    ].copy()
-    for col in ("lyr_14c", "lyr_soc", "lyr_top", "lyr_bot"):
-        lay[col] = pd.to_numeric(lay[col], errors="coerce")
-    lay = lay.dropna(subset=["lyr_14c", "lyr_top", "lyr_bot"])
-    lay["lyr_mid"] = 0.5 * (lay["lyr_top"] + lay["lyr_bot"])
+    ]
 
-    # Measured density-fraction masses → per-layer weights (surface bins only).
-    frac_ok = os.path.isfile(israd_frac_path)
-    if frac_ok:
-        frac = pd.read_csv(israd_frac_path, low_memory=False)
-        frac = frac[
-            (frac["entry_name"] == _HF_BULK_ENTRY) & (frac["frc_scheme"] == "density")
-        ].copy()
-        frac["frc_mass_perc"] = pd.to_numeric(frac["frc_mass_perc"], errors="coerce")
-        frac["pool"] = frac["frc_property"].map(_HF_FRAC_POOL_MAP)
-        frac["lyr_mid"] = 0.5 * (
-            pd.to_numeric(frac["lyr_top"], errors="coerce")
-            + pd.to_numeric(frac["lyr_bot"], errors="coerce")
-        )
+    frac_df = None
+    if os.path.isfile(israd_frac_path):
+        frac_all = pd.read_csv(israd_frac_path, low_memory=False)
+        frac_df = frac_all[
+            (frac_all["entry_name"] == _HF_BULK_ENTRY)
+            & (frac_all["frc_scheme"] == "density")
+        ]
 
-    time_np = np.array(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
-    t_yr = jnp.array(
-        np.where((years_np >= _HF_BULK_OBS_YEAR) & (years_np < _HF_BULK_OBS_YEAR + 1))[0],
-        dtype=jnp.int32,
+    rows = build_perlayer_mixture_obs_blocks(
+        lay, pool_index, forcing_time,
+        depth_bins=_HF_PERLAYER_BINS,
+        obs_year=_HF_BULK_OBS_YEAR,
+        fraction_df=frac_df,
+        fraction_to_pool=_HF_FRAC_POOL_MAP,
+        pool_order=_HF_PERLAYER_POOL_ORDER,
+        sigma_floor=_HF_PERLAYER_SIGMA_FLOOR,
+        name_prefix="israd_perlayer",
     )
-    if t_yr.shape[0] == 0:
-        t_yr = jnp.array(
-            [int(np.argmin(np.abs(years_np - (_HF_BULK_OBS_YEAR + 0.5))))],
-            dtype=jnp.int32,
-        )
-    pool_cols = jnp.array(
-        [int(pool_index[p]) for p in _HF_PERLAYER_POOL_ORDER], dtype=jnp.int32
-    )
-
-    def _make_fixed_predictor(w_arr, t=t_yr, cols=pool_cols):
-        wj = jnp.asarray(w_arr, dtype=jnp.float32)
-
-        def _predict(out, p, t=t, cols=cols, wj=wj):
-            d = out.delta14C[t][:, cols]        # (nt, 3)
-            return jnp.mean(d @ wj, keepdims=True)
-
-        return _predict
-
-    def _predict_model_partition(out, p, t=t_yr):
-        c12 = out.C12[t, :]
-        d14 = out.delta14C[t, :]
-        num = jnp.sum(c12 * d14, axis=1)
-        den = jnp.sum(c12, axis=1) + 1e-30
-        return jnp.mean(num / den, keepdims=True)
-
-    blocks = []
-    for bin_label, (z0, z1) in _HF_PERLAYER_BINS:
-        sub = lay[(lay["lyr_mid"] >= z0) & (lay["lyr_mid"] < z1)]
-        vals = sub["lyr_14c"].dropna()
-        if len(vals) < 2:
-            continue
-
-        # SOC-weighted observed bulk value across profiles (fall back to simple mean).
-        soc = sub["lyr_soc"].to_numpy(dtype=float)
-        v = sub["lyr_14c"].to_numpy(dtype=float)
-        w_mask = np.isfinite(soc) & (soc > 0)
-        if w_mask.sum() >= 2:
-            obs_mean = float(np.dot(soc[w_mask], v[w_mask]) / soc[w_mask].sum())
-        else:
-            obs_mean = float(vals.mean())
-        obs_sigma = max(float(vals.std(ddof=1)), _HF_PERLAYER_SIGMA_FLOOR)
-
-        # Measured mixing weights for this bin, if density fractions exist here.
-        w_vec = None
-        if frac_ok:
-            fsub = frac[
-                (frac["lyr_mid"] >= z0) & (frac["lyr_mid"] < z1)
-                & frac["pool"].notna() & frac["frc_mass_perc"].notna()
-            ]
-            if len(fsub):
-                wmap = fsub.groupby("pool")["frc_mass_perc"].mean()
-                wv = np.array([wmap.get(p, 0.0) for p in _HF_PERLAYER_POOL_ORDER], dtype=float)
-                if wv.sum() > 0:
-                    w_vec = wv / wv.sum()
-
-        if w_vec is not None:
-            predict = _make_fixed_predictor(w_vec)
-            wsrc = f"measured [{w_vec[0]:.2f},{w_vec[1]:.2f},{w_vec[2]:.2f}]"
-        else:
-            predict = _predict_model_partition
-            wsrc = "model-C12 partition"
-
-        blocks.append(ObsBlock(
-            name=f"israd_perlayer_{bin_label}",
-            y=jnp.array([obs_mean], dtype=jnp.float32),
-            Se=jnp.array([obs_sigma ** 2], dtype=jnp.float32),
-            predict=predict,
-        ))
-        if print_summary:
+    if print_summary:
+        for r in rows:
+            if r["weight_source"] == "measured":
+                w = r["weights"]
+                wsrc = f"measured [{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]"
+            else:
+                wsrc = "model-C12 partition"
             print(
-                f"  HF per-layer bulk Δ¹⁴C {bin_label:>6s} cm: "
-                f"{obs_mean:+7.1f} ± {obs_sigma:5.1f}‰  weights={wsrc}  "
-                f"(n={len(vals)} layers)"
+                f"  HF per-layer bulk Δ¹⁴C {r['bin_label']:>6s} cm: "
+                f"{r['mean']:+7.1f} ± {r['sigma']:5.1f}‰  weights={wsrc}  "
+                f"(n={r['n']} layers)"
             )
-    return blocks
+    return [r["block"] for r in rows]
 
 
 def load_horizon_means(hf324_path: str, hf271_path: str) -> dict:
