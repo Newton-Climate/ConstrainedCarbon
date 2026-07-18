@@ -63,11 +63,16 @@ def load_harvard_forest(
     """
     df = pd.read_csv(hr_path, na_values=[-9999], low_memory=False)
 
-    # Parse timestamp manually (12-digit integer YYYYMMDDhhmm)
-    df["datetime"] = pd.to_datetime(
+    # Parse timestamp manually (12-digit integer YYYYMMDDhhmm).
+    # Kept as a standalone grouping key rather than assigned into `df`: the
+    # FULLSET frame is ~227 columns, and inserting into a frame that wide
+    # fragments its block manager (pandas raises PerformanceWarning, and every
+    # later column access pays for the fragmentation). `datetime` was only ever
+    # used to derive `date`, and `date` only to group, so neither needs to be a
+    # column. The name is what makes `reset_index()` below emit a "date" column.
+    date_key = pd.to_datetime(
         df["TIMESTAMP_START"].astype(str), format="%Y%m%d%H%M"
-    )
-    df["date"] = df["datetime"].dt.date
+    ).dt.date.rename("date")
 
     # ── QC filter ────────────────────────────────────────────────────────────
     if "NEE_VUT_REF_QC" in df.columns:
@@ -98,10 +103,20 @@ def load_harvard_forest(
         if raw in df.columns:
             agg_dict[out] = pd.NamedAgg(column=raw, aggfunc=_daily_flux_sum)
 
-    # Uncertainty: daily mean of available values
+    # Uncertainty: daily mean of available values.
+    # Guarded like the met aggregators below: a day whose half-hours are all NaN
+    # (gap-filled uncertainty is absent for whole days early in the record) makes
+    # np.nanmean warn "Mean of empty slice" and return NaN anyway. Returning NaN
+    # explicitly keeps the same value without the warning — and, unlike silencing
+    # it, still leaves a genuinely empty day as NaN rather than a fabricated 0.
     if "NEE_VUT_REF_RANDUNC" in df.columns:
         agg_dict["NEE_unc_hh"] = pd.NamedAgg(
-            column="NEE_VUT_REF_RANDUNC", aggfunc=lambda s: float(np.nanmean(s)) * _HH_TO_GC * 48
+            column="NEE_VUT_REF_RANDUNC",
+            aggfunc=lambda s: (
+                float(np.nanmean(s.dropna())) * _HH_TO_GC * 48
+                if s.notna().any()
+                else np.nan
+            ),
         )
 
     # Met: daily mean / sum
@@ -124,7 +139,7 @@ def load_harvard_forest(
             aggfunc=lambda s: float(np.nanmean(s.dropna())) if s.notna().any() else np.nan,
         )
 
-    daily = df.groupby("date").agg(**agg_dict).reset_index()
+    daily = df.groupby(date_key).agg(**agg_dict).reset_index()
     daily["date"] = pd.to_datetime(daily["date"])
     daily = daily.sort_values("date").reset_index(drop=True)
 
@@ -399,10 +414,11 @@ def load_eight_mile_lake(
     """
     df = pd.read_csv(hh_path, comment="#", na_values=[-9999], low_memory=False)
 
-    df["datetime"] = pd.to_datetime(
+    # Standalone grouping key rather than two inserts into the wide BASE frame
+    # — see load_harvard_forest for why.
+    date_key = pd.to_datetime(
         df["TIMESTAMP_START"].astype(str), format="%Y%m%d%H%M"
-    )
-    df["date"] = df["datetime"].dt.date
+    ).dt.date.rename("date")
 
     for col in ["NEE_PI_F", "GPP_PI_F", "RECO_PI_F"]:
         if col in df.columns:
@@ -436,7 +452,7 @@ def load_eight_mile_lake(
                 aggfunc=lambda s, f=aggfunc: float(f(s.dropna())) if s.notna().any() else np.nan,
             )
 
-    daily = df.groupby("date").agg(**agg_dict).reset_index()
+    daily = df.groupby(date_key).agg(**agg_dict).reset_index()
     daily["date"] = pd.to_datetime(daily["date"])
     daily = daily.sort_values("date").reset_index(drop=True)
 
