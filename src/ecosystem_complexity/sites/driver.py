@@ -12,8 +12,12 @@ diagnostics are self-consistent regardless of site.
 from __future__ import annotations
 
 import logging
+import multiprocessing
 import os
 import time
+from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -303,9 +307,35 @@ def summary_row(result: dict) -> dict:
     return row
 
 
+def _run_one(
+    spec: SiteSpec,
+    observation_path: str | None,
+    reduce: Callable[[dict], Any] | None = None,
+) -> tuple[SiteSpec, Any, Exception | None]:
+    """Run one site, capturing rather than raising, for use by both schedulers.
+
+    ``reduce`` is applied *inside* the worker. That is not an optimisation: the
+    raw result dict holds the built model, whose ``_compiled_step`` is a closure
+    local to ``EcosystemModel.__post_init__`` and therefore unpicklable, so a
+    parallel worker cannot return it. Reducing before the process boundary is
+    what makes the result transferable at all.
+    """
+    path = observation_path or spec.observation_path
+    try:
+        result = run_site_canonical(spec, observation_path=path)
+    except Exception as exc:  # noqa: BLE001 — one bad site must not stop the rest
+        return spec, None, exc
+    if result.get("skipped"):
+        return spec, None, None
+    return spec, (reduce(result) if reduce is not None else result), None
+
+
 def run_sites(
-    specs: list[SiteSpec], observation_path: str | None = None
-) -> tuple[list[dict], list[tuple[SiteSpec, Exception]]]:
+    specs: list[SiteSpec],
+    observation_path: str | None = None,
+    workers: int = 1,
+    reduce: Callable[[dict], Any] | None = None,
+) -> tuple[list[Any], list[tuple[SiteSpec, Exception]]]:
     """Run the canonical inversion over several sites, isolating failures.
 
     Returns ``(results, failures)``. One site blowing up (missing forcing file,
@@ -314,18 +344,64 @@ def run_sites(
     exit status from — the previous ``main`` printed them and still exited 0.
 
     ``observation_path`` overrides each spec's configured path when given.
+
+    ``workers`` > 1 runs sites concurrently in separate *processes*. Processes
+    rather than threads because the work is CPU-bound inside JAX/XLA, and
+    because each site builds its own model and JAX state — sharing one
+    interpreter would contend on the GIL for the Python-level driver work and
+    have the per-site XLA compilations fight over the same default device.
+    Results are collected as they finish and then re-ordered to match ``specs``,
+    so the summary table does not reshuffle with scheduling.
+
+    ``reduce`` maps each result dict to the value collected, and is **required**
+    when ``workers`` > 1: the raw result holds the compiled model, which cannot
+    be pickled back from a worker (see ``_run_one``). Pass ``summary_row`` for
+    the summary table, or a callable extracting whatever the caller needs.
     """
-    results: list[dict] = []
+    if workers > 1 and reduce is None:
+        raise ValueError(
+            "run_sites(workers>1) needs a `reduce` callable: the full result "
+            "holds the compiled model and cannot cross a process boundary. "
+            "Pass reduce=summary_row, or run with workers=1."
+        )
+
+    results_by_stem: dict[str, Any] = {}
     failures: list[tuple[SiteSpec, Exception]] = []
-    for spec in specs:
-        path = observation_path or spec.observation_path
-        try:
-            result = run_site_canonical(spec, observation_path=path)
-        except Exception as exc:  # noqa: BLE001 — keep going across sites
-            logger.error("ERROR at %s: %s", spec.label, exc)
-            failures.append((spec, exc))
-            continue
-        if result.get("skipped"):
-            continue
-        results.append(result)
+
+    if workers > 1 and len(specs) > 1:
+        # `spawn` keeps each worker's JAX/XLA initialisation independent; forking
+        # a process that has already initialised a JAX backend is unsafe.
+        ctx = multiprocessing.get_context("spawn")
+        with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as pool:
+            futures = {
+                pool.submit(_run_one, spec, observation_path, reduce): spec
+                for spec in specs
+            }
+            for fut in as_completed(futures):
+                spec = futures[fut]
+                try:
+                    spec, result, exc = fut.result()
+                except Exception as exc:  # noqa: BLE001 — worker died outright
+                    logger.error("ERROR at %s: %s", spec.label, exc)
+                    failures.append((spec, exc))
+                    continue
+                if exc is not None:
+                    logger.error("ERROR at %s: %s", spec.label, exc)
+                    failures.append((spec, exc))
+                elif result is not None:
+                    results_by_stem[spec.config_stem] = result
+    else:
+        for spec in specs:
+            spec, result, exc = _run_one(spec, observation_path, reduce)
+            if exc is not None:
+                logger.error("ERROR at %s: %s", spec.label, exc)
+                failures.append((spec, exc))
+            elif result is not None:
+                results_by_stem[spec.config_stem] = result
+
+    results = [
+        results_by_stem[s.config_stem]
+        for s in specs
+        if s.config_stem in results_by_stem
+    ]
     return results, failures

@@ -30,7 +30,8 @@ from ecosystem_complexity.sites.driver import (
 )
 from ecosystem_complexity.sites.forcing import build_annual_mean_forcing
 from ecosystem_complexity.sites.fraction_mapping import (
-    BULK_SCHEMES,
+    BULK_PROPERTIES,
+    PROPERTY_POLICY,
     PROPERTY_ROLES,
     SCHEME_POLICY,
     FractionMapping,
@@ -55,7 +56,8 @@ from ecosystem_complexity.sites.spec import (
 )
 
 __all__ = [
-    "BULK_SCHEMES",
+    "BULK_PROPERTIES",
+    "PROPERTY_POLICY",
     "CONFIG_DIR",
     "PROPERTY_ROLES",
     "OPT_FIELDS",

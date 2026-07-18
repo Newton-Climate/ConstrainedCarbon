@@ -20,7 +20,7 @@ from ecosystem_complexity.data.israd_observations import (
     bulk_mixture_obs_block,
 )
 from ecosystem_complexity.sites.fraction_mapping import (
-    BULK_SCHEMES,
+    BULK_PROPERTIES,
     build_fraction_mapping,
     normalize,
 )
@@ -108,10 +108,10 @@ def _bulk_pool_ic_seeds(israd_name: str) -> dict[str, float]:
 def _plant_debris_df(israd_name: str) -> pd.DataFrame:
     """ISRaD plant-debris Δ¹⁴C rows, shaped like layer rows for bulk aggregation.
 
-    Plant debris (macrofossil, roots, coarse/plant material) is recognisable
-    plant fragments, not a density/kinetic fraction, so it is treated as part of
-    the bulk material of its layer rather than assigned to a kinetic pool. The
-    membership test is the shared ``BULK_SCHEMES`` policy, so the
+    Macrofossils are dead plant fragments genuinely within the soil matrix,
+    not a density/kinetic fraction, so they are treated as part of
+    the bulk material of their layer rather than assigned to a kinetic pool. The
+    membership test is the shared ``BULK_PROPERTIES`` policy, so the
     same classification drives both this fold-in and the fraction mapping's
     skip list — they cannot drift apart into double-counting a property.
 
@@ -124,8 +124,8 @@ def _plant_debris_df(israd_name: str) -> pd.DataFrame:
     df = df[(df["site_name"] == israd_name) & df["frc_14c"].notna()].copy()
     if df.empty:
         return df
-    scheme = df["frc_scheme"].astype(str).map(normalize)
-    df = df[scheme.isin(BULK_SCHEMES)].copy()
+    prop = df["frc_property"].astype(str).map(normalize)
+    df = df[prop.isin(BULK_PROPERTIES)].copy()
     if df.empty:
         return df
     year = pd.to_numeric(df.get("frc_obs_date_y"), errors="coerce")

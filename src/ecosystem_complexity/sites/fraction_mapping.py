@@ -59,10 +59,35 @@ MAP, BULK, SKIP = "map", "bulk", "skip"
 SCHEME_POLICY: dict[str, str] = {
     "density": MAP,
     "particle size": MAP,
-    "physical (other)": BULK,
+    "physical (other)": SKIP,
     "chemical": SKIP,
     "aggregate": SKIP,
     "compound specific": SKIP,
+}
+
+# Property-level refinements, applied over SCHEME_POLICY.
+#
+# ``physical (other)`` is a grab-bag rather than one protocol, so it cannot take
+# a single policy. Its members differ in whether they are soil organic matter at
+# all:
+#
+# * ``macrofossil`` — dead plant fragments genuinely within the soil matrix, so
+#   part of what a whole-sample bulk measurement captures. Its Δ¹⁴C spread
+#   (−599…+675‰) is real and is carried into the bulk block's σ.
+# * ``roots`` — living/recent root biomass, which is not SOM; the standard
+#   protocol removes roots before fractionation. Δ¹⁴C averages +155‰ (max +285)
+#   because it tracks recent photosynthate, and against free light in the same
+#   layer it scatters −73…+157‰ — no stable kinetic relationship. Folding it
+#   into bulk biases bulk enriched, so it is excluded.
+# * ``plant material (non-root)`` — litter. It would belong in a litter pool,
+#   but the canonical configs set ``aboveground_pools: []`` and the fastest pool
+#   is soil_active (τ prior 730 d), which the free light density fraction
+#   already maps to. Mapping litter there too would double-count a pool that is
+#   only ~31‰ away in the three layers where both are measured, for 8 rows
+#   globally. Excluded until the model grows a litter pool.
+# * ``pyrogenic c`` — charcoal; distinct kinetics, 1 row.
+PROPERTY_POLICY: dict[str, str] = {
+    "macrofossil": BULK,
 }
 
 # Kinetic role per property, for the schemes whose policy is MAP. Roles resolve
@@ -93,10 +118,23 @@ def normalize(value: str) -> str:
     return str(value).strip().lower()
 
 
-# Properties folded into the bulk observation, derived from SCHEME_POLICY so the
-# bulk builder and this module cannot drift apart into double-counting a row.
-BULK_SCHEMES: frozenset[str] = frozenset(
-    s for s, policy in SCHEME_POLICY.items() if policy == BULK
+def policy_for(scheme: str, prop: str) -> str | None:
+    """Policy for one (scheme, property) pair; ``None`` if the scheme is unknown.
+
+    Property-level entries win over the scheme default — that is how the
+    ``physical (other)`` grab-bag is resolved member by member.
+    """
+    prop = normalize(prop)
+    if prop in PROPERTY_POLICY:
+        return PROPERTY_POLICY[prop]
+    return SCHEME_POLICY.get(normalize(scheme))
+
+
+# Properties folded into the bulk observation. Derived from the same policy the
+# fraction mapping applies, so the bulk builder and this module cannot drift
+# apart into double-counting (or dropping) a row.
+BULK_PROPERTIES: frozenset[str] = frozenset(
+    p for p, policy in PROPERTY_POLICY.items() if policy == BULK
 )
 
 
@@ -168,7 +206,7 @@ def build_fraction_mapping(
             pool_by_property[prop] = pool
             continue
 
-        policy = SCHEME_POLICY.get(scheme)
+        policy = policy_for(scheme, prop)
         if policy is None:
             skipped[prop] = f"unknown frc_scheme {scheme!r}"
             continue

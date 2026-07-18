@@ -18,6 +18,9 @@ Examples
     # two sites by stem, writing a summary table
     python apps/optim_site_main.py solling eml --out exports/run.csv
 
+    # every configured site, 4 at a time
+    python apps/optim_site_main.py --all --workers 4
+
     # every configured site, forcing the fraction observation path
     python apps/optim_site_main.py --all --observation-path fraction
 
@@ -136,6 +139,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="write the multi-site summary table to this CSV path",
     )
     p.add_argument(
+        "-j", "--workers", type=int, default=1, metavar="N",
+        help=(
+            "run N sites concurrently in separate processes (default 1). "
+            "Each worker builds its own model and JAX state, so memory scales "
+            "with N; 4 is a reasonable default for a full --all sweep."
+        ),
+    )
+    p.add_argument(
         "-q", "--quiet", action="store_true",
         help="suppress per-site progress logging",
     )
@@ -156,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.sites and args.all:
         _build_parser().error("--all cannot be combined with explicit site names")
+    if args.workers < 1:
+        _build_parser().error("--workers must be at least 1")
 
     # The drivers log their progress; route it to stdout so the CLI behaves the
     # way the old `python notebooks/sites/multisite_canonical.py` entry point did.
@@ -172,7 +185,18 @@ def main(argv: list[str] | None = None) -> int:
     if not specs:
         raise SystemExit("error: no site configs found under configs/multisite/")
 
-    results, failures = run_sites(specs, observation_path=args.observation_path)
+    workers = min(args.workers, len(specs))
+    if workers > 1:
+        print(f"Running {len(specs)} sites across {workers} worker processes…")
+    # Reduce to summary rows in the worker: the raw result holds the compiled
+    # model, which cannot be pickled back from a worker process. Doing it in
+    # both modes keeps serial and parallel returning the same shape.
+    results, failures = run_sites(
+        specs,
+        observation_path=args.observation_path,
+        workers=workers,
+        reduce=summary_row,
+    )
 
     n_skipped = len(specs) - len(results) - len(failures)
     print(
@@ -186,7 +210,8 @@ def main(argv: list[str] | None = None) -> int:
     if results:
         import pandas as pd
 
-        table = pd.DataFrame([summary_row(r) for r in results])
+        # `results` are already summary rows — run_sites reduced them.
+        table = pd.DataFrame(results)
         print()
         print(table.to_string(index=False))
         if args.out:
