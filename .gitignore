@@ -14,6 +14,11 @@ build/
 venv/
 env/
 
+# Local credentials (AmeriFlux download, etc.)
+.env
+.env.*
+!.env.example
+
 # Conda
 .conda/
 
@@ -43,7 +48,10 @@ coverage.xml
 *.swo
 
 # Data / outputs (tracked separately if needed)
-data/
+# Anchored to the repo root so this ignores the top-level dataset dir only —
+# an unanchored "data/" also matched src/ecosystem_complexity/data/ and
+# silently hid tracked source modules (israd_observations.py, loaders.py).
+/data/
 results/
 # Stray duplicate of data/harvard_forest/hf324-06-soil-carbon.csv
 /hf324-06-soil-carbon.csv
