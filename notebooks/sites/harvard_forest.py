@@ -53,6 +53,10 @@ from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 from ecosystem_complexity.data.israd_observations import (
     FractionMappingRule,
     build_fraction_obs_blocks,
+    add_layer_midpoint,
+    summarize_by_depth,
+    obs_blocks_from_single_year_summary,
+    build_perlayer_mixture_obs_blocks,
 )
 from ecosystem_complexity.state import make_default_params
 from ecosystem_complexity.analysis import compute_age_diagnostics, compute_resp_delta14C
@@ -79,6 +83,7 @@ HF_RESP_14C_PATH = _data("data/harvard_forest/hf212-01-14c-no-treat.csv")
 HF_SOIL_C_PATH   = _data("data/harvard_forest/hf271-07-soils.csv")
 HF_SOIL_C_PATH2  = _data("data/harvard_forest/hf324-06-soil-carbon.csv")
 ISRAD_FRAC_PATH  = _data("data/shared/israd/ISRaD_extra_flat_fraction_v 2.6.6.2024-01-25.csv")
+ISRAD_LAYER_PATH = _data("data/shared/israd/ISRaD_extra_flat_layer_v 2.6.6.2024-01-25.csv")
 HUA_PATH         = _data("data/shared/atm_14C/Hua_2021.csv")
 GRAVEN_PATH      = _data("data/shared/atm_14C/Graven_2017.csv")
 INTCAL_PATH      = _data("data/shared/atm_14C/intcal20.14c")
@@ -201,6 +206,268 @@ def build_israd_14C_obs(israd_frac_path: str, forcing_time, pool_index) -> list:
         )
         blocks.append(row["block"])
     return blocks
+
+
+# Depth→pool bins for bulk-layer Δ¹⁴C.  Deliberately identical to the HF
+# C-stock depth groups in sites/canonical.py so the bulk pool constraint is
+# an apples-to-apples swap for the density-fraction constraint on the same
+# three pools:  O (above 0 cm) → active, A (0–15 cm) → slow,
+# B (15–100 cm) → passive.
+_HF_BULK_DEPTH_TO_POOL = [
+    ("soil_active",  (-15.0,   0.0)),
+    ("soil_slow",    (  0.0,  15.0)),
+    ("soil_passive", ( 15.0, 100.0)),
+]
+# McFarlane_2013 measured whole-soil (bulk) Δ¹⁴C on the same H1–H5 flux-tower
+# cores that provide the density fractions, so the two are NOT independent
+# samples — bulk is the mass-weighted mixture of those fractions.
+_HF_BULK_ENTRY    = "McFarlane_2013"
+_HF_BULK_PROFILES = ["H1", "H2", "H3", "H4", "H5"]
+_HF_BULK_OBS_YEAR = 2007
+
+
+def build_hf_bulk_14C_obs(
+    israd_layer_path: str,
+    forcing_time,
+    pool_index,
+    print_summary: bool = True,
+) -> list:
+    """Build ISRaD bulk (whole-soil) layer Δ¹⁴C observations as ObsBlocks.
+
+    Bins the McFarlane_2013 H1–H5 depth-resolved ``lyr_14c`` profiles into the
+    three model pools by depth midpoint (see ``_HF_BULK_DEPTH_TO_POOL``) and
+    emits one ObsBlock per pool at the 2007 observation year.  In contrast to
+    the density-fraction blocks — which isolate one kinetic pool per fraction —
+    each bulk value is the mass-weighted mixture of all pools present at that
+    depth, so the depth→pool assignment leans on the (strong) vertical age
+    gradient rather than chemical separation.
+    """
+    if not os.path.isfile(israd_layer_path):
+        print(f"  ISRaD layer file not found: {israd_layer_path} — skipping")
+        return []
+
+    df = pd.read_csv(israd_layer_path, low_memory=False)
+    df = df[
+        (df["entry_name"] == _HF_BULK_ENTRY)
+        & df["pro_name"].isin(_HF_BULK_PROFILES)
+    ].copy()
+    df = df.dropna(subset=["lyr_14c", "lyr_top", "lyr_bot"])
+    df = add_layer_midpoint(df)
+
+    summary = summarize_by_depth(
+        df, "lyr_14c", _HF_BULK_DEPTH_TO_POOL, min_n=2, sigma_floor=25.0
+    )
+    blocks = obs_blocks_from_single_year_summary(
+        summary, pool_index, forcing_time, _HF_BULK_OBS_YEAR,
+        name_prefix="israd_bulk",
+    )
+    if print_summary:
+        depth_by_pool = dict((p, dr) for p, dr in _HF_BULK_DEPTH_TO_POOL)
+        for pool_name, (mean_val, sigma_val, n_obs) in summary.items():
+            z_top, z_bot = depth_by_pool[pool_name]
+            print(
+                f"  HF bulk Δ¹⁴C {pool_name:<14s} ({z_top:.0f}–{z_bot:.0f} cm): "
+                f"{mean_val:+7.1f} ± {sigma_val:5.1f}‰  "
+                f"(n={n_obs} layers, {_HF_BULK_ENTRY} {_HF_BULK_OBS_YEAR})"
+            )
+    return blocks
+
+
+# Minimum profile depth reach (cm) to count a McFarlane core as a whole-soil
+# sample for the mass-weighted mixture.  H1 stops at 15 cm and would bias the
+# integral young, so it is excluded; H2–H5 reach 45–60 cm.
+_HF_BULK_MIX_MIN_DEPTH_CM = 30.0
+_HF_BULK_MIX_SIGMA_FLOOR   = 10.0
+
+
+def build_hf_bulk_mixture_14C_obs(
+    israd_layer_path: str,
+    forcing_time,
+    pool_index,
+    print_summary: bool = True,
+) -> list:
+    """Build the physically-correct *mass-weighted mixture* bulk Δ¹⁴C constraint.
+
+    Instead of assigning each depth layer to a single pool (the depth-proxy in
+    :func:`build_hf_bulk_14C_obs`), this treats whole-soil Δ¹⁴C for what it is —
+    the carbon-mass-weighted mixture of every pool present:
+
+        Δ¹⁴C_bulk = Σ_p (C12_p / Σ C12) · Δ¹⁴C_p
+
+    The predictor evaluates exactly that combination on the model state (it is
+    the same quantity as ``compute_age_diagnostics().bulk_delta14C``), so the
+    model's own relative pool masses weight the pools inside the bulk value —
+    no depth→pool assumption.  The observation is the whole-column, SOC-weighted
+    mean of the McFarlane H2–H5 profiles (H1 excluded: too shallow), with the
+    across-profile spread as σ.  Because bulk is a single mixture, this is one
+    scalar constraint, not one-per-pool.
+    """
+    if not os.path.isfile(israd_layer_path):
+        print(f"  ISRaD layer file not found: {israd_layer_path} — skipping")
+        return []
+
+    df = pd.read_csv(israd_layer_path, low_memory=False)
+    df = df[
+        (df["entry_name"] == _HF_BULK_ENTRY)
+        & df["pro_name"].isin(_HF_BULK_PROFILES)
+    ].copy()
+    df["lyr_14c"] = pd.to_numeric(df["lyr_14c"], errors="coerce")
+    df["lyr_soc"] = pd.to_numeric(df["lyr_soc"], errors="coerce")
+    df["lyr_bot"] = pd.to_numeric(df["lyr_bot"], errors="coerce")
+
+    # Restrict to whole-soil profiles (deep enough for a representative column).
+    reach = df.groupby("pro_name")["lyr_bot"].max()
+    deep = reach[reach >= _HF_BULK_MIX_MIN_DEPTH_CM].index
+    both = df.dropna(subset=["lyr_14c", "lyr_soc"])
+    both = both[both["pro_name"].isin(deep)]
+
+    per_profile: dict[str, float] = {}
+    for pro, g in both.groupby("pro_name"):
+        w = g["lyr_soc"].to_numpy(dtype=float)
+        v = g["lyr_14c"].to_numpy(dtype=float)
+        if w.sum() > 0:
+            per_profile[pro] = float(np.dot(w, v) / w.sum())
+
+    if len(per_profile) < 2:
+        print("  HF bulk-mixture: <2 whole-soil profiles available — skipping")
+        return []
+
+    vals = np.array(list(per_profile.values()), dtype=float)
+    mean_val = float(vals.mean())
+    sigma_val = max(float(vals.std(ddof=1)), _HF_BULK_MIX_SIGMA_FLOOR)
+
+    time_np = np.array(forcing_time, dtype=float)
+    years_np = 1970.0 + time_np / 365.25
+    t_yr = jnp.array(
+        np.where((years_np >= _HF_BULK_OBS_YEAR) & (years_np < _HF_BULK_OBS_YEAR + 1))[0],
+        dtype=jnp.int32,
+    )
+    if t_yr.shape[0] == 0:
+        t_yr = jnp.array(
+            [int(np.argmin(np.abs(years_np - (_HF_BULK_OBS_YEAR + 0.5))))],
+            dtype=jnp.int32,
+        )
+
+    def _predict_mixture(out, p, t=t_yr):
+        c12 = out.C12[t, :]           # (nt, n_pools)
+        d14 = out.delta14C[t, :]      # (nt, n_pools)
+        num = jnp.sum(c12 * d14, axis=1)
+        den = jnp.sum(c12, axis=1) + 1e-30
+        return jnp.mean(num / den, keepdims=True)
+
+    block = ObsBlock(
+        name="israd_bulkmix",
+        y=jnp.array([mean_val], dtype=jnp.float32),
+        Se=jnp.array([sigma_val ** 2], dtype=jnp.float32),
+        predict=_predict_mixture,
+    )
+    if print_summary:
+        pro_str = ", ".join(f"{k}:{v:+.0f}" for k, v in per_profile.items())
+        print(
+            f"  HF bulk-mixture Δ¹⁴C (mass-weighted whole soil): "
+            f"{mean_val:+.1f} ± {sigma_val:.1f}‰  "
+            f"(n={len(per_profile)} profiles [{pro_str}], "
+            f"{_HF_BULK_ENTRY} {_HF_BULK_OBS_YEAR})"
+        )
+    return [block]
+
+
+# Depth bins for the per-layer mixture operator.  Surface bins (0–15 cm) have
+# measured density-fraction masses; deep bins (15–60 cm) do not and fall back
+# to the model's own C12 partition.
+_HF_PERLAYER_BINS = [
+    ("0-5",   (0.0,   5.0)),
+    ("5-15",  (5.0,  15.0)),
+    ("15-30", (15.0, 30.0)),
+    ("30-45", (30.0, 45.0)),
+    ("45-60", (45.0, 60.0)),
+]
+# density fraction property → model pool (free light≈fast, heavy≈mineral/passive)
+_HF_FRAC_POOL_MAP = {
+    "free light":     "soil_active",
+    "occluded light": "soil_slow",
+    "heavy":          "soil_passive",
+}
+_HF_PERLAYER_POOL_ORDER = ("soil_active", "soil_slow", "soil_passive")
+_HF_PERLAYER_SIGMA_FLOOR = 15.0
+
+
+def build_hf_bulk_perlayer_mixture_14C_obs(
+    israd_layer_path: str,
+    forcing_time,
+    pool_index,
+    israd_frac_path: str = ISRAD_FRAC_PATH,
+    print_summary: bool = True,
+) -> list:
+    """Per-layer bulk Δ¹⁴C, each layer a carbon-mass-weighted mixture of pools.
+
+    This is the physically-honest bulk operator: each depth bin's whole-soil
+    Δ¹⁴C is predicted as a mixture ``Σ_p w_{p,z}·Δ¹⁴C_p`` of the model pools,
+    with the mixing weights set by the carbon mass of each pool *in that layer*
+    (not a depth→pool assignment, and not one collapsed whole-profile number).
+
+    Weight source per bin:
+
+    * **Surface bins (0–5, 5–15 cm)** — *measured* density-fraction masses
+      (``frc_mass_perc``, McFarlane 2013): free light→active, occluded→slow,
+      heavy→passive, normalised.  Fixed weights ⇒ predictor is linear in the
+      pool Δ¹⁴C.
+    * **Deep bins (15–60 cm)** — no measured fractions exist, so weight by the
+      model's own C12 partition, i.e. ``Σ_p (C12_p/ΣC12)·Δ¹⁴C_p`` (the same
+      quantity as ``compute_age_diagnostics().bulk_delta14C``).  Weights vary
+      with the parameters during the inversion.
+
+    Note: because the box model is not depth-resolved, every deep bin shares the
+    *same* global-partition predictor and differs only in its observed value, so
+    the deep bins jointly pull that one mixture quantity toward the deep bulk
+    mean.  Such collinear rows add no independent degrees of freedom — which is
+    precisely why bulk-alone information is rank-limited (≈1.3 DFS at HF) even
+    though many layers are supplied.
+
+    Thin site adapter around the generalized
+    :func:`ecosystem_complexity.data.israd_observations.build_perlayer_mixture_obs_blocks`.
+    """
+    if not os.path.isfile(israd_layer_path):
+        print(f"  ISRaD layer file not found: {israd_layer_path} — skipping")
+        return []
+
+    lay = pd.read_csv(israd_layer_path, low_memory=False)
+    lay = lay[
+        (lay["entry_name"] == _HF_BULK_ENTRY)
+        & lay["pro_name"].isin(_HF_BULK_PROFILES)
+    ]
+
+    frac_df = None
+    if os.path.isfile(israd_frac_path):
+        frac_all = pd.read_csv(israd_frac_path, low_memory=False)
+        frac_df = frac_all[
+            (frac_all["entry_name"] == _HF_BULK_ENTRY)
+            & (frac_all["frc_scheme"] == "density")
+        ]
+
+    rows = build_perlayer_mixture_obs_blocks(
+        lay, pool_index, forcing_time,
+        depth_bins=_HF_PERLAYER_BINS,
+        obs_year=_HF_BULK_OBS_YEAR,
+        fraction_df=frac_df,
+        fraction_to_pool=_HF_FRAC_POOL_MAP,
+        pool_order=_HF_PERLAYER_POOL_ORDER,
+        sigma_floor=_HF_PERLAYER_SIGMA_FLOOR,
+        name_prefix="israd_perlayer",
+    )
+    if print_summary:
+        for r in rows:
+            if r["weight_source"] == "measured":
+                w = r["weights"]
+                wsrc = f"measured [{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]"
+            else:
+                wsrc = "model-C12 partition"
+            print(
+                f"  HF per-layer bulk Δ¹⁴C {r['bin_label']:>6s} cm: "
+                f"{r['mean']:+7.1f} ± {r['sigma']:5.1f}‰  weights={wsrc}  "
+                f"(n={r['n']} layers)"
+            )
+    return [r["block"] for r in rows]
 
 
 def load_horizon_means(hf324_path: str, hf271_path: str) -> dict:
