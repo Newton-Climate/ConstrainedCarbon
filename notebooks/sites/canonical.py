@@ -67,6 +67,7 @@ from ecosystem_complexity.oe_diagnostics import (
     oe_style_ablation as _shared_oe_style_ablation,
     oe_constraint_ladder as _shared_oe_constraint_ladder,
 )
+from ecosystem_complexity.sites.driver import run_oe_canonical
 
 # Per-site helpers already implemented in the site modules
 from sites.barrow import (
@@ -205,51 +206,9 @@ def _ss_state_for(model, forcing, state0, params):
     return _shared_ss_state_for(model, forcing, state0, params)
 
 
-def _run_oe_canonical(
-    model, forcing, state0, obs_full,
-    extra_blocks: list,
-    opt_fields: tuple,
-    site_label: str,
-) -> dict:
-    """Single canonical optimize_oe call with structured return.
-
-    This is THE shared inversion driver for every canonical site (HF, Barrow,
-    EML, Howland).  It runs the prior and the MAP from their own analytical
-    steady state — the exact operating points ``optimize_oe`` costs against —
-    so the returned diagnostics are self-consistent regardless of site.
-    """
-    params_prior = make_default_params(model.config)
-    print(f"\n[{site_label}] prior forward simulation…")
-    # Run the prior from its own analytical steady state — the same operating
-    # point optimize_oe costs the prior against (y_prior = _forward(xa)).  Using
-    # the observed-stock state0 here would plot a "prior" that is not at steady
-    # state and does not match the prior the inversion actually sees.
-    state_at_prior = _ss_state_for(model, forcing, state0, params_prior)
-    out_prior = run_model(model, forcing, state0=state_at_prior, params=params_prior)
-    jax.block_until_ready(out_prior.delta14C)
-
-    print(f"[{site_label}] optimize_oe  fields={opt_fields}  "
-          f"extras={[b.name for b in extra_blocks]}")
-    t0 = time.perf_counter()
-    result = optimize_oe(
-        model, forcing, obs_full, state0=state0,
-        fields=opt_fields, extra_obs_blocks=extra_blocks,
-    )
-    ch = np.array(result.cost_history)
-    print(f"  Done [{time.perf_counter()-t0:.1f}s]  J {ch[0]:.2f} → {ch[-1]:.2f}  "
-          f"({result.n_iter} iter, converged={result.converged})")
-
-    params_opt = result.params_opt
-    state_at_map = _ss_state_for(model, forcing, state0, params_opt)
-    out_opt = run_model(model, forcing, state0=state_at_map, params=params_opt)
-    jax.block_until_ready(out_opt.delta14C)
-
-    return dict(
-        params_prior=params_prior, params_opt=params_opt,
-        out_prior=out_prior, out_opt=out_opt,
-        state_at_prior=state_at_prior, state_at_map=state_at_map,
-        oe_result=result,
-    )
+# The shared driver now lives in ecosystem_complexity.sites.driver; this alias
+# keeps the private name the site runners below already call.
+_run_oe_canonical = run_oe_canonical
 
 
 # ════════════════════════════════════════════════════════════════════════════
