@@ -25,10 +25,14 @@ class SiteSpec:
     lat: float
     lon: float
     label: str
+    er_observation_glob: str = ""
     tower_id: str = ""
     biome: str = "unclassified"
     forcing_kind: str = "daily"
     observation_path: str = "bulk_resp"   # bulk_resp | fraction | combined
+    mat_c: float | None = None
+    map_mm: float | None = None
+    elevation_m: float | None = None
     # Per-site overrides of the ISRaD frc_property → pool mapping. Empty for
     # every current site: the shared vocabulary in sites.fraction_mapping
     # covers them, and this exists so an unusual protocol stays a config
@@ -54,6 +58,7 @@ def load_site_spec(config_path: str) -> SiteSpec:
         config_stem=stem,
         israd_name=str(ds["israd_name"]),
         forcing_glob=str(ds["forcing_glob"]),
+        er_observation_glob=str(ds.get("er_observation_glob", "")),
         lat=float(site.get("lat", 0.0)),
         lon=float(site.get("lon", 0.0)),
         label=str(site.get("name", stem)),
@@ -61,6 +66,11 @@ def load_site_spec(config_path: str) -> SiteSpec:
         biome=str(site.get("biome", "unclassified")),
         forcing_kind=str(ds.get("forcing_kind", "daily")),
         observation_path=str(ds.get("observation_path", "bulk_resp")),
+        mat_c=(float(site["mat_c"]) if "mat_c" in site else None),
+        map_mm=(float(site["map_mm"]) if "map_mm" in site else None),
+        elevation_m=(
+            float(site["elevation_m"]) if "elevation_m" in site else None
+        ),
         fraction_rules=dict(ds.get("fraction_rules") or {}),
     )
 
