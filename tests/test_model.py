@@ -238,6 +238,7 @@ _EXPECTED_DIAG_KEYS = {
     "Ra",
     "NPP",
     "Rh",
+    "Rh_by_pool",
     "ER",
     "NEE",
     # external_inputs diagnostics (always present; zero when feature disabled)

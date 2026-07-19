@@ -34,6 +34,8 @@ from ecosystem_complexity.above_ground import (
 )
 from ecosystem_complexity.climate import f_moisture, f_temp
 from ecosystem_complexity.config import ModelConfig, PoolIndex
+# soil.py does not import this module, so this stays acyclic.
+from ecosystem_complexity.soil import respiration_fractions
 from ecosystem_complexity.state import EcosystemState, ModelParams
 from ecosystem_complexity.transfer import get_transfer_matrix
 
@@ -395,3 +397,64 @@ def initialize_permafrost_14C(
         i = pool_index[pool_name]
         C14 = C14.at[i].set(C12[i] * _R_STD * (1.0 + delta14C_obs / 1000.0))
     return C14
+
+
+def respired_delta14C(
+    delta14C: jnp.ndarray,
+    Rh_by_pool: jnp.ndarray,
+    C12: jnp.ndarray,
+    log_tau: jnp.ndarray,
+    log_f_transfer: jnp.ndarray,
+    n_pools: int,
+    *,
+    flux_floor: float = 1e-18,
+) -> jnp.ndarray:
+    """Δ¹⁴C (‰) of respired CO₂: the pools' Δ¹⁴C mixed by respiration flux.
+
+    .. math::
+
+        \\Delta^{14}C_{resp} = \\frac{\\sum_i R_{h,i}\\,\\Delta^{14}C_i}
+                                    {\\sum_i R_{h,i}}
+
+    with ``R_h,i`` the model's own per-pool respiration
+    (``resp_frac_i · C_i/τ_i · f_t · f_m · f_f``), so the operator and
+    ``het_respiration`` cannot disagree about what respiration means.
+
+    **Why the fallback exists.** Those environmental scalars are shared by all
+    pools in a single-layer config, so they cancel in the ratio — but they do
+    not cancel *numerically*. At a frozen timestep ``f_f → 0`` drives every
+    pool's weight to zero simultaneously and the ratio becomes 0/0. This is not
+    hypothetical: at Old Black Spruce 218 of 1826 daily steps have an
+    identically-zero total, and 318 fall below 1e-30. Evaluated naively that
+    yields a predicted 0 ‰ with a pathological gradient, which flat-lines the
+    OE cost at every boreal and permafrost site.
+
+    When the total flux underflows ``flux_floor`` the mixture therefore falls
+    back to the **intrinsic** weights ``resp_frac_i · C_i/τ_i``, which are
+    strictly positive. That is the right limit rather than a fudge: the
+    isotopic signature of respired CO₂ is undefined when nothing is respiring,
+    and the intrinsic mixture is what the soil would respire at reference
+    conditions. In a single-layer config it is *exactly* the flux-weighted
+    answer, since the common scalars cancel.
+
+    Shapes: ``delta14C``, ``Rh_by_pool``, ``C12`` are ``(T, n_pools)``;
+    returns ``(T,)``.
+    """
+    resp_frac = respiration_fractions(log_f_transfer, n_pools)  # (n_pools,)
+    tau = jnp.exp(log_tau)  # (n_pools,)
+
+    w_flux = Rh_by_pool  # (T, n_pools)
+    s_flux = w_flux.sum(axis=-1)  # (T,)
+    live = s_flux > flux_floor
+
+    # Guard the denominator so the untaken branch never produces NaN/Inf and
+    # poisons the gradient (the double-where pattern used elsewhere in the OE
+    # loss).
+    safe_flux = jnp.where(live, s_flux, 1.0)
+    d14_flux = (delta14C * w_flux).sum(axis=-1) / safe_flux
+
+    w_int = resp_frac[None, :] * (C12 / tau[None, :])  # (T, n_pools), > 0
+    s_int = w_int.sum(axis=-1)
+    d14_int = (delta14C * w_int).sum(axis=-1) / (s_int + 1e-30)
+
+    return jnp.where(live, d14_flux, d14_int)

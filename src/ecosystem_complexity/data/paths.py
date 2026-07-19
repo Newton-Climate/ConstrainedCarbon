@@ -64,6 +64,9 @@ ISRAD_FRACTION = os.path.join(
     ISRAD_DIR, f"ISRaD_data_flat_fraction_v {ISRAD_VERSION}.csv"
 )
 ISRAD_FLUX = os.path.join(ISRAD_DIR, f"ISRaD_data_flat_flux_v {ISRAD_VERSION}.csv")
+ISRAD_INCUBATION = os.path.join(
+    ISRAD_DIR, f"ISRaD_data_flat_incubation_v {ISRAD_VERSION}.csv"
+)
 
 _ATM_14C_DIR = os.path.join(REPO_ROOT, "data", "shared", "atm_14C")
 HUA_PATH = os.path.join(_ATM_14C_DIR, "Hua_2021.csv")
