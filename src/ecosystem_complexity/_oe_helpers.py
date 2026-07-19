@@ -11,6 +11,7 @@ Contains:
 
 from __future__ import annotations
 
+import functools
 import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Optional
@@ -20,8 +21,8 @@ import jax.numpy as jnp
 import numpy as np
 
 from .config import ModelConfig, PoolIndex
-from .state import ModelParams
-from .tracer_14C import respired_delta14C
+from .state import _LAMBDA_14C, ModelParams
+from .tracer_14C import _R_STD, respired_delta14C
 from .transfer import get_transfer_matrix
 
 if TYPE_CHECKING:
@@ -425,6 +426,17 @@ def _analytical_c12_ss(
 def apply_ss_c12(state, c12_ss: jnp.ndarray):
     """Swap ``state.C12`` for the steady-state stocks, preserving initial Δ¹⁴C.
 
+    .. warning::
+
+       Preserving the observed ratio pins each pool's initial Δ¹⁴C independently
+       of τ. If a pool-Δ¹⁴C observation is dated at the start of the forcing
+       record *and* was used to seed that pool, the model reproduces it exactly
+       and the observation becomes self-predicting — zero residual, zero
+       sensitivity, zero information. The OE forward models therefore use
+       ``apply_ss_c12_c14`` with ``analytical_c14_ss`` instead. This function
+       remains for callers that genuinely want the observed initial Δ¹⁴C held
+       fixed (e.g. plotting a trajectory from a known state).
+
     ``state`` carries an initial C12/C14 pair whose ratio C14/C12 encodes the
     intended initial Δ¹⁴C (``= R_std·(1 + Δ¹⁴C/1000)``).  When the analytical
     steady-state C12 replaces the observed C12 we must rescale C14 by the same
@@ -439,3 +451,122 @@ def apply_ss_c12(state, c12_ss: jnp.ndarray):
     ratio = state.C14 / (state.C12 + 1e-30)  # = R_std·(1 + Δ¹⁴C/1000), constant
     c14_ss = ratio * c12_ss
     return state._replace(C12=c12_ss, C14=c14_ss)
+
+# ── ¹⁴C initial condition from the parameters ────────────────────────────────
+
+def analytical_c14_ss(
+    params: ModelParams,
+    c12_ss: jnp.ndarray,
+    n_pools: int,
+    mean_input: float,
+    mean_modifier: float,
+    atm_years: np.ndarray,
+    atm_delta14C: np.ndarray,
+    t0_year: float,
+    target_indices: Optional[list[int]] = None,
+    spinup_start_year: float = 1850.0,
+    dt_years: float = 1.0,
+) -> jnp.ndarray:
+    """¹⁴C stocks at ``t0_year``, derived from the parameters — not from data.
+
+    Seeding a pool's initial Δ¹⁴C from the very observation the inversion then
+    fits makes that observation self-predicting: the model reproduces it exactly
+    at t₀, the residual is zero by construction, and ∂prediction/∂τ vanishes. At
+    UMBS that drove the three density-fraction rows of the prewhitened Jacobian
+    to ~1e-3 against ~0.5 for the stock and bulk rows, so the fraction family
+    contributed 0.002 DFS instead of the ~2.0 it is worth. This function removes
+    that circularity by making the initial condition a *consequence* of τ, which
+    is what makes radiocarbon informative about turnover in the first place.
+
+    At fixed ``c12_ss`` the ¹⁴C system is linear in ``C14``::
+
+        dC14/dt = b·R_atm(t) + Fᵀ·diag(k)·C14 − (diag(k) + λ)·C14
+                = b·R_atm(t) − A·C14,     A = diag(k) + λI − Fᵀ·diag(k)
+
+    where ``k_i = mean_modifier / τ_i`` and ``b_i`` is pool i's *direct*
+    external input (cascades are carried by ``F``, so unlike
+    ``_analytical_c12_ss`` the input here must not be pre-cascaded).
+
+    ``A`` is time-invariant, so with the atmosphere held piecewise constant over
+    each step the solution is exact::
+
+        C14_{n+1} = C14*_n + E·(C14_n − C14*_n),
+        E = exp(−A·Δt),   C14*_n = A⁻¹·b·R_atm(t_n)
+
+    One ``expm`` is needed regardless of the number of steps, which keeps this
+    cheap enough to sit inside the differentiated forward model. Integration
+    starts from the pre-industrial equilibrium ``A⁻¹·b·R_atm(spinup_start_year)``
+    — by 1850 a passive pool has long forgotten any earlier transient, and the
+    bomb spike (the part that actually carries turnover information) is fully
+    resolved.
+    """
+    tau = jnp.exp(params.log_tau)
+    F = get_transfer_matrix(params.log_f_transfer, n_pools)
+
+    lep = params.log_external_input_partition
+    n_lep = lep.shape[0]
+    if n_lep == 0:
+        f_part = jnp.zeros(n_pools).at[0].set(1.0)
+    else:
+        w = jax.nn.softmax(lep)
+        idx = target_indices if target_indices is not None else list(range(n_lep))
+        f_part = jnp.zeros(n_pools).at[jnp.asarray(idx)].set(w)
+
+    k = mean_modifier / tau                       # (n_pools,) day⁻¹
+    b = f_part * mean_input                       # direct input, gC m⁻² day⁻¹
+    A = jnp.diag(k + _LAMBDA_14C) - F.T * k[None, :]
+
+    dt_days = dt_years * 365.25
+    E = jax.scipy.linalg.expm(-A * dt_days)
+
+    years = np.arange(spinup_start_year, t0_year + 1e-9, dt_years, dtype=np.float64)
+    r_atm = _R_STD * (
+        1.0 + np.interp(years, atm_years, atm_delta14C) / 1000.0
+    )
+    r_atm_j = jnp.asarray(r_atm, dtype=jnp.float32)
+
+    c14_0 = jnp.linalg.solve(A, b * r_atm_j[0])
+
+    def _step(c14, r):
+        c_star = jnp.linalg.solve(A, b * r)
+        return c_star + E @ (c14 - c_star), None
+
+    c14_end, _ = jax.lax.scan(_step, c14_0, r_atm_j[1:])
+    return jnp.maximum(c14_end, 0.0)
+
+
+def apply_ss_c12_c14(state, c12_ss: jnp.ndarray, c14_ss: jnp.ndarray):
+    """Set both ¹²C and ¹⁴C from the parameters (see ``analytical_c14_ss``).
+
+    The counterpart to ``apply_ss_c12``, which preserves the *observed* initial
+    Δ¹⁴C ratio and therefore holds it fixed with respect to τ. Use this when the
+    ¹⁴C initial condition should follow the parameters instead.
+    """
+    return state._replace(C12=c12_ss, C14=c14_ss)
+
+@functools.lru_cache(maxsize=4)
+def _atm14c_record(hemisphere: str) -> tuple[np.ndarray, np.ndarray]:
+    """Spliced IntCal20/Graven/Hua daily Δ¹⁴C record (cached; reads 3 CSVs)."""
+    from .data.parsers_14C import load_full_14C_record
+    from .data.paths import GRAVEN_PATH, HUA_PATH, INTCAL_PATH
+
+    years, d14c = load_full_14C_record(
+        HUA_PATH, GRAVEN_PATH, INTCAL_PATH, hemisphere, 1500.0, 2023.0
+    )
+    return np.asarray(years, dtype=np.float64), np.asarray(d14c, dtype=np.float64)
+
+
+def prepare_c14_spinup(
+    forcing, hemisphere: str = "NH"
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """Constants for analytical_c14_ss: (atm_years, atm_delta14C, t0_year).
+
+    Hoisted out of the traced forward model — these depend only on the forcing
+    window, never on the parameters, so they are closure constants.
+    t0_year is the first year of the forcing record, i.e. the moment the
+    spinup must hand over to the simulated period.
+    """
+    years, d14c = _atm14c_record(hemisphere)
+    t0_year = float(1970.0 + float(np.asarray(forcing.time)[0]) / 365.25)
+    return years, d14c, t0_year
+
