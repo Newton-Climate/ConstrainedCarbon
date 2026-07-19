@@ -37,6 +37,7 @@ from .information import (
     compute_posterior,
 )
 from .model import EcosystemModel
+from .tracer_14C import respired_delta14C
 from .sensitivity import (
     _DEFAULT_C_SIGMA_REL,
     _DEFAULT_D14C_SIGMA,
@@ -386,12 +387,14 @@ def compute_age_diagnostics(
     C12_sum = C12.sum(axis=-1, keepdims=True) + 1e-30
     bulk_d14C = (stored_d14C * C12).sum(axis=-1) / C12_sum[:, 0]
 
-    # Flux-weighted respired Δ¹⁴C (Rh-weighted)
-    # Rh contribution from pool i ∝ C12_i / τ_i
-    tau = np.exp(np.array(params.log_tau))  # (n_pools,)
-    rh_weights = C12 / (tau[None, :] + 1e-30)  # (T, n_pools)
-    rh_sum = rh_weights.sum(axis=-1) + 1e-30
-    resp_d14C = (stored_d14C * rh_weights).sum(axis=-1) / rh_sum
+    # Flux-weighted respired Δ¹⁴C, mixed by the model's own per-pool Rh, with
+    # the intrinsic-weight fallback for frozen steps (see respired_delta14C).
+    resp_d14C = np.array(
+        respired_delta14C(
+            output.delta14C, output.Rh_by_pool, output.C12,
+            params.log_tau, params.log_f_transfer, output.C12.shape[-1],
+        )
+    )
 
     # Reco Δ¹⁴C (autotrophic + heterotrophic) if Ra is non-trivial
     Ra = np.array(output.Ra)  # (T,)
@@ -450,11 +453,12 @@ def compute_resp_delta14C(
     np.ndarray
         Shape ``(T,)``, Δ¹⁴C in ‰.  NaN where all pool weights are zero.
     """
-    tau = np.exp(np.array(params.log_tau))  # (n_pools,)
-    C12 = np.array(output.C12)  # (T, n_pools)
-    d14C = np.array(output.delta14C)  # (T, n_pools)
-    w = C12 / (tau[None, :] + 1e-30)  # (T, n_pools)
-    return np.asarray((d14C * w).sum(axis=-1) / (w.sum(axis=-1) + 1e-30))
+    return np.asarray(
+        respired_delta14C(
+            output.delta14C, output.Rh_by_pool, output.C12,
+            params.log_tau, params.log_f_transfer, output.C12.shape[-1],
+        )
+    )
 
 
 def age_diagnostics_summary(

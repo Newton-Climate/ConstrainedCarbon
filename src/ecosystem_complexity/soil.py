@@ -72,6 +72,53 @@ def decomp_flux(
     return (C12_i / tau_i) * ft * fm * ff
 
 
+def respiration_fractions(
+    log_f_transfer: jnp.ndarray,
+    n_pools: int,
+) -> jnp.ndarray:
+    """Fraction of each pool's outflux that is respired, shape ``(n_pools,)``.
+
+    ``1 - Σ_j f_ij`` after the softmax, i.e. the weight on the respiration
+    column. Split out so the observation operators can rebuild the *intrinsic*
+    (environment-free) respiration weights without duplicating the softmax
+    convention.
+    """
+    f_full = jax.nn.softmax(log_f_transfer, axis=-1)  # (n_pools, n_pools+1)
+    return 1.0 - f_full[:, :n_pools].sum(axis=-1)
+
+
+def het_respiration_by_pool(
+    C12: jnp.ndarray,
+    log_tau: jnp.ndarray,
+    log_f_transfer: jnp.ndarray,
+    ft_vec: jnp.ndarray,
+    fm_vec: jnp.ndarray,
+    ff_vec: jnp.ndarray,
+    n_pools: int,
+) -> jnp.ndarray:
+    """
+    Per-pool heterotrophic respiration flux (gC m⁻² day⁻¹), shape ``(n_pools,)``.
+
+    ``het_respiration`` is the sum of this vector; the split exists because the
+    respired-Δ¹⁴C observation operator needs the *per-pool* fluxes as mixing
+    weights.  Deriving both from one function keeps the operator and the model's
+    own respiration from drifting apart — an earlier version of the operator
+    weighted by ``C12 / τ`` alone, dropping ``resp_frac`` and the environmental
+    scalars, which reweighted the mixture because ``resp_frac`` differs per pool
+    (an active pool transfers most of its outflux onward, a passive pool
+    respires nearly all of it).
+
+    Parameters are as for :func:`het_respiration`.
+    """
+    resp_frac = respiration_fractions(log_f_transfer, n_pools)  # (n_pools,)
+
+    # Per-pool decomposition fluxes (vectorised)
+    tau = jnp.exp(log_tau)  # (n_pools,)
+    f_decomp = (C12 / tau) * ft_vec * fm_vec * ff_vec  # (n_pools,)
+
+    return resp_frac * f_decomp
+
+
 def het_respiration(
     C12: jnp.ndarray,
     log_tau: jnp.ndarray,
@@ -116,18 +163,11 @@ def het_respiration(
     jnp.ndarray
         Non-negative scalar total Rh in gC m⁻² day⁻¹.
     """
-    # Transfer fractions: softmax over last axis, drop respiration column
-    f_full = jax.nn.softmax(log_f_transfer, axis=-1)  # (n_pools, n_pools+1)
-    f_transfer = f_full[:, :n_pools]  # (n_pools, n_pools)
-
-    # Fraction of each pool's outflux that is respired
-    resp_frac = 1.0 - f_transfer.sum(axis=-1)  # (n_pools,)
-
-    # Per-pool decomposition fluxes (vectorised)
-    tau = jnp.exp(log_tau)  # (n_pools,)
-    f_decomp = (C12 / tau) * ft_vec * fm_vec * ff_vec  # (n_pools,)
-
-    return jnp.sum(resp_frac * f_decomp)
+    return jnp.sum(
+        het_respiration_by_pool(
+            C12, log_tau, log_f_transfer, ft_vec, fm_vec, ff_vec, n_pools
+        )
+    )
 
 
 def nee(

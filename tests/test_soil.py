@@ -10,6 +10,7 @@ import math
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from ecosystem_complexity.soil import (
@@ -165,3 +166,90 @@ def test_nee_zero_at_balance():
         F_rh=jnp.array(3.0),
     )
     assert float(result) == pytest.approx(0.0, abs=1e-7)
+
+
+# ── respired Δ¹⁴C mixture operator ─────────────────────────────────────────
+#
+# Regression coverage for the freeze degeneracy: the flux weights
+# resp_frac·(C/τ)·ft·fm·ff all vanish together when ff → 0, so a naive
+# normalisation evaluates 0/0 at every frozen timestep. That flat-lined the OE
+# cost at boreal and permafrost sites.
+
+
+def _resp_inputs(n_pools=3, T=4):
+    """delta14C / C12 / params for a small mixture, with pool-distinct Δ¹⁴C."""
+    delta14C = jnp.tile(
+        jnp.array([100.0, 0.0, -400.0][:n_pools])[None, :], (T, 1)
+    )
+    C12 = jnp.tile(jnp.array([500.0, 3000.0, 8000.0][:n_pools])[None, :], (T, 1))
+    log_tau = jnp.log(jnp.array([730.0, 7300.0, 36500.0][:n_pools]))
+    log_f_transfer = jnp.zeros((n_pools, n_pools + 1))
+    return delta14C, C12, log_tau, log_f_transfer
+
+
+def test_respired_delta14C_matches_flux_weighting_when_flux_is_live():
+    from ecosystem_complexity.soil import respiration_fractions
+    from ecosystem_complexity.tracer_14C import respired_delta14C
+
+    d14, C12, log_tau, log_f = _resp_inputs()
+    n = C12.shape[-1]
+    resp_frac = respiration_fractions(log_f, n)
+    # A live, pool-varying respiration flux.
+    rh = resp_frac[None, :] * (C12 / jnp.exp(log_tau)[None, :]) * jnp.array(
+        [[0.9, 0.5, 0.2]]
+    )
+    got = respired_delta14C(d14, rh, C12, log_tau, log_f, n)
+    want = (d14 * rh).sum(-1) / rh.sum(-1)
+    assert np.allclose(np.array(got), np.array(want), rtol=1e-5)
+
+
+def test_respired_delta14C_falls_back_to_intrinsic_when_frozen():
+    """All-zero flux must give the intrinsic mixture, not 0 permil."""
+    from ecosystem_complexity.soil import respiration_fractions
+    from ecosystem_complexity.tracer_14C import respired_delta14C
+
+    d14, C12, log_tau, log_f = _resp_inputs()
+    n = C12.shape[-1]
+    rh = jnp.zeros_like(C12)  # fully frozen
+
+    got = respired_delta14C(d14, rh, C12, log_tau, log_f, n)
+    resp_frac = respiration_fractions(log_f, n)
+    w = resp_frac[None, :] * (C12 / jnp.exp(log_tau)[None, :])
+    want = (d14 * w).sum(-1) / w.sum(-1)
+
+    assert np.allclose(np.array(got), np.array(want), rtol=1e-5)
+    # The bug being guarded against produced exactly 0.0 here.
+    assert not np.allclose(np.array(got), 0.0)
+
+
+def test_respired_delta14C_gradient_is_finite_when_frozen():
+    """A frozen timestep must not poison the gradient."""
+    from ecosystem_complexity.tracer_14C import respired_delta14C
+
+    d14, C12, log_tau, log_f = _resp_inputs(T=3)
+    n = C12.shape[-1]
+    # Mixed: one live step, two frozen.
+    rh = jnp.stack([
+        C12[0] / jnp.exp(log_tau),
+        jnp.zeros(n),
+        jnp.zeros(n),
+    ])
+
+    def _f(lt):
+        return jnp.sum(respired_delta14C(d14, rh, C12, lt, log_f, n))
+
+    g = np.array(jax.grad(_f)(log_tau))
+    assert np.all(np.isfinite(g))
+
+
+def test_env_scalars_cancel_in_a_single_layer_mixture():
+    """A scalar common to every pool must not change the normalised mixture."""
+    from ecosystem_complexity.tracer_14C import respired_delta14C
+
+    d14, C12, log_tau, log_f = _resp_inputs()
+    n = C12.shape[-1]
+    base = C12 / jnp.exp(log_tau)[None, :]
+
+    full = respired_delta14C(d14, base, C12, log_tau, log_f, n)
+    damped = respired_delta14C(d14, base * 0.01, C12, log_tau, log_f, n)
+    assert np.allclose(np.array(full), np.array(damped), rtol=1e-5)
