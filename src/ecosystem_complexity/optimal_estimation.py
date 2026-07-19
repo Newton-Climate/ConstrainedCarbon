@@ -27,7 +27,9 @@ from ._oe_helpers import (
     _analytical_c12_ss,
     _build_obs_blocks,
     _build_sa_diag,
-    apply_ss_c12,
+    analytical_c14_ss,
+    apply_ss_c12_c14,
+    prepare_c14_spinup,
 )
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
@@ -234,17 +236,24 @@ def optimize_oe(  # noqa: C901
     print(f"  OE obs vector: {block_summary}  =  {int(y.shape[0])} total")  # noqa: T201
 
     Se_inv_diag = 1.0 / (Se_diag + 1e-30)
+    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
     def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = _vector_to_params(x_vec, params0, opt_fields)
 
-        # Replace C12 with analytical steady-state to eliminate spinup drift,
-        # rescaling C14 so the initial Δ¹⁴C stays fixed as τ (hence c12_ss) moves.
+        # Replace C12 *and* C14 with the analytical steady state at these
+        # parameters. Deriving the ¹⁴C initial condition from τ (rather than
+        # pinning it to the observed Δ¹⁴C) is what keeps a pool-¹⁴C observation
+        # dated at t₀ from becoming self-predicting — see analytical_c14_ss.
         c12_ss = _analytical_c12_ss(
             p, _n_pools, _mean_input, _mean_modifier, target_indices=_ext_target_idx
         )
-        state_ss = apply_ss_c12(state0, c12_ss)
+        c14_ss = analytical_c14_ss(
+            p, c12_ss, _n_pools, _mean_input, _mean_modifier,
+            _atm_years, _atm_d14c, _t0_year, target_indices=_ext_target_idx,
+        )
+        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
 
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])

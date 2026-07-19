@@ -16,7 +16,9 @@ from ._oe_helpers import (
     _analytical_c12_ss,
     _build_obs_blocks,
     _build_sa_diag,
-    apply_ss_c12,
+    analytical_c14_ss,
+    apply_ss_c12_c14,
+    prepare_c14_spinup,
 )
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
@@ -88,6 +90,7 @@ def _build_forward_oe_context(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
+    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
     ext_cfg = model.config.external_inputs
     assert ext_cfg is not None
     target_names = list(ext_cfg.partition.keys())
@@ -98,7 +101,11 @@ def _build_forward_oe_context(
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
         )
-        state_ss = apply_ss_c12(state0, c12_ss)
+        c14_ss = analytical_c14_ss(
+            p, c12_ss, n_pools, mean_input, mean_mod,
+            _atm_years, _atm_d14c, _t0_year, target_indices=target_idx,
+        )
+        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 
@@ -270,6 +277,7 @@ def oe_style_ablation(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
+    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
     ext_cfg = model.config.external_inputs
     assert ext_cfg is not None
     target_names = list(ext_cfg.partition.keys())
@@ -280,7 +288,11 @@ def oe_style_ablation(
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
         )
-        state_ss = apply_ss_c12(state0, c12_ss)
+        c14_ss = analytical_c14_ss(
+            p, c12_ss, n_pools, mean_input, mean_mod,
+            _atm_years, _atm_d14c, _t0_year, target_indices=target_idx,
+        )
+        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 
@@ -729,6 +741,7 @@ def oe_constraint_ladder(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
+    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
     ext_cfg = model.config.external_inputs
     assert ext_cfg is not None
     target_names = list(ext_cfg.partition.keys())
@@ -739,7 +752,11 @@ def oe_constraint_ladder(
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
         )
-        state_ss = apply_ss_c12(state0, c12_ss)
+        c14_ss = analytical_c14_ss(
+            p, c12_ss, n_pools, mean_input, mean_mod,
+            _atm_years, _atm_d14c, _t0_year, target_indices=target_idx,
+        )
+        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 

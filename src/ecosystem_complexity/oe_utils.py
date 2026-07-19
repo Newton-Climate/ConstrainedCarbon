@@ -7,7 +7,12 @@ from typing import Optional
 import jax.numpy as jnp
 import numpy as np
 
-from ._oe_helpers import _analytical_c12_ss, apply_ss_c12
+from ._oe_helpers import (
+    _analytical_c12_ss,
+    analytical_c14_ss,
+    apply_ss_c12_c14,
+    prepare_c14_spinup,
+)
 from .api import ModelOutput, run_model
 from .climate import f_moisture as _f_moisture
 from .climate import f_temp as _f_temp
@@ -65,7 +70,12 @@ def ss_state_for_params(
     c12_ss = _analytical_c12_ss(
         params, n_pools, mean_input, mean_mod, target_indices=target_idx
     )
-    return apply_ss_c12(state0, c12_ss)
+    atm_years, atm_d14c, t0_year = prepare_c14_spinup(forcing)
+    c14_ss = analytical_c14_ss(
+        params, c12_ss, n_pools, mean_input, mean_mod,
+        atm_years, atm_d14c, t0_year, target_indices=target_idx,
+    )
+    return apply_ss_c12_c14(state0, c12_ss, c14_ss)
 
 
 def build_oe_observation_sets(
