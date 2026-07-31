@@ -33,6 +33,8 @@ from paper_figs.fig_05 import make_figure_05
 from paper_figs.fig_06 import make_figure_06
 from paper_figs.fig_07 import make_figure_07
 from paper_figs.fig_08 import make_figure_08
+from paper_figs.fig_09 import make_figure_09
+from paper_figs.fig_10 import make_figure_10
 from paper_figs.utils import close_or_show
 from uncertainty_projections import (
     SITE_ORDER,
@@ -104,7 +106,28 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--pathway-information",
-        default=str(_NB / "exports" / "israd_14c_pathway_information.csv"),
+        nargs="+",
+        default=[
+            str(_NB / "exports" / "cross_ecosystem_pathway_information_20260730.csv"),
+        ],
+    )
+    parser.add_argument(
+        "--network-summary",
+        default=str(_NB / "exports" / "network_inversion_fluxcom_er_20260719" / "site_summary.csv"),
+    )
+    parser.add_argument(
+        "--warming-summary",
+        default=str(_NB / "exports" / "warming_vulnerability_fluxcom_er_20260719" / "site_warming_summary.csv"),
+    )
+    parser.add_argument(
+        "--new-sites",
+        nargs="+",
+        default=[
+            str(_NB / "exports" / "new_sites_incubation_20260719.csv"),
+            str(_NB / "exports" / "incubation_new_sites_runnable_20260719.csv"),
+            str(_NB / "exports" / "ecosystem_diversity_candidates_20260730.csv"),
+            str(_NB / "exports" / "maui_fluxcom_inversion_20260730.csv"),
+        ],
     )
     parser.add_argument(
         "--n-prior-samples",
@@ -535,10 +558,28 @@ def main() -> None:
     close_or_show(fig, show=False)
     fig, _ = make_figure_07(cesm_comparison, output_dir=str(output_dir))
     close_or_show(fig, show=False)
-    if os.path.isfile(args.pathway_information):
-        pathway_information = pd.read_csv(args.pathway_information)
+    if all(os.path.isfile(path) for path in args.pathway_information):
+        pathway_information = pd.concat(
+            [pd.read_csv(path) for path in args.pathway_information],
+            ignore_index=True,
+        )
         pathway_information.to_csv(inputs_dir / "pathway_information.csv", index=False)
         fig, _ = make_figure_08(pathway_information, output_dir=str(output_dir))
+        close_or_show(fig, show=False)
+    if os.path.isfile(args.network_summary) and os.path.isfile(args.warming_summary):
+        fig, _ = make_figure_09(
+            args.network_summary,
+            args.warming_summary,
+            args.new_sites,
+            output_dir=str(output_dir),
+        )
+        close_or_show(fig, show=False)
+        fig, _ = make_figure_10(
+            args.network_summary,
+            args.warming_summary,
+            args.new_sites,
+            output_dir=str(output_dir),
+        )
         close_or_show(fig, show=False)
 
 

@@ -334,6 +334,7 @@ _LADDER_FAMILY_PREFIXES: tuple[tuple[str, str], ...] = (
     ("israd_bulk", "bulk_14C"),
     ("israd_fraction", "fraction_14C"),
     ("resp_14C", "resp_14C"),
+    ("er_annual", "ER_annual"),
     ("pool_14C", "bulk_14C"),
     ("israd", "bulk_14C"),
 )
@@ -350,6 +351,10 @@ LADDER_STEPS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "C_stocks+bulk_14C+fraction_14C+resp_14C",
         ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C"),
+    ),
+    (
+        "C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual",
+        ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "ER_annual"),
     ),
 )
 

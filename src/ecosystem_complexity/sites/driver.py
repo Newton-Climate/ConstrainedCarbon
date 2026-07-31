@@ -28,6 +28,7 @@ from ecosystem_complexity.data.israd_14c import (
     _bulk_pool_ic_seeds,
     build_bulk_14C_blocks,
     build_fraction_14C_blocks,
+    build_incubation_14C_blocks,
     build_resp_14C_obs,
 )
 from ecosystem_complexity.data.israd_incubation import build_incubation_rate_blocks
@@ -154,6 +155,7 @@ def run_site_canonical(
     observation_path: str = "bulk_resp",
     include_er_constraint: bool = False,
     include_incubation_constraint: bool = False,
+    include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
 ) -> dict:
     if observation_path not in {"bulk_resp", "fraction", "combined"}:
@@ -270,12 +272,20 @@ def run_site_canonical(
                 "pass incubation_duration_types to avoid mixing protocol biases.",
                 spec.label,
             )
+    incubation_14c_blocks = (
+        build_incubation_14C_blocks(spec.israd_name, forcing.time)
+        if include_incubation_14c_constraint
+        else []
+    )
+    if include_incubation_14c_constraint:
+        logger.info("  ISRaD incubation Δ¹⁴C constraint: %d dated block(s) [σ≥20‰]", len(incubation_14c_blocks))
     if (
         not pool_blocks
         or (
             observation_path == "bulk_resp"
             and n_resp == 0
             and n_incubation == 0
+            and len(incubation_14c_blocks) == 0
         )
     ):
         logger.info("%s", "  SKIP — insufficient radiocarbon/incubation obs.")
@@ -307,7 +317,7 @@ def run_site_canonical(
     t0 = time.perf_counter()
     result = optimize_oe(
         model, forcing, obs_full, state0=state0,
-        fields=OPT_FIELDS, extra_obs_blocks=pool_blocks + incubation_blocks,
+        fields=OPT_FIELDS, extra_obs_blocks=pool_blocks + incubation_blocks + incubation_14c_blocks,
     )
     ch = np.array(result.cost_history)
     logger.info(
@@ -332,13 +342,14 @@ def run_site_canonical(
         "n_er_finite": n_er_finite,
         "include_incubation_constraint": include_incubation_constraint,
         "n_incubation": n_incubation,
+        "n_incubation_14c": len(incubation_14c_blocks),
         "tau_years": {n: float(t / 365.25) for n, t in zip(idx.pool_names, tau_days)},
         "cost0": float(ch[0]), "cost_final": float(ch[-1]),
         "converged": bool(result.converged), "n_iter": int(result.n_iter),
         "oe_result": result,
         # pieces needed for downstream information diagnostics (constraint ladder)
         "forcing": forcing, "state0": state0,
-        "obs_full": obs_full, "pool_blocks": pool_blocks + incubation_blocks,
+        "obs_full": obs_full, "pool_blocks": pool_blocks + incubation_blocks + incubation_14c_blocks,
         "params_opt": result.params_opt,
     }
 
@@ -360,6 +371,7 @@ def summary_row(result: dict) -> dict:
         "n_pool_blocks": result["n_pool_blocks"],
         "n_resp": result["n_resp"],
         "n_incubation": result["n_incubation"],
+        "n_incubation_14c": result["n_incubation_14c"],
     }
     for pool, tau in result["tau_years"].items():
         # soil_active → tau_active_yr; passive is slow-moving so keep 1 decimal.
@@ -378,6 +390,7 @@ def _run_one(
     observation_path: str | None,
     include_er_constraint: bool = False,
     include_incubation_constraint: bool = False,
+    include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
     reduce: Callable[[dict], Any] | None = None,
 ) -> tuple[SiteSpec, Any, Exception | None]:
@@ -396,6 +409,7 @@ def _run_one(
             observation_path=path,
             include_er_constraint=include_er_constraint,
             include_incubation_constraint=include_incubation_constraint,
+            include_incubation_14c_constraint=include_incubation_14c_constraint,
             incubation_duration_types=incubation_duration_types,
         )
     except Exception as exc:  # noqa: BLE001 — one bad site must not stop the rest
@@ -410,6 +424,7 @@ def run_sites(
     observation_path: str | None = None,
     include_er_constraint: bool = False,
     include_incubation_constraint: bool = False,
+    include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
     workers: int = 1,
     reduce: Callable[[dict], Any] | None = None,
@@ -458,6 +473,7 @@ def run_sites(
                     observation_path,
                     include_er_constraint,
                     include_incubation_constraint,
+                    include_incubation_14c_constraint,
                     incubation_duration_types,
                     reduce,
                 ): spec
@@ -483,6 +499,7 @@ def run_sites(
                 observation_path,
                 include_er_constraint,
                 include_incubation_constraint,
+                include_incubation_14c_constraint,
                 incubation_duration_types,
                 reduce,
             )

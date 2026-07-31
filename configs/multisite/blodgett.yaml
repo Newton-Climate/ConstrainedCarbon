@@ -8,23 +8,22 @@
 # canonical recipe (identical across sites). Driven by
 # notebooks/sites/multisite_canonical.py.
 #
-# NOT RUNNABLE (as of this download): AmeriFlux has no gap-filled FLUXNET
-# release for US-Blo — only the BASE-BADM product, which carries no GPP
-# partition. The GPP-forced recipe needs daily GPP, so this site is staged for
-# transparency but skips at runtime until a GPP-bearing forcing is available
-# (a FLUXNET release, or NEE→GPP partitioning of the BASE file). `forcing_glob`
-# below targets the FLUXNET product it would use if released.
+# AmeriFlux US-Blo exposes BASE data but no GPP-partitioned FLUXNET release.
+# Use FluxCom GPP/ER until a tower GPP product becomes available.
 site:
   id: israd-multisite-blodgett
-  name: Blodgett Forest (US-Blo)
-  lat: 38.8953
-  lon: -120.6328
-  tower_id: US-Blo
+  name: Blodgett Forest (FluxCom fallback)
+  lat: 38.908122
+  lon: -120.660771
+  elevation_m: 1370
+  mat_c: 12.5
+  map_mm: 1774
   biome: Mediterranean conifer forest
 datasource:
-  israd_name: Blodgett
-  forcing_glob: AMF_US-Blo_FLUXNET_FULLSET_*
-  forcing_kind: daily
+  israd_name: Blodgett Forest
+  forcing_glob: shared/fluxcom/blodgett_forest_fluxcom.csv
+  er_observation_glob: shared/fluxcom/blodgett_forest_fluxcom_er.csv
+  forcing_kind: fluxcom
   observation_path: combined
 model:
   dt_days: 1.0

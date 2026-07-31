@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import numpy as np
 import pandas as pd
@@ -18,41 +19,31 @@ from ecosystem_complexity._oe_helpers import build_oe_prior_sigma
 from ecosystem_complexity.state import make_default_params
 from ecosystem_complexity.sites import (
     OPT_FIELDS,
-    discover_site_specs,
     run_site_canonical,
 )
+from ecosystem_complexity.sites.spec import load_site_spec
 
-# Config specs keyed by ISRaD site_name (the driver keys configs by file stem).
-_SPEC_BY_ISRAD = {s.israd_name: s for s in discover_site_specs().values()}
 
-PAIRED_SITES = ("Howland Forest", "Harvard Forest", "Solling", "Appi forest", "EML")
-BULK_ONLY_SITES = (
-    "FLONA", "ZF2", "CZ_Old_Black_Spruce", "CZ_1964burn_NSA",
-    "Auchencorth Moss", "Baram Basin",
-)
-# New fraction-only ISRaD sites (no respired Δ¹⁴C → no bulk_resp pathway); we
-# compare their fraction pathway against the richer combined pathway.
-NEW_SITES = ("MI-Coarse UMBS", "MO Ozark BREA", "NH Bartlett Forest")
-BIOMES = {
-    "Howland Forest": "temperate evergreen forest",
-    "Harvard Forest": "temperate deciduous forest",
-    "Solling": "temperate forest",
-    "Appi forest": "cool-temperate forest",
-    "EML": "tundra/permafrost",
-    "FLONA": "tropical moist forest",
-    "ZF2": "tropical moist forest",
-    "CZ_Old_Black_Spruce": "boreal forest",
-    "CZ_1964burn_NSA": "boreal wet forest/fire",
-    "Auchencorth Moss": "temperate peatland",
-    "Baram Basin": "tropical peat forest",
-    "MI-Coarse UMBS": "temperate mixed forest",
-    "MO Ozark BREA": "temperate deciduous forest",
-    "NH Bartlett Forest": "temperate mixed forest",
-}
+def _discover_all_specs() -> dict[str, object]:
+    specs: dict[str, object] = {}
+    for subdir in ("configs/multisite", "configs/expansion"):
+        for path in sorted(os.listdir(os.path.join(_REPO_ROOT, subdir))):
+            if not path.endswith(".yaml"):
+                continue
+            spec = load_site_spec(os.path.join(_REPO_ROOT, subdir, path))
+            specs[spec.israd_name] = spec
+    return specs
+
+
+# Config specs keyed by ISRaD site_name.
+_SPEC_BY_ISRAD = _discover_all_specs()
 
 OUT = os.path.join(_NB_ROOT, "exports", "israd_14c_pathway_information.csv")
 OUT_PAIRED = os.path.join(_NB_ROOT, "exports", "israd_14c_pathway_paired_comparison.csv")
 OUT_BIOME = os.path.join(_NB_ROOT, "exports", "israd_14c_pathway_biome_summary.csv")
+DEFAULT_SITE_SUMMARY = os.path.join(
+    _NB_ROOT, "exports", "network_inversion_fluxcom_er_20260719", "site_summary.csv"
+)
 
 
 def summarize(result: dict) -> dict:
@@ -70,11 +61,15 @@ def summarize(result: dict) -> dict:
     tau = [i for i, name in enumerate(names) if name.startswith("log_tau[")]
     return {
         "site": result["spec"].israd_name,
-        "biome": BIOMES[result["spec"].israd_name],
+        "biome": result["spec"].biome,
         "pathway": result["observation_path"],
         "converged": result["converged"],
         "n_obs": int(np.array(oe.y_obs).shape[0]),
-        "n_14c_blocks": result["n_pool_blocks"] + result["n_resp"],
+        "n_14c_blocks": (
+            result["n_pool_blocks"]
+            + result["n_resp"]
+            + result["n_incubation_14c"]
+        ),
         "dfs_total": float(np.trace(A)),
         "dfs_tau": float(diag[tau].sum()),
         "ur_tau_mean": float(ur[tau].mean()),
@@ -85,9 +80,18 @@ def summarize(result: dict) -> dict:
     }
 
 
-def write_summaries(df: pd.DataFrame) -> None:
+def write_summaries(
+    df: pd.DataFrame,
+    paired_out: str = OUT_PAIRED,
+    biome_out: str = OUT_BIOME,
+) -> None:
     metrics = ["dfs_total", "dfs_tau", "ur_tau_mean"]
-    paired = df[df["site"].isin(PAIRED_SITES)].pivot(
+    paired_sites = (
+        df[df["pathway"].isin(["fraction", "bulk_resp"])]
+        .groupby("site")["pathway"]
+        .nunique()
+    )
+    paired = df[df["site"].isin(paired_sites[paired_sites == 2].index)].pivot(
         index=["site", "biome"], columns="pathway", values=metrics,
     )
     paired.columns = [f"{metric}_{path}" for metric, path in paired.columns]
@@ -107,7 +111,7 @@ def write_summaries(df: pd.DataFrame) -> None:
     paired["equivalent_tau_dfs_within_10pct"] = paired[
         "dfs_tau_ratio_fraction_to_bulk_resp"
     ].between(0.9, 1.1)
-    paired.to_csv(OUT_PAIRED, index=False)
+    paired.to_csv(paired_out, index=False)
 
     biome = (
         df.groupby(["biome", "pathway"], as_index=False)
@@ -121,7 +125,42 @@ def write_summaries(df: pd.DataFrame) -> None:
             ur_tau_passive_mean=("ur_tau_passive", "mean"),
         )
     )
-    biome.to_csv(OUT_BIOME, index=False)
+    biome.to_csv(biome_out, index=False)
+
+
+def _pathways_for_site(site: str, explicit: list[str] | None) -> list[str]:
+    if explicit:
+        return list(explicit)
+    # Try every pathway for every site; run_site_canonical will skip invalid ones.
+    return ["bulk_resp", "fraction", "combined"]
+
+
+def _run_one(
+    site: str,
+    pathway: str,
+    include_er_constraint: bool,
+    include_incubation_14c_constraint: bool,
+) -> dict:
+    spec = _SPEC_BY_ISRAD.get(site)
+    if spec is None:
+        return {"status": "missing", "site": site, "pathway": pathway}
+    try:
+        result = run_site_canonical(
+            spec,
+            observation_path=pathway,
+            include_er_constraint=include_er_constraint,
+            include_incubation_14c_constraint=include_incubation_14c_constraint,
+        )
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "status": "error",
+            "site": site,
+            "pathway": pathway,
+            "error": str(exc),
+        }
+    if result.get("skipped"):
+        return {"status": "skipped", "site": site, "pathway": pathway}
+    return {"status": "ok", "row": summarize(result)}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -131,44 +170,122 @@ def main(argv: list[str] | None = None) -> int:
         "--pathways", nargs="*",
         choices=("bulk_resp", "fraction", "combined"), default=None,
     )
+    parser.add_argument(
+        "--site-summary",
+        default=DEFAULT_SITE_SUMMARY,
+        help="Latest network site_summary.csv used to define the default all-site universe.",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=max(1, min(8, os.cpu_count() or 1)),
+        help="Number of worker processes for site-pathway runs.",
+    )
+    parser.add_argument(
+        "--no-er-constraint",
+        action="store_false",
+        dest="include_er_constraint",
+        help="Disable annual ER constraints. Default uses the latest ER-backed setup.",
+    )
+    parser.add_argument(
+        "--no-incubation-14c-constraint",
+        action="store_false",
+        dest="include_incubation_14c_constraint",
+        help="Disable dated ISRaD incubation-Δ14C constraints (enabled by default).",
+    )
     parser.add_argument("--summarize-only", action="store_true")
+    parser.add_argument("--out", default=OUT, help="Path for the pathway-information CSV.")
+    parser.add_argument("--paired-out", default=None, help="Path for the paired-pathway summary CSV.")
+    parser.add_argument("--biome-out", default=None, help="Path for the biome pathway-summary CSV.")
+    parser.add_argument(
+        "--reference-pathway-information",
+        default=None,
+        help=(
+            "Reuse the site/pathway plan from an existing pathway-information CSV. "
+            "This makes it possible to regenerate a legacy comparison under the current model."
+        ),
+    )
+    parser.add_argument(
+        "--add-combined-sites",
+        nargs="*",
+        default=[],
+        help="Additional sites to run with the combined pathway alongside a reference plan.",
+    )
+    parser.set_defaults(include_er_constraint=True, include_incubation_14c_constraint=True)
     args = parser.parse_args(argv)
 
     if args.summarize_only:
-        write_summaries(pd.read_csv(OUT))
-        print(f"Saved {os.path.relpath(OUT_PAIRED, _REPO_ROOT)}")
-        print(f"Saved {os.path.relpath(OUT_BIOME, _REPO_ROOT)}")
+        paired_out = args.paired_out or OUT_PAIRED
+        biome_out = args.biome_out or OUT_BIOME
+        write_summaries(pd.read_csv(args.out), paired_out, biome_out)
+        print(f"Saved {os.path.relpath(paired_out, _REPO_ROOT)}")
+        print(f"Saved {os.path.relpath(biome_out, _REPO_ROOT)}")
         return 0
 
-    selected = args.sites or list(PAIRED_SITES + BULK_ONLY_SITES + NEW_SITES)
+    if args.reference_pathway_information:
+        reference = pd.read_csv(args.reference_pathway_information)
+        required_plan_cols = {"site", "pathway"}
+        missing_plan_cols = required_plan_cols - set(reference.columns)
+        if missing_plan_cols:
+            raise ValueError(
+                "reference pathway information is missing columns: "
+                f"{sorted(missing_plan_cols)}"
+            )
+        jobs = list(
+            reference[["site", "pathway"]]
+            .drop_duplicates()
+            .itertuples(index=False, name=None)
+        )
+        jobs.extend((site, "combined") for site in args.add_combined_sites)
+        jobs = list(dict.fromkeys(jobs))
+    elif args.sites:
+        selected = args.sites
+        jobs = [(site, path) for site in selected for path in _pathways_for_site(site, args.pathways)]
+    elif os.path.isfile(args.site_summary):
+        selected = sorted(pd.read_csv(args.site_summary)["site"].dropna().unique().tolist())
+        jobs = [(site, path) for site in selected for path in _pathways_for_site(site, args.pathways)]
+    else:
+        selected = sorted(_SPEC_BY_ISRAD)
+        jobs = [(site, path) for site in selected for path in _pathways_for_site(site, args.pathways)]
     rows = []
-    for site in selected:
-        if args.pathways:
-            paths = list(args.pathways)
-        elif site in PAIRED_SITES:
-            paths = ["bulk_resp", "fraction", "combined"]
-        elif site in NEW_SITES:
-            paths = ["fraction", "combined"]
-        else:  # BULK_ONLY_SITES
-            paths = ["bulk_resp", "combined"]
-        spec = _SPEC_BY_ISRAD.get(site)
-        if spec is None:
-            print(f"  SKIP {site!r}: no config in configs/multisite/")
-            continue
-        for path in paths:
-            try:
-                result = run_site_canonical(spec, observation_path=path)
-            except Exception as exc:  # noqa: BLE001 — keep going across sites
-                print(f"  ERROR {site} [{path}]: {exc}")
-                continue
-            if not result.get("skipped"):
-                rows.append(summarize(result))
+    failures = []
+    max_workers = max(1, min(args.workers, len(jobs)))
+    with ProcessPoolExecutor(max_workers=max_workers) as pool:
+        future_map = {
+            pool.submit(
+                _run_one,
+                site,
+                path,
+                args.include_er_constraint,
+                args.include_incubation_14c_constraint,
+            ): (site, path)
+            for site, path in jobs
+        }
+        for i, fut in enumerate(as_completed(future_map), start=1):
+            site, path = future_map[fut]
+            payload = fut.result()
+            status = payload["status"]
+            if status == "ok":
+                rows.append(payload["row"])
+                print(f"[{i}/{len(future_map)}] {site} [{path}] :: kept", flush=True)
+            elif status == "skipped":
+                print(f"[{i}/{len(future_map)}] {site} [{path}] :: skipped", flush=True)
+            elif status == "missing":
+                print(f"[{i}/{len(future_map)}] {site} [{path}] :: missing spec", flush=True)
+            else:
+                failures.append(payload)
+                print(f"[{i}/{len(future_map)}] {site} [{path}] :: ERROR {payload['error']}", flush=True)
 
     df = pd.DataFrame(rows).sort_values(["biome", "site", "pathway"])
-    df.to_csv(OUT, index=False)
-    write_summaries(df)
-    print(f"Saved {os.path.relpath(OUT, _REPO_ROOT)}")
+    df.to_csv(args.out, index=False)
+    paired_out = args.paired_out or OUT_PAIRED
+    biome_out = args.biome_out or OUT_BIOME
+    write_summaries(df, paired_out, biome_out)
+    print(f"Saved {os.path.relpath(args.out, _REPO_ROOT)}")
     print(df.to_string(index=False))
+    if failures:
+        print(f"{len(failures)} pathway runs failed.", flush=True)
+        return 1
     return 0
 
 

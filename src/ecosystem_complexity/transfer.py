@@ -132,6 +132,30 @@ def get_transfer_matrix(log_f_transfer: jnp.ndarray, n_pools: int) -> jnp.ndarra
     return f_full[:, :n_pools]  # (n_pools, n_pools)
 
 
+def mean_transit_time(
+    log_tau: np.ndarray,
+    log_f_transfer: np.ndarray,
+    input_fraction: np.ndarray,
+) -> tuple[float, np.ndarray]:
+    """Mean transit time from external entry to respiratory exit.
+
+    ``tau`` is the intrinsic pool residence time and ``F[i, j]`` is the
+    fraction of pool ``i`` outflux transferred to pool ``j``.  The expected
+    remaining lifetime of carbon entering pool ``i`` is therefore
+
+    ``t = tau + F t``, or ``t = (I - F)^-1 tau``.
+
+    The scalar returned first is the external-input-weighted mean of ``t``;
+    the second value gives the source-pool-specific expectations.  This is an
+    intrinsic (reference-environment) transit time: daily temperature,
+    moisture, and freeze-thaw modifiers are deliberately excluded so sites can
+    be compared on their optimised turnover and transfer structure alone.
+    """
+    from ecosystem_complexity.transit_time import intrinsic_mean_transit_time
+
+    return intrinsic_mean_transit_time(log_tau, log_f_transfer, input_fraction)
+
+
 # ---------------------------------------------------------------------------
 # Diagnostic validator (build-time, returns warnings)
 # ---------------------------------------------------------------------------

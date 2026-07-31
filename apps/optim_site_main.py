@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Run the canonical OE soil-carbon inversion for any configured site.
 
-Every site is defined entirely by a config YAML under ``configs/multisite/``
-(see ``ecosystem_complexity.sites.multisite`` for the recipe those configs
-encode), so adding a site needs a new YAML, not new code.
+Every site is defined entirely by a config YAML.  Curated, reproducible
+cross-biome runs can additionally be defined as a YAML site set under
+``configs/site_sets/``.
 
 Sites may be named three ways, mixed freely:
   • a path to a config     configs/multisite/solling.yaml
@@ -38,6 +38,8 @@ import logging
 import os
 import sys
 
+import yaml
+
 # Make the package importable from a plain checkout (no `pip install -e .`),
 # matching how the notebooks/ scripts bootstrap themselves.
 _APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,6 +57,21 @@ from ecosystem_complexity.sites import (  # noqa: E402
 )
 
 OBSERVATION_PATHS = ("bulk_resp", "fraction", "combined")
+INCUBATION_DURATION_TYPES = ("<2 weeks", "<1 month", "<1 year", ">1 year")
+
+
+def _load_site_set(path: str) -> list[str]:
+    """Read an explicit, versioned list of site-config paths from YAML."""
+    with open(path, encoding="utf-8") as fh:
+        payload = yaml.safe_load(fh) or {}
+    configs = payload.get("configs")
+    if not isinstance(configs, list) or not configs or not all(isinstance(p, str) for p in configs):
+        raise SystemExit(f"error: {path}: expected a non-empty string list at 'configs'")
+    resolved = [p if os.path.isabs(p) else os.path.join(_REPO_ROOT, p) for p in configs]
+    missing = [p for p in resolved if not os.path.isfile(p)]
+    if missing:
+        raise SystemExit(f"error: {path}: missing config(s): {', '.join(missing)}")
+    return resolved
 
 
 def _resolve_specs(selectors: list[str]) -> list[SiteSpec]:
@@ -124,6 +141,10 @@ def _build_parser() -> argparse.ArgumentParser:
         help="run every config under configs/multisite/",
     )
     p.add_argument(
+        "--site-set", metavar="YAML",
+        help="run the explicit config list in a versioned YAML site set",
+    )
+    p.add_argument(
         "--list", action="store_true",
         help="list the configured sites and exit",
     )
@@ -150,6 +171,31 @@ def _build_parser() -> argparse.ArgumentParser:
         "-q", "--quiet", action="store_true",
         help="suppress per-site progress logging",
     )
+    p.add_argument(
+        "--include-incubation", action="store_true",
+        help="append ISRaD incubation-rate blocks when the site has them",
+    )
+    p.add_argument(
+        "--include-incubation-14c", action="store_true",
+        help=(
+            "append conservative dated ISRaD incubation-CO₂ Δ¹⁴C blocks "
+            "(σ ≥ 20‰) when the site has them"
+        ),
+    )
+    p.add_argument(
+        "--include-er", action="store_true",
+        help="include daily tower or FluxCom ER as a respiration-flux constraint when available",
+    )
+    p.add_argument(
+        "--incubation-duration-type",
+        action="append",
+        choices=INCUBATION_DURATION_TYPES,
+        metavar="CLASS",
+        help=(
+            "restrict incubation rows to one or more ISRaD duration classes; "
+            "repeatable. Ignored unless --include-incubation is set."
+        ),
+    )
     return p
 
 
@@ -160,15 +206,19 @@ def main(argv: list[str] | None = None) -> int:
         _print_available()
         return 0
 
-    if not args.sites and not args.all:
+    if not args.sites and not args.all and not args.site_set:
         _build_parser().error(
-            "give at least one site, or --all to run every config "
+            "give at least one site, --all, or --site-set to run configs "
             "(--list shows what is available)"
         )
-    if args.sites and args.all:
-        _build_parser().error("--all cannot be combined with explicit site names")
+    if sum(bool(value) for value in (args.sites, args.all, args.site_set)) > 1:
+        _build_parser().error("site names, --all, and --site-set are mutually exclusive")
     if args.workers < 1:
         _build_parser().error("--workers must be at least 1")
+    if args.incubation_duration_type and not args.include_incubation:
+        _build_parser().error(
+            "--incubation-duration-type requires --include-incubation"
+        )
 
     # The drivers log their progress; route it to stdout so the CLI behaves the
     # way the old `python notebooks/sites/multisite_canonical.py` entry point did.
@@ -178,10 +228,12 @@ def main(argv: list[str] | None = None) -> int:
         stream=sys.stdout,
     )
 
-    specs = (
-        list(discover_site_specs().values()) if args.all
-        else _resolve_specs(args.sites)
-    )
+    if args.all:
+        specs = list(discover_site_specs().values())
+    elif args.site_set:
+        specs = _resolve_specs(_load_site_set(args.site_set))
+    else:
+        specs = _resolve_specs(args.sites)
     if not specs:
         raise SystemExit("error: no site configs found under configs/multisite/")
 
@@ -194,6 +246,14 @@ def main(argv: list[str] | None = None) -> int:
     results, failures = run_sites(
         specs,
         observation_path=args.observation_path,
+        include_er_constraint=args.include_er,
+        include_incubation_constraint=args.include_incubation,
+        include_incubation_14c_constraint=args.include_incubation_14c,
+        incubation_duration_types=(
+            frozenset(args.incubation_duration_type)
+            if args.incubation_duration_type
+            else None
+        ),
         workers=workers,
         reduce=summary_row,
     )

@@ -26,7 +26,12 @@ from ecosystem_complexity.data.israd_observations import (
     build_fraction_obs_blocks,
     bulk_mixture_obs_block,
 )
-from ecosystem_complexity.data.paths import ISRAD_FLUX, ISRAD_FRACTION, ISRAD_LAYER
+from ecosystem_complexity.data.paths import (
+    ISRAD_FLUX,
+    ISRAD_FRACTION,
+    ISRAD_INCUBATION,
+    ISRAD_LAYER,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -316,3 +321,69 @@ def build_resp_14C_obs(israd_name: str, forcing_time) -> jnp.ndarray:
         if np.isfinite(val):
             arr[int(np.argmin(np.abs(years_np - float(dec_yr))))] = float(val)
     return jnp.array(arr)
+
+
+def build_incubation_14C_blocks(
+    israd_name: str,
+    forcing_time,
+    *,
+    sigma_floor: float = 20.0,
+) -> list[ObsBlock]:
+    """Dated ISRaD incubation CO₂ Δ¹⁴C as conservative respiration blocks.
+
+    Incubation CO₂ samples trace carbon being mineralised, but are not assumed
+    to be identical to field efflux: altered temperature, moisture, and the
+    rewetting flush introduce representativeness error.  Values are therefore
+    pooled into one block per sampling date and given an absolute uncertainty
+    floor (20‰ by default), irrespective of their much smaller analytical
+    uncertainty.  This avoids treating depth or replicate jars as independent
+    whole-column observations in the co-located-pool model.
+    """
+    df = pd.read_csv(ISRAD_INCUBATION, low_memory=False)
+    df = df[df["site_name"] == israd_name].copy()
+    if df.empty:
+        return []
+    df = df[df["inc_type"].isin({"root-picked soil", "soil w/ dead roots"})]
+    df = df[df["inc_anaerobic"].ne("yes")]
+    for col in ("inc_14c", "inc_14c_sigma", "inc_14c_sd", "inc_obs_date_y", "inc_obs_date_m"):
+        df[col] = pd.to_numeric(df.get(col), errors="coerce")
+    df = df.dropna(subset=["inc_14c", "inc_obs_date_y"])
+    if df.empty:
+        return []
+
+    time_np = np.asarray(forcing_time, dtype=float)
+    years_np = 1970.0 + time_np / 365.25
+    # Month is absent for some otherwise usable records.  Midyear is less
+    # arbitrary than discarding a dated radiocarbon observation.
+    month = df["inc_obs_date_m"].where(df["inc_obs_date_m"].between(1, 12), 6.5)
+    df["_decimal_year"] = df["inc_obs_date_y"] + (month - 0.5) / 12.0
+    blocks: list[ObsBlock] = []
+    for date, grp in df.groupby("_decimal_year"):
+        values = grp["inc_14c"].to_numpy(dtype=float)
+        mean_val = float(np.mean(values))
+        analytical = np.concatenate([
+            grp["inc_14c_sigma"].dropna().to_numpy(dtype=float),
+            grp["inc_14c_sd"].dropna().to_numpy(dtype=float),
+        ])
+        replicate_sd = float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
+        sigma_val = max(
+            float(sigma_floor),
+            replicate_sd,
+            float(np.nanmax(analytical)) if analytical.size else 0.0,
+        )
+        t_idx = jnp.array([int(np.argmin(np.abs(years_np - float(date))))], dtype=jnp.int32)
+
+        def _predict(out, p, t: jnp.ndarray = t_idx) -> jnp.ndarray:
+            tau = jnp.exp(p.log_tau)
+            weights = out.C12[t] / (tau[None, :] + 1e-30)
+            return jnp.sum(out.delta14C[t] * weights, axis=-1) / (
+                jnp.sum(weights, axis=-1) + 1e-30
+            )
+
+        blocks.append(ObsBlock(
+            name=f"israd_incubation_14C_{date:.2f}",
+            y=jnp.asarray([mean_val], dtype=jnp.float32),
+            Se=jnp.asarray([sigma_val**2], dtype=jnp.float32),
+            predict=_predict,
+        ))
+    return blocks

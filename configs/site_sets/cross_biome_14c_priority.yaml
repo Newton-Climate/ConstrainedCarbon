@@ -1,0 +1,23 @@
+# A non-redundant expansion of the cross-ecosystem inversion network.
+#
+# Each entry has multiple complementary radiocarbon constraints (multiple
+# pool/fraction blocks and/or respired or incubation CO2 14C), and fills a
+# biome/soil-system gap in the current 34-site transit-time synthesis.  Do not
+# add the Carpathian sites here: they are useful temperate-forest replicates,
+# but do not extend ecological coverage.
+name: cross_biome_14c_priority
+description: >-
+  Six high-information ISRaD ecosystems selected to improve coverage of
+  tropical land use, Mediterranean rangeland, cool temperate Spodosols,
+  semi-arid Mollisols, and warm dry rangeland.
+run_options:
+  include_incubation: true
+  include_incubation_14c: true
+  include_er: true
+configs:
+  - configs/expansion/fazenda_victoria.yaml
+  - configs/expansion/sedgwick_reserve.yaml
+  - configs/expansion/fichtelgeberge.yaml
+  - configs/expansion/ga_450_c.yaml
+  - configs/expansion/bb_450_c.yaml
+  - configs/expansion/ma_harvard_forest.yaml
