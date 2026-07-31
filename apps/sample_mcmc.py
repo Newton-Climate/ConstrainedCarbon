@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
+import yaml
 
 _ROOT = Path(__file__).resolve().parents[1]
 _SRC = _ROOT / "src"
@@ -52,20 +53,6 @@ NULL_ITERATIONS = 1000
 WARMING_HORIZON_YEARS = 100.0
 WARMING_DELTA_C = 4.0
 OLD_POOLS = ("soil_slow", "soil_passive")
-EXPANSION_SITES = {
-    "CZ_1981burn",
-    "CZ_1930burn",
-    "Biadaski",
-    "Trumbore Musick",
-    "Dinesen",
-    "Treynor",
-    "Trumbore Ahwahnee",
-    "La Campana",
-    "Nelson Farm",
-    "Trumbore Falbrook",
-}
-
-
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -83,6 +70,13 @@ def _parse_args() -> argparse.Namespace:
             str(_NB / "exports" / "new_sites_incubation_20260719.csv"),
             str(_NB / "exports" / "incubation_new_sites_runnable_20260719.csv"),
         ],
+    )
+    parser.add_argument(
+        "--site-set",
+        help=(
+            "Optional YAML with an explicit 'configs' list. Its sites are added "
+            "to the standard warming-MCMC network."
+        ),
     )
     parser.add_argument(
         "--chain-dir",
@@ -148,10 +142,28 @@ def _discover_all_specs() -> dict[str, str]:
     return out
 
 
+def _biome_group(biome: str) -> str:
+    biome = biome.lower()
+    if any(key in biome for key in ("arctic", "tundra", "permafrost")):
+        return "arctic_permafrost"
+    if "boreal" in biome:
+        return "boreal"
+    if any(key in biome for key in ("peatland", "moss")):
+        return "peatland"
+    if "tropical" in biome:
+        return "tropical"
+    if any(key in biome for key in ("grassland", "mollisol", "mediterranean")):
+        return "grassland_mediterranean"
+    if any(key in biome for key in ("temperate", "conifer")):
+        return "temperate_forest"
+    return "other"
+
+
 def _selected_site_metadata(
     network_summary: str,
     warming_summary: str,
     new_sites: list[str],
+    site_set: str | None = None,
 ) -> pd.DataFrame:
     tables = build_cross_ecosystem_tables(network_summary, warming_summary, new_sites)
     all_sites = tables["all_sites_union"].copy()
@@ -171,8 +183,30 @@ def _selected_site_metadata(
         axis=1,
     )
     all_sites["include_er_constraint"] = True
-    all_sites["include_incubation_constraint"] = all_sites["site"].isin(EXPANSION_SITES)
+    all_sites["include_incubation_constraint"] = all_sites["config"].astype(str).str.contains("configs/expansion/")
     all_sites["posterior_kind"] = np.where(all_sites["tower_id"].isin({"US-Ha1", "US-A10", "US-Ho1", "US-EML"}), "saved_mcmc", "gaussian")
+    if site_set:
+        with open(site_set, encoding="utf-8") as fh:
+            payload = yaml.safe_load(fh) or {}
+        config_paths = payload.get("configs")
+        if not isinstance(config_paths, list) or not config_paths or not all(isinstance(p, str) for p in config_paths):
+            raise ValueError(f"{site_set}: expected a non-empty string list at 'configs'")
+        additions = []
+        for raw_path in config_paths:
+            config_path = str(Path(raw_path) if Path(raw_path).is_absolute() else _ROOT / raw_path)
+            spec = load_site_spec(config_path)
+            if spec.israd_name in set(all_sites["site"]):
+                continue
+            additions.append({
+                "site": spec.israd_name, "label": spec.label, "biome": spec.biome,
+                "biome_group": _biome_group(spec.biome), "source_set": str(payload.get("name", "site_set")),
+                "has_direct_warming": True, "config": config_path, "tower_id": spec.tower_id,
+                "observation_path": spec.observation_path, "include_er_constraint": True,
+                "include_incubation_constraint": "configs/expansion/" in config_path,
+                "posterior_kind": "gaussian", "dfs_total": np.nan,
+            })
+        if additions:
+            all_sites = pd.concat([all_sites, pd.DataFrame(additions)], ignore_index=True, sort=False)
     return all_sites.sort_values(["has_direct_warming", "site"], ascending=[False, True]).reset_index(drop=True)
 
 
@@ -215,9 +249,15 @@ def _build_site_context(
     )
     if include_incubation_constraint:
         from ecosystem_complexity.data.israd_incubation import build_incubation_rate_blocks
+        from ecosystem_complexity.data.israd_14c import build_incubation_14C_blocks
 
         incubation_rows = build_incubation_rate_blocks(spec.israd_name, model)
         pool_blocks = pool_blocks + [row["block"] for row in incubation_rows]
+        # The same expansion-site switch now carries the dated isotope
+        # measurement as well as the incubation-rate block. The 14C builder
+        # pools replicate jars by date and applies its conservative ≥20‰
+        # representativeness floor.
+        pool_blocks.extend(build_incubation_14C_blocks(spec.israd_name, forcing.time))
     T = int(forcing.time.shape[0])
     er_obs = (
         tower_obs.ER
@@ -472,6 +512,7 @@ def _site_worker(payload: dict) -> dict[str, object]:
             observation_path=payload["observation_path"],
             include_er_constraint=include_er_constraint,
             include_incubation_constraint=include_incubation_constraint,
+            include_incubation_14c_constraint=include_incubation_constraint,
         )
         context = {
             "spec": result["spec"],
@@ -876,7 +917,9 @@ def main() -> None:
     cache_dir = Path(args.cache_dir) if args.cache_dir else outdir / "site_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    site_meta = _selected_site_metadata(args.network_summary, args.warming_summary, args.new_sites)
+    site_meta = _selected_site_metadata(
+        args.network_summary, args.warming_summary, args.new_sites, args.site_set
+    )
     worker_payloads = []
     for i, row in site_meta.iterrows():
         worker_payloads.append(

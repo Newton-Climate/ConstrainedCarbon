@@ -1,14 +1,29 @@
+# Per-site canonical 3-pool OE inversion config (ISRaD field-flux + respiration).
+#
+# NEW site from notebooks/exports/flux_tower_israd_best_sites.csv. Uses the
+# `fraction` observation path (density-fraction Δ¹⁴C → pools; no field-flux
+# Δ¹⁴C required), since these ISRaD sites have interpretable free-light /
+# occluded-light / heavy fractions but no respiration Δ¹⁴C. The `model` /
+# `external_inputs` / `parameters` / `inversion` sections are the SHARED
+# canonical recipe (identical across sites). Driven by
+# notebooks/sites/multisite_canonical.py.
+#
+# AmeriFlux US-Blo exposes BASE data but no GPP-partitioned FLUXNET release.
+# Use FluxCom GPP/ER until a tower GPP product becomes available.
 site:
   id: israd-multisite-blodgett
-  name: Blodgett Forest (US-Blo)
-  lat: 38.8953
-  lon: -120.6328
-  tower_id: US-Blo
+  name: Blodgett Forest (FluxCom fallback)
+  lat: 38.908122
+  lon: -120.660771
+  elevation_m: 1370
+  mat_c: 12.5
+  map_mm: 1774
   biome: Mediterranean conifer forest
 datasource:
-  israd_name: Blodgett
-  forcing_glob: AMF_US-Blo_FLUXNET_FULLSET_*
-  forcing_kind: daily
+  israd_name: Blodgett Forest
+  forcing_glob: shared/fluxcom/blodgett_forest_fluxcom.csv
+  er_observation_glob: shared/fluxcom/blodgett_forest_fluxcom_er.csv
+  forcing_kind: fluxcom
   observation_path: combined
 model:
   dt_days: 1.0
@@ -62,7 +77,13 @@ parameters:
   theta_opt: 0.35
   gamma_moisture: 5.0
 inversion:
-  sigma_soc_fraction: 0.5
+  # 0.50 matches the sigma=0.5 OE prior on log_tau. The model-derived SOC prior
+  # (build_soc_prior) sets obs = C(prior params), and C = I*tau/modifier at steady
+  # state with I fixed by the GPP forcing — so a tighter sigma here would restate
+  # the tau prior at MORE confidence than the prior itself, i.e. double-count it.
+  # At 0.50 the fallback is a genuine no-op; real stock data comes from ISRaD or
+  # SoilGrids instead.
+  sigma_soc_fraction: 0.50
   oe_max_iterations: 100
   sigma_pool_14C: 15.0
   sigma_resp_14C: 15.0
@@ -73,26 +94,3 @@ inversion:
   lm_lambda0: 0.01
   lm_lambda_factor: 10.0
   oe_convergence_eps: 0.0001
-analysis:
-  metrics:
-    reduced_chi2: true
-    rmse: true
-    degrees_of_freedom: true
-    averaging_kernel: true
-    gain_matrix: true
-    jacobian: true
-    constraint_ladder: true
-    shapley: false
-    ablation: false
-    orthogonality: false
-  plots:
-    model_results: true
-    information_content: true
-    observation_fit: true
-output:
-  artifact_dir: results/{config_stem}
-  summary_json: true
-  matrices_npz: true
-  observation_csv: true
-  diagnostics_csv: true
-  figure_png: true

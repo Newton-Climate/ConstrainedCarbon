@@ -3,9 +3,17 @@
 
 const pptxgen = require("pptxgenjs");
 const path = require("path");
+const fs = require("fs");
 
 const FIG_DIR = "/Users/newtonnguyen/Documents/ecosystem-complexity/notebooks";
-const fig = (name) => path.join(FIG_DIR, name);
+const fig = (name) => {
+  const direct = path.join(FIG_DIR, name);
+  const archived = path.join(FIG_DIR, "figures", name);
+  const workspace = path.join(__dirname, name);
+  if (fs.existsSync(direct)) return direct;
+  if (fs.existsSync(archived)) return archived;
+  return workspace;
+};
 
 // ─── Palette: Forest + warm radiocarbon accent ─────────────────────────────
 const C = {
@@ -1613,7 +1621,7 @@ let n = 1;
     x: 9.55, y: 1.65, w: 3.0, h: 0.32,
     fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
   });
-  s.addText("All ecosystems occupy the same multi-pool turnover space, but warming loss is not explained by total DFS alone.", {
+  s.addText("Thirty direct-warming ecosystems now span six biome groups; MA Harvard Forest adds a high-information temperate replicate (DFS 1.53).", {
     x: 9.55, y: 2.05, w: 3.0, h: 1.0,
     fontSize: 15, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
   });
@@ -1623,7 +1631,7 @@ let n = 1;
     { text: "• ", options: { bold: true, color: C.accent } },
     { text: "Arctic/permafrost systems have the oldest excess respiration.\n", options: { breakLine: true } },
     { text: "• ", options: { bold: true, color: C.accent } },
-    { text: "C stocks, bulk ¹⁴C, and respired ¹⁴C contribute differently across biomes." },
+    { text: "C stocks, bulk ¹⁴C, respired ¹⁴C, and annual ER contribute differently across biomes." },
   ], {
     x: 9.55, y: 3.35, w: 3.0, h: 1.7,
     fontSize: 12.5, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,
@@ -1656,17 +1664,17 @@ let n = 1;
     x: 10.0, y: 1.65, w: 2.8, h: 0.32,
     fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
   });
-  s.addText("The passive-to-active turnover ratio is a useful complexity axis: it predicts the age of warming-enhanced respiration, but not the largest fractional loss.", {
+  s.addText("Radiocarbon structure retains cross-biome predictive power: held-out correlation is 0.51 for old-C vulnerability and 0.43 for fractional loss.", {
     x: 10.0, y: 2.05, w: 2.8, h: 1.35,
     fontSize: 14.5, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
   });
   s.addText([
     { text: "• ", options: { bold: true, color: C.accent } },
-    { text: "Pool separation and old-RH share correlate strongly (ρₛ = 0.74).\n", options: { breakLine: true } },
+    { text: "30-site leave-one-biome-out: old-C share RMSE = 0.139 (r = 0.51).\n", options: { breakLine: true } },
     { text: "• ", options: { bold: true, color: C.accent } },
-    { text: "Pool separation and fractional C loss anticorrelate (ρₛ = −0.76).\n", options: { breakLine: true } },
+    { text: "Fractional loss RMSE = 0.070 (r = 0.43); stocks/GPP alone fail cross-biome transfer.\n", options: { breakLine: true } },
     { text: "• ", options: { bold: true, color: C.accent } },
-    { text: "Total DFS is nearly independent of turnover separation." },
+    { text: "Environmental protection is most useful for predicting the age—not the amount—of vulnerable C." },
   ], {
     x: 10.0, y: 3.75, w: 2.8, h: 1.55,
     fontSize: 12, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,

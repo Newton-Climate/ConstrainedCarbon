@@ -28,6 +28,7 @@ from ecosystem_complexity.data.israd_14c import (
     _bulk_pool_ic_seeds,
     build_bulk_14C_blocks,
     build_fraction_14C_blocks,
+    build_incubation_14C_blocks,
     build_resp_14C_obs,
 )
 from ecosystem_complexity.data.israd_incubation import build_incubation_rate_blocks
@@ -48,6 +49,7 @@ from ecosystem_complexity.data.soc_stocks import (
 )
 from ecosystem_complexity.oe_utils import ss_state_for_params
 from ecosystem_complexity.sites.forcing import (
+    load_site_observations,
     load_site_forcing,
     resolve_forcing_file,
 )
@@ -151,7 +153,9 @@ def build_state0(model, state_ss, pool_blocks, ic_seeds=None):
 def run_site_canonical(
     spec: SiteSpec,
     observation_path: str = "bulk_resp",
+    include_er_constraint: bool = False,
     include_incubation_constraint: bool = False,
+    include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
 ) -> dict:
     if observation_path not in {"bulk_resp", "fraction", "combined"}:
@@ -170,6 +174,11 @@ def run_site_canonical(
     forcing_path = resolve_forcing_file(spec)
     logger.info("%s", f"  Forcing: {os.path.relpath(forcing_path, _REPO_ROOT)}")
     forcing = load_site_forcing(spec, forcing_path, model)
+    tower_obs = (
+        load_site_observations(spec, forcing_path, model, forcing=forcing)
+        if include_er_constraint
+        else None
+    )
     mean_gpp = float(np.nanmean(np.array(forcing.GPP_obs)))
 
     hemisphere = "NH" if spec.lat >= 0 else "SH"
@@ -223,23 +232,6 @@ def run_site_canonical(
         pool_blocks = build_bulk_14C_blocks(spec.israd_name, forcing.time, model)
         resp = build_resp_14C_obs(spec.israd_name, forcing.time)
         block_label = "bulk"
-    incubation_rows = (
-        build_incubation_rate_blocks(
-            spec.israd_name, model, duration_types=incubation_duration_types
-        )
-        if include_incubation_constraint else []
-    )
-    incubation_blocks = [row["block"] for row in incubation_rows]
-    n_incubation = len(incubation_blocks)
-    if include_incubation_constraint:
-        duration_label = (
-            ", ".join(sorted(incubation_duration_types))
-            if incubation_duration_types else "all duration classes"
-        )
-        logger.info(
-            "  ISRaD incubation constraint: %d block(s) [%s]",
-            n_incubation, duration_label,
-        )
     n_resp = int(jnp.sum(~jnp.isnan(resp)))
     soc_total = c_total_obs[0] if c_total_obs else 0.0
     logger.info(
@@ -248,17 +240,70 @@ def run_site_canonical(
         len(pool_blocks), block_label, n_resp,
         soc_total, c_total_obs[1], soc_source, ss_years,
     )
-    if not pool_blocks or (
-        observation_path == "bulk_resp" and n_resp == 0 and n_incubation == 0
+    incubation_rows = (
+        build_incubation_rate_blocks(
+            spec.israd_name,
+            model,
+            duration_types=incubation_duration_types,
+        )
+        if include_incubation_constraint
+        else []
+    )
+    incubation_blocks = [row["block"] for row in incubation_rows]
+    n_incubation = len(incubation_blocks)
+    if include_incubation_constraint:
+        duration_label = (
+            ", ".join(sorted(incubation_duration_types))
+            if incubation_duration_types
+            else "all duration classes"
+        )
+        logger.info(
+            "  ISRaD incubation constraint: %d block(s) [%s]",
+            n_incubation,
+            duration_label,
+        )
+        mixed = [
+            row for row in incubation_rows
+            if len(row.get("duration_mix", {})) > 1
+        ]
+        if mixed:
+            logger.warning(
+                "  Incubation blocks for %s pool multiple duration classes; "
+                "pass incubation_duration_types to avoid mixing protocol biases.",
+                spec.label,
+            )
+    incubation_14c_blocks = (
+        build_incubation_14C_blocks(spec.israd_name, forcing.time)
+        if include_incubation_14c_constraint
+        else []
+    )
+    if include_incubation_14c_constraint:
+        logger.info("  ISRaD incubation Δ¹⁴C constraint: %d dated block(s) [σ≥20‰]", len(incubation_14c_blocks))
+    if (
+        not pool_blocks
+        or (
+            observation_path == "bulk_resp"
+            and n_resp == 0
+            and n_incubation == 0
+            and len(incubation_14c_blocks) == 0
+        )
     ):
-        logger.info("%s", "  SKIP — insufficient radiocarbon obs.")
+        logger.info("%s", "  SKIP — insufficient radiocarbon/incubation obs.")
         return {"spec": spec, "skipped": True}
 
     T = int(forcing.time.shape[0])
+    er_obs = (
+        tower_obs.ER
+        if (tower_obs is not None and tower_obs.ER is not None)
+        else jnp.full(T, jnp.nan)
+    )
+    n_er_finite = int(jnp.sum(jnp.isfinite(er_obs)))
+    if include_er_constraint:
+        logger.info("  Tower ER constraint: %d finite daily ER values", n_er_finite)
     obs_full = ObservationData(
         time=forcing.time,
         NEE=jnp.full(T, jnp.nan), GPP=jnp.full(T, jnp.nan),
-        ER=jnp.full(T, jnp.nan), NEE_unc=jnp.full(T, jnp.nan),
+        ER=er_obs, NEE_unc=jnp.full(T, jnp.nan),
         delta14C_obs={}, deltaD14C_obs={}, C_pools_obs={}, delta14C_resp=resp,
         C_total_obs=c_total_obs,
     )
@@ -269,17 +314,17 @@ def run_site_canonical(
     ic_seeds = _bulk_pool_ic_seeds(spec.israd_name)
     state0 = build_state0(model, soc_prior_state, pool_blocks, ic_seeds=ic_seeds)
 
-    canonical = run_oe_canonical(
-        model,
-        forcing,
-        state0,
-        obs_full,
-        pool_blocks + incubation_blocks,
-        OPT_FIELDS,
-        spec.label,
+    t0 = time.perf_counter()
+    result = optimize_oe(
+        model, forcing, obs_full, state0=state0,
+        fields=OPT_FIELDS, extra_obs_blocks=pool_blocks + incubation_blocks + incubation_14c_blocks,
     )
-    result = canonical["oe_result"]
     ch = np.array(result.cost_history)
+    logger.info(
+        "  optimize_oe done [%.1fs]  J %.1f→%.1f  (%d iter, converged=%s)",
+        time.perf_counter() - t0, ch[0], ch[-1], result.n_iter, result.converged,
+    )
+
     tau_days = np.exp(np.array(result.params_opt.log_tau))
     logger.info("%s", "  optimised τ (yr): " + ", ".join(
         f"{n}={t/365.25:.1f}" for n, t in zip(idx.pool_names, tau_days)))
@@ -287,28 +332,24 @@ def run_site_canonical(
     return {
         "spec": spec, "skipped": False, "model": model,
         "observation_path": observation_path,
+        "include_er_constraint": include_er_constraint,
         "config_path": config_path,
         "mean_gpp_gCm2yr": mean_gpp * 365.0,
         "soc_total_gCm2": soc_total,
         "n_cstock": 1 if c_total_obs else 0,
         "soc_source": soc_source,
         "n_pool_blocks": len(pool_blocks), "n_resp": n_resp,
+        "n_er_finite": n_er_finite,
+        "include_incubation_constraint": include_incubation_constraint,
         "n_incubation": n_incubation,
+        "n_incubation_14c": len(incubation_14c_blocks),
         "tau_years": {n: float(t / 365.25) for n, t in zip(idx.pool_names, tau_days)},
         "cost0": float(ch[0]), "cost_final": float(ch[-1]),
         "converged": bool(result.converged), "n_iter": int(result.n_iter),
         "oe_result": result,
-        "params_prior": canonical["params_prior"],
-        "params_opt": canonical["params_opt"],
-        "out_prior": canonical["out_prior"],
-        "out_opt": canonical["out_opt"],
-        "state_at_prior": canonical["state_at_prior"],
-        "state_at_map": canonical["state_at_map"],
-        "opt_fields": OPT_FIELDS,
-        "extra_blocks": pool_blocks + incubation_blocks,
         # pieces needed for downstream information diagnostics (constraint ladder)
         "forcing": forcing, "state0": state0,
-        "obs_full": obs_full, "pool_blocks": pool_blocks + incubation_blocks,
+        "obs_full": obs_full, "pool_blocks": pool_blocks + incubation_blocks + incubation_14c_blocks,
         "params_opt": result.params_opt,
     }
 
@@ -327,8 +368,10 @@ def summary_row(result: dict) -> dict:
         "mean_GPP_gCm2yr": round(result["mean_gpp_gCm2yr"]),
         "SOC_gCm2": round(result["soc_total_gCm2"]),
         "n_cstock": result["n_cstock"],
-        "n_pool_blocks": result["n_pool_blocks"], "n_resp": result["n_resp"],
-        "n_incubation": result.get("n_incubation", 0),
+        "n_pool_blocks": result["n_pool_blocks"],
+        "n_resp": result["n_resp"],
+        "n_incubation": result["n_incubation"],
+        "n_incubation_14c": result["n_incubation_14c"],
     }
     for pool, tau in result["tau_years"].items():
         # soil_active → tau_active_yr; passive is slow-moving so keep 1 decimal.
@@ -345,8 +388,10 @@ def summary_row(result: dict) -> dict:
 def _run_one(
     spec: SiteSpec,
     observation_path: str | None,
-    include_incubation_constraint: bool,
-    incubation_duration_types: frozenset[str] | None,
+    include_er_constraint: bool = False,
+    include_incubation_constraint: bool = False,
+    include_incubation_14c_constraint: bool = False,
+    incubation_duration_types: frozenset[str] | None = None,
     reduce: Callable[[dict], Any] | None = None,
 ) -> tuple[SiteSpec, Any, Exception | None]:
     """Run one site, capturing rather than raising, for use by both schedulers.
@@ -362,7 +407,9 @@ def _run_one(
         result = run_site_canonical(
             spec,
             observation_path=path,
+            include_er_constraint=include_er_constraint,
             include_incubation_constraint=include_incubation_constraint,
+            include_incubation_14c_constraint=include_incubation_14c_constraint,
             incubation_duration_types=incubation_duration_types,
         )
     except Exception as exc:  # noqa: BLE001 — one bad site must not stop the rest
@@ -375,7 +422,9 @@ def _run_one(
 def run_sites(
     specs: list[SiteSpec],
     observation_path: str | None = None,
+    include_er_constraint: bool = False,
     include_incubation_constraint: bool = False,
+    include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
     workers: int = 1,
     reduce: Callable[[dict], Any] | None = None,
@@ -422,7 +471,9 @@ def run_sites(
                     _run_one,
                     spec,
                     observation_path,
+                    include_er_constraint,
                     include_incubation_constraint,
+                    include_incubation_14c_constraint,
                     incubation_duration_types,
                     reduce,
                 ): spec
@@ -446,7 +497,9 @@ def run_sites(
             spec, result, exc = _run_one(
                 spec,
                 observation_path,
+                include_er_constraint,
                 include_incubation_constraint,
+                include_incubation_14c_constraint,
                 incubation_duration_types,
                 reduce,
             )

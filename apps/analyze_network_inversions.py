@@ -15,6 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import yaml
 
 _APP_DIR = os.path.dirname(os.path.abspath(__file__))
 _REPO_ROOT = os.path.dirname(_APP_DIR)
@@ -52,20 +53,39 @@ def _biome_group(biome: str) -> str:
     return "other"
 
 
-def _config_paths(include_expansion: bool) -> list[str]:
+def _config_paths(include_expansion: bool, site_set: str | None = None) -> list[str]:
+    if site_set:
+        with open(site_set, encoding="utf-8") as fh:
+            payload = yaml.safe_load(fh) or {}
+        paths = payload.get("configs")
+        if not isinstance(paths, list) or not paths or not all(isinstance(p, str) for p in paths):
+            raise ValueError(f"{site_set}: expected a non-empty string list at 'configs'")
+        root = Path(_REPO_ROOT)
+        resolved = [str(Path(p) if Path(p).is_absolute() else root / p) for p in paths]
+        missing = [p for p in resolved if not Path(p).is_file()]
+        if missing:
+            raise FileNotFoundError(f"{site_set}: missing config(s): {', '.join(missing)}")
+        return resolved
     paths = sorted(str(p) for p in Path("configs/multisite").glob("*.yaml"))
     if include_expansion:
         paths += sorted(str(p) for p in Path("configs/expansion").glob("*.yaml"))
     return paths
 
 
-def _analyze_one(config_path: str, include_er_constraint: bool) -> dict:
+def _analyze_one(
+    config_path: str,
+    include_er_constraint: bool,
+    include_incubation_constraint: bool,
+    include_incubation_14c_constraint: bool,
+) -> dict:
     spec = load_site_spec(config_path)
     t0 = time.perf_counter()
     result = run_site_canonical(
         spec,
         observation_path=spec.observation_path,
         include_er_constraint=include_er_constraint,
+        include_incubation_constraint=include_incubation_constraint,
+        include_incubation_14c_constraint=include_incubation_14c_constraint,
     )
     if result.get("skipped"):
         return {
@@ -116,6 +136,8 @@ def _analyze_one(config_path: str, include_er_constraint: bool) -> dict:
         "forcing_kind": spec.forcing_kind,
         "observation_path": result["observation_path"],
         "include_er_constraint": include_er_constraint,
+        "include_incubation_constraint": include_incubation_constraint,
+        "include_incubation_14c_constraint": include_incubation_14c_constraint,
         "tower_id": spec.tower_id,
         "n_obs_total": int(y_obs.size),
         "n_state": int(len(oe.state_names)),
@@ -321,10 +343,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help="include configs/expansion/*.yaml in addition to configs/multisite/",
     )
     p.add_argument(
+        "--site-set",
+        help="YAML with an explicit 'configs' list; overrides the default network selection",
+    )
+    p.add_argument(
         "--include-er-constraint",
         action="store_true",
         help="add annual tower ER as an OE observation block where available",
     )
+    p.add_argument("--include-incubation-constraint", action="store_true")
+    p.add_argument("--include-incubation-14c-constraint", action="store_true")
     p.add_argument(
         "--outdir",
         default="notebooks/exports/network_inversion_20260718",
@@ -337,7 +365,9 @@ def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     logging.basicConfig(level=logging.ERROR)
 
-    config_paths = _config_paths(include_expansion=args.include_expansion)
+    if args.site_set and args.include_expansion:
+        raise SystemExit("--site-set and --include-expansion are mutually exclusive")
+    config_paths = _config_paths(args.include_expansion, args.site_set)
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -350,7 +380,13 @@ def main(argv: list[str] | None = None) -> int:
     ctx = multiprocessing.get_context("spawn")
     with ProcessPoolExecutor(max_workers=max_workers, mp_context=ctx) as pool:
         futures = {
-            pool.submit(_analyze_one, path, args.include_er_constraint): path
+            pool.submit(
+                _analyze_one,
+                path,
+                args.include_er_constraint,
+                args.include_incubation_constraint,
+                args.include_incubation_14c_constraint,
+            ): path
             for path in config_paths
         }
         for i, fut in enumerate(as_completed(futures), start=1):

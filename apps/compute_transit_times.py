@@ -27,7 +27,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ecosystem_complexity.sites.driver import run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec
-from ecosystem_complexity.transfer import mean_transit_time
+from ecosystem_complexity.transit_time import intrinsic_mean_transit_time
 from ecosystem_complexity.api import build_model
 
 COLORS = {
@@ -63,7 +63,7 @@ def _one(config_path: str, include_er: bool) -> dict:
         weights[target] = part
     else:
         weights[0] = 1.0
-    mtt_days, by_pool = mean_transit_time(params.log_tau, params.log_f_transfer, weights)
+    mtt_days, by_pool = intrinsic_mean_transit_time(params.log_tau, params.log_f_transfer, weights)
     tau = np.exp(np.asarray(params.log_tau, dtype=float)) / 365.25
     return {
         "status": "ok", "config": config_path, "site": spec.israd_name, "label": spec.label,
@@ -105,7 +105,7 @@ def _from_summary(row: pd.Series) -> dict:
     # network export; optimize_oe's MAP logits were not persisted historically.
     from ecosystem_complexity.state import make_default_params
     params = make_default_params(model.config)
-    mtt_days, by_pool = mean_transit_time(
+    mtt_days, by_pool = intrinsic_mean_transit_time(
         np.log(tau_years * 365.25), np.asarray(params.log_f_transfer), weights
     )
     return {

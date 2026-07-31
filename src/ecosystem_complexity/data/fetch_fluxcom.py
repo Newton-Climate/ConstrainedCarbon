@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import tempfile
 import zipfile
@@ -18,7 +19,9 @@ import xarray as xr
 if TYPE_CHECKING:
     from ecosystem_complexity.sites.spec import SiteSpec
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(
+    os.environ.get("ECOSYSTEM_COMPLEXITY_ROOT", Path(__file__).resolve().parents[3])
+)
 _DATA_ROOT = _REPO_ROOT / "data"
 _ICOS_DOWNLOAD_URL = "https://data.icos-cp.eu/licence_accept"
 
