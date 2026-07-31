@@ -60,20 +60,28 @@ def _site_order(df: pd.DataFrame) -> list[str]:
 
 
 def make_figure_08(
-    pathway_information: str | pd.DataFrame,
+    pathway_information: str | pd.DataFrame | list[str | pd.DataFrame] | tuple[str | pd.DataFrame, ...],
     output_dir: str = "outputs",
     config_path: str | None = None,
 ):
     setup_figure_config(config_path)
-    info = coerce_table(pathway_information, "pathway_information")
-    assert info is not None
+    sources = (
+        list(pathway_information)
+        if isinstance(pathway_information, (list, tuple))
+        else [pathway_information]
+    )
+    info = pd.concat(
+        [coerce_table(source, "pathway_information") for source in sources],
+        ignore_index=True,
+    )
     missing = REQUIRED - set(info.columns)
     if missing:
         raise ValueError(f"pathway information is missing columns: {sorted(missing)}")
 
     paired = _paired_table(info)
     site_order = _site_order(info)
-    fig, axes = plt.subplots(2, 2, figsize=(15.5, 12.0))
+    fig_height = max(12.0, 8.8 + 0.18 * len(site_order))
+    fig, axes = plt.subplots(2, 2, figsize=(15.5, fig_height))
     panelize(axes)
 
     ax = axes[0, 0]
@@ -86,6 +94,7 @@ def make_figure_08(
         ax.text(value, yi + 0.17, f"{value:.2f}", fontsize=8, ha="center")
     ax.set_yticks(y)
     ax.set_yticklabels(paired["site"])
+    ax.tick_params(axis="y", labelsize=8)
     ax.set_xlabel("Turnover DFS ratio: fraction / bulk + respired")
     ax.set_title("Pathway equivalence is site-specific")
     ax.text(0.73, 0.97, "±10% equivalence band", transform=ax.transAxes,
@@ -100,6 +109,7 @@ def make_figure_08(
     ax.set_xticklabels(["Active", "Slow", "Passive"])
     ax.set_yticks(np.arange(len(paired)))
     ax.set_yticklabels(paired["site"])
+    ax.tick_params(axis="y", labelsize=8)
     for i in range(mat.shape[0]):
         for j in range(mat.shape[1]):
             color = "white" if abs(mat[i, j]) > 0.55 * vmax else "black"
@@ -125,9 +135,9 @@ def make_figure_08(
         )
     ax.set_yticks(np.arange(len(site_order)))
     labels = [f"{site}  |  {info.loc[info.site == site, 'biome'].iloc[0]}" for site in site_order]
-    ax.set_yticklabels(labels, fontsize=8)
+    ax.set_yticklabels(labels, fontsize=7)
     ax.set_xlabel("Turnover degrees of freedom for signal")
-    ax.set_title("Expanded cross-ecosystem sample")
+    ax.set_title(f"Expanded cross-ecosystem sample ({info.site.nunique()} sites)")
     ax.legend(loc="lower right", fontsize=8)
     ax.grid(axis="x", alpha=0.3)
 
@@ -187,7 +197,7 @@ def make_figure_08(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--pathway-information", required=True)
+    parser.add_argument("--pathway-information", nargs="+", required=True)
     parser.add_argument("--config", default=None)
     parser.add_argument("--output-dir", default="outputs")
     args = parser.parse_args()
