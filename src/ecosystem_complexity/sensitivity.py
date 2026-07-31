@@ -23,6 +23,7 @@ import numpy as np
 
 from .data.schemas import ForcingData, ObservationData
 from .state import EcosystemState, ModelParams, make_default_params
+from .tracer_14C import respired_delta14C
 
 if TYPE_CHECKING:
     from .model import EcosystemModel
@@ -412,10 +413,10 @@ def _build_obs_fn(
 
         # Respired Δ¹⁴C — flux-weighted time-mean
         if has_resp:
-            tau = jnp.exp(params.log_tau)
-            weights = output.C12 / (tau[None, :] + 1e-30)
-            w_sum = weights.sum(axis=-1, keepdims=False) + 1e-30
-            d14C_resp = (output.delta14C * weights).sum(axis=-1) / w_sum
+            d14C_resp = respired_delta14C(
+                output.delta14C, output.Rh_by_pool, output.C12,
+                params.log_tau, params.log_f_transfer, output.C12.shape[-1],
+            )
             parts.append(jnp.mean(d14C_resp))
 
         if not parts:

@@ -1,7 +1,7 @@
 # Informal config schema reference for the site optimization applications.
 #
 # Runtime validation still happens in `src/ecosystem_complexity/config.py`.
-# This file is a human-readable contract for the major top-level blocks,
+# This file exists as a human-readable contract for the major top-level blocks,
 # especially the analysis/export options that drive the application layer.
 
 site:

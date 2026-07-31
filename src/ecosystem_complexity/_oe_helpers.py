@@ -21,6 +21,7 @@ import numpy as np
 
 from .config import ModelConfig, PoolIndex
 from .state import ModelParams
+from .tracer_14C import respired_delta14C
 from .transfer import get_transfer_matrix
 
 if TYPE_CHECKING:
@@ -150,9 +151,10 @@ def _build_obs_blocks(  # noqa: C901
         def _predict_resp(
             out: ModelOutput, p: ModelParams, t_r: jnp.ndarray = _t_r
         ) -> jnp.ndarray:
-            tau_v = jnp.exp(p.log_tau)
-            w = out.C12 / (tau_v[None, :] + 1e-30)  # (T, n_pools)
-            d14c = (out.delta14C * w).sum(-1) / (w.sum(-1) + 1e-30)  # (T,)
+            d14c = respired_delta14C(
+                out.delta14C, out.Rh_by_pool, out.C12,
+                p.log_tau, p.log_f_transfer, out.C12.shape[-1],
+            )  # (T,)
             return d14c[t_r]
 
         blocks.append(

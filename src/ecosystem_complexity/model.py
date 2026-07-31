@@ -44,7 +44,10 @@ import ecosystem_complexity.tracer_14C as tracer_14C
 from ecosystem_complexity.above_ground import _gpp, compute_external_soil_inputs
 from ecosystem_complexity.climate import _pool_env_vecs
 from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.soil import _step_12C_pure, het_respiration
+from ecosystem_complexity.soil import (
+    _step_12C_pure,
+    het_respiration_by_pool,
+)
 from ecosystem_complexity.soil import nee as nee_flux
 from ecosystem_complexity.state import EcosystemState, ModelParams
 
@@ -318,8 +321,9 @@ class EcosystemModel:
         Returns
         -------
         dict
-            Keys: ``'GPP'``, ``'Ra'``, ``'NPP'``, ``'Rh'``, ``'ER'``,
-            ``'NEE'``.
+            Keys: ``'GPP'``, ``'Ra'``, ``'NPP'``, ``'Rh'``, ``'Rh_by_pool'``,
+            ``'ER'``, ``'NEE'``.  ``'Rh_by_pool'`` is a ``(n_pools,)`` vector
+            summing to ``'Rh'``.
         """
         CUE = jnp.exp(params.log_CUE)
 
@@ -350,7 +354,7 @@ class EcosystemModel:
             damping_depth_m=self._damping_depth_m,
         )
 
-        Rh = het_respiration(
+        Rh_by_pool = het_respiration_by_pool(
             state.C12,
             params.log_tau,
             params.log_f_transfer,
@@ -359,6 +363,7 @@ class EcosystemModel:
             ff_vec,
             n_pools=self._n_pools,
         )
+        Rh = jnp.sum(Rh_by_pool)
 
         ER = Ra + Rh
         NEE = nee_flux(GPP, Ra, Rh)
@@ -388,6 +393,7 @@ class EcosystemModel:
             "Ra": Ra,
             "NPP": NPP,
             "Rh": Rh,
+            "Rh_by_pool": Rh_by_pool,
             "ER": ER,
             "NEE": NEE,
             "GPP_forcing_used": GPP,

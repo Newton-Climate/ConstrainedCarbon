@@ -17,6 +17,7 @@ import numpy as np
 import optax
 
 from .api import run_model
+from .tracer_14C import respired_delta14C
 from .data.schemas import ForcingData, ObservationData
 from .model import EcosystemModel
 from .optimizer import (
@@ -142,14 +143,20 @@ def optimize(  # noqa: C901
             l_14C = l_14C / n_14C_terms
 
         # Respired CO₂ Δ¹⁴C loss — flux-weighted mean across all pools.
-        # Respiration flux from pool i ∝ C12_i / τ_i, giving the weighting.
+        # Weights are the model's own per-pool respiration fluxes,
+        #   resp_frac_i · (C12_i / τ_i) · ft · fm · ff,
+        # taken straight from `Rh_by_pool` rather than recomputed here. Using
+        # C12_i/τ_i alone (as this did previously) drops resp_frac and the
+        # environmental scalars; resp_frac varies per pool, so it does not
+        # cancel in the normalisation and biases the mixture toward pools that
+        # transfer most of their outflux onward instead of respiring it.
         # Double-where pattern applied for NaN-safe gradients.
         l_resp = jnp.zeros(())
         if w_resp > 0.0 and observations.delta14C_resp is not None:
-            tau_vals = jnp.exp(p.log_tau)  # (n_pools,)
-            weights = out.C12 / (tau_vals[None, :] + 1e-30)  # (T, n_pools)
-            w_sum = weights.sum(-1, keepdims=False) + 1e-30  # (T,)
-            d14C_resp_sim = (out.delta14C * weights).sum(-1) / w_sum  # (T,)
+            d14C_resp_sim = respired_delta14C(
+                out.delta14C, out.Rh_by_pool, out.C12,
+                p.log_tau, p.log_f_transfer, out.C12.shape[-1],
+            )  # (T,)
 
             obs_resp = jnp.array(observations.delta14C_resp)
             valid_resp = ~jnp.isnan(obs_resp)

@@ -45,6 +45,7 @@ class ModelOutput(NamedTuple):
     ER: jnp.ndarray  # (T,)
     Rh: jnp.ndarray  # (T,)
     Ra: jnp.ndarray  # (T,)
+    Rh_by_pool: jnp.ndarray  # (T, n_pools) — per-pool Rh, sums to Rh
     final_state: EcosystemState
 
 
@@ -167,12 +168,13 @@ def run_model(
             diag["ER"],
             diag["Rh"],
             diag["Ra"],
+            diag["Rh_by_pool"],
         )
 
     T = forcing.time.shape[0]
-    (final_state, _), (C12, C14, delta14C, NEE, GPP, ER, Rh, Ra) = jax.lax.scan(
-        _scan_body, (state0, params), jnp.arange(T)
-    )
+    (final_state, _), (
+        C12, C14, delta14C, NEE, GPP, ER, Rh, Ra, Rh_by_pool,
+    ) = jax.lax.scan(_scan_body, (state0, params), jnp.arange(T))
 
     return ModelOutput(
         C12=C12,
@@ -183,6 +185,7 @@ def run_model(
         ER=ER,
         Rh=Rh,
         Ra=Ra,
+        Rh_by_pool=Rh_by_pool,
         final_state=final_state,
     )
 

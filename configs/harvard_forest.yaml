@@ -1,124 +1,122 @@
-# config.yaml — Harvard Forest (US-Ha1)
-
-# ─────────────────────────────────────────────
-# Site
-# ─────────────────────────────────────────────
 site:
-  id: "US-Ha1"
-  name: "Harvard Forest"
+  id: US-Ha1
+  name: Harvard Forest
   lat: 42.5378
   lon: -72.1715
   elevation_m: 340
-  biome: "temperate_deciduous"
+  biome: temperate_deciduous
   mat_c: 8.5
   map_mm: 1220
   permafrost: false
-
-# ─────────────────────────────────────────────
-# Model structure
-# ─────────────────────────────────────────────
 model:
   dt_days: 1.0
-  solver: "euler"
+  solver: euler
   spinup_years: 200
   enable_14C: true
   microbial_pool_per_layer: false
-
   aboveground_pools:
-    - name: leaf
-      is_woody: false
-      litterfall_to: organic_litter
-    - name: wood
-      is_woody: true
-      litterfall_to: mineral_A_fast
-    - name: branch
-      is_woody: true
-      litterfall_to: organic_litter
-    - name: root
-      is_woody: false
-      litterfall_to: mineral_A_fast
-
+  - name: leaf
+    is_woody: false
+    litterfall_to: organic_litter
+  - name: wood
+    is_woody: true
+    litterfall_to: mineral_A_fast
+  - name: branch
+    is_woody: true
+    litterfall_to: organic_litter
+  - name: root
+    is_woody: false
+    litterfall_to: mineral_A_fast
   soil_layers:
-    - name: organic
-      depth_top_m: 0.00
-      depth_bot_m: 0.05
-      permafrost_eligible: false
-      som_pools:
-        - name: litter
-          tau_prior_days: 180
-          tau_prior_std: 60
-        - name: fast
-          tau_prior_days: 730
-          tau_prior_std: 200
-    - name: mineral_A
-      depth_top_m: 0.05
-      depth_bot_m: 0.20
-      permafrost_eligible: false
-      som_pools:
-        - name: fast
-          tau_prior_days: 1095
-          tau_prior_std: 300
-        - name: slow
-          tau_prior_days: 10950
-          tau_prior_std: 2000
-    - name: mineral_B
-      depth_top_m: 0.20
-      depth_bot_m: 0.60
-      permafrost_eligible: false
-      som_pools:
-        - name: slow
-          tau_prior_days: 10950
-          tau_prior_std: 2000
-        - name: passive
-          tau_prior_days: 36500
-          tau_prior_std: 10000
-
-  # Carbon transfer rules: [source, destination, fraction]
-  # Remainder of each source outflux is respired.
+  - name: organic
+    depth_top_m: 0.0
+    depth_bot_m: 0.05
+    permafrost_eligible: false
+    som_pools:
+    - name: litter
+      tau_prior_days: 180
+      tau_prior_std: 60
+    - name: fast
+      tau_prior_days: 730
+      tau_prior_std: 200
+  - name: mineral_A
+    depth_top_m: 0.05
+    depth_bot_m: 0.2
+    permafrost_eligible: false
+    som_pools:
+    - name: fast
+      tau_prior_days: 1095
+      tau_prior_std: 300
+    - name: slow
+      tau_prior_days: 10950
+      tau_prior_std: 2000
+  - name: mineral_B
+    depth_top_m: 0.2
+    depth_bot_m: 0.6
+    permafrost_eligible: false
+    som_pools:
+    - name: slow
+      tau_prior_days: 10950
+      tau_prior_std: 2000
+    - name: passive
+      tau_prior_days: 36500
+      tau_prior_std: 10000
   transfer_rules:
-    - [leaf,             organic_litter,    0.95]
-    - [branch,           organic_litter,    0.90]
-    - [root,             mineral_A_fast,    0.80]
-    - [wood,             mineral_A_fast,    0.70]
-    - [organic_litter,   organic_fast,      0.30]
-    - [organic_litter,   mineral_A_fast,    0.20]
-    - [organic_fast,     mineral_A_fast,    0.15]
-    - [organic_fast,     mineral_A_slow,    0.05]
-    - [mineral_A_fast,   mineral_A_slow,    0.10]
-    - [mineral_A_slow,   mineral_B_slow,    0.02]
-    - [mineral_A_slow,   mineral_B_passive, 0.01]
-
-# ─────────────────────────────────────────────
-# Parameters
-# ─────────────────────────────────────────────
+  - - leaf
+    - organic_litter
+    - 0.95
+  - - branch
+    - organic_litter
+    - 0.9
+  - - root
+    - mineral_A_fast
+    - 0.8
+  - - wood
+    - mineral_A_fast
+    - 0.7
+  - - organic_litter
+    - organic_fast
+    - 0.3
+  - - organic_litter
+    - mineral_A_fast
+    - 0.2
+  - - organic_fast
+    - mineral_A_fast
+    - 0.15
+  - - organic_fast
+    - mineral_A_slow
+    - 0.05
+  - - mineral_A_fast
+    - mineral_A_slow
+    - 0.1
+  - - mineral_A_slow
+    - mineral_B_slow
+    - 0.02
+  - - mineral_A_slow
+    - mineral_B_passive
+    - 0.01
 parameters:
   Q10:
     value: 2.0
     prior_std: 0.5
     optimize: true
   theta_opt:
-    value: 0.30
+    value: 0.3
     prior_std: 0.05
     optimize: true
   gamma_moisture:
     value: 5.0
     prior_std: 2.0
     optimize: true
-
   alloc:
-    leaf: 0.30
+    leaf: 0.3
     wood: 0.35
-    branch: 0.10
+    branch: 0.1
     root: 0.25
     optimize: true
-
   tau_overrides:
     leaf: 365.0
     wood: 18250.0
-
-# ─────────────────────────────────────────────
-# Data sources
-# ─────────────────────────────────────────────
 data:
   flux:
     type: ameriflux_csv
@@ -126,48 +124,54 @@ data:
     freq: DD
     gap_fill: true
     qc_threshold: 2
-
   meteorology:
     type: ameriflux_csv
     path: data/harvard_forest/AMF_US-Ha1_FLUXNET_FULLSET_DD_1991-2020.csv
-
   soil_profile:
     type: harvard_archive_csv
     path: data/harvard_forest/soil_carbon_inventory.csv
     horizon_depth_col: depth_cm
     carbon_col: C_gC_m2
-
   radiocarbon_14C:
     type: israd_csv
     path: data/harvard_forest/ISRaD_Harvard_Forest.csv
     pool_name_map:
-      free_light:     organic_fast
+      free_light: organic_fast
       occluded_light: mineral_A_fast
-      mineral_assoc:  mineral_A_slow
-      passive:        mineral_B_passive
-
+      mineral_assoc: mineral_A_slow
+      passive: mineral_B_passive
   atmospheric_14C:
     type: hua2013
     hemisphere: NH
     path: data/shared/Hua2013_NH.csv
-
-# ─────────────────────────────────────────────
-# Inversion settings
-# ─────────────────────────────────────────────
 inversion:
   optimizer: adam
-  lr: 1.0e-3
+  lr: 0.001
   n_steps: 2000
-  target_vars: [NEE, ER, GPP]
+  target_vars:
+  - NEE
+  - ER
+  - GPP
   include_14C: true
   lambda_14C: 1.0
-  lambda_reg: 1.0e-3
-  convergence_tol: 1.0e-6
-
-# ─────────────────────────────────────────────
-# Analysis / complexity metrics
-# ─────────────────────────────────────────────
+  lambda_reg: 0.001
+  convergence_tol: 1.0e-06
 analysis:
+  metrics:
+    reduced_chi2: true
+    rmse: true
+    degrees_of_freedom: true
+    averaging_kernel: true
+    gain_matrix: true
+    jacobian: true
+    constraint_ladder: true
+    shapley: false
+    ablation: false
+    orthogonality: false
+  plots:
+    model_results: true
+    information_content: true
+    observation_fit: true
   compute_fisher_information: true
   compute_posterior_covariance: true
   compute_degrees_of_freedom: true
@@ -177,11 +181,13 @@ analysis:
     ER: 0.4
     GPP: 0.6
     delta14C: 5.0
-
-# ─────────────────────────────────────────────
-# Output
-# ─────────────────────────────────────────────
 output:
+  artifact_dir: results/{config_stem}
+  summary_json: true
+  matrices_npz: true
+  observation_csv: true
+  diagnostics_csv: true
+  figure_png: true
   dir: results/harvard_forest/
   save_states: true
   save_fluxes: true

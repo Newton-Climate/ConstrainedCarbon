@@ -11,10 +11,6 @@ Scripts
   Runs a basic PPTX layout QA pass for overflow and off-slide elements.
 - `headline_figures.py`
   Generates the canonical cross-site summary figures used in the deck.
-- `harvard_forest_analysis.py`
-  Generates the Harvard Forest canonical information-content figure.
-- `barrow_alaska_analysis.py`
-  Generates the Barrow canonical information-content figure.
 - `cross_site_information.py`
   Generates the cross-site DFS-by-observation-type comparison figure.
 - `atm_14c_timeseries.py`
