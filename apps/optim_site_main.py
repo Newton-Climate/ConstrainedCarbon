@@ -55,6 +55,7 @@ from ecosystem_complexity.sites import (  # noqa: E402
 )
 
 OBSERVATION_PATHS = ("bulk_resp", "fraction", "combined")
+INCUBATION_DURATION_TYPES = ("<2 weeks", "<1 month", "<1 year", ">1 year")
 
 
 def _resolve_specs(selectors: list[str]) -> list[SiteSpec]:
@@ -150,6 +151,20 @@ def _build_parser() -> argparse.ArgumentParser:
         "-q", "--quiet", action="store_true",
         help="suppress per-site progress logging",
     )
+    p.add_argument(
+        "--include-incubation", action="store_true",
+        help="append ISRaD incubation-rate blocks when the site has them",
+    )
+    p.add_argument(
+        "--incubation-duration-type",
+        action="append",
+        choices=INCUBATION_DURATION_TYPES,
+        metavar="CLASS",
+        help=(
+            "restrict incubation rows to one or more ISRaD duration classes; "
+            "repeatable. Ignored unless --include-incubation is set."
+        ),
+    )
     return p
 
 
@@ -169,6 +184,10 @@ def main(argv: list[str] | None = None) -> int:
         _build_parser().error("--all cannot be combined with explicit site names")
     if args.workers < 1:
         _build_parser().error("--workers must be at least 1")
+    if args.incubation_duration_type and not args.include_incubation:
+        _build_parser().error(
+            "--incubation-duration-type requires --include-incubation"
+        )
 
     # The drivers log their progress; route it to stdout so the CLI behaves the
     # way the old `python notebooks/sites/multisite_canonical.py` entry point did.
@@ -194,6 +213,12 @@ def main(argv: list[str] | None = None) -> int:
     results, failures = run_sites(
         specs,
         observation_path=args.observation_path,
+        include_incubation_constraint=args.include_incubation,
+        incubation_duration_types=(
+            frozenset(args.incubation_duration_type)
+            if args.incubation_duration_type
+            else None
+        ),
         workers=workers,
         reduce=summary_row,
     )
