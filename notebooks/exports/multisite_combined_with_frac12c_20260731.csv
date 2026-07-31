@@ -1,0 +1,17 @@
+site,label,tower_id,biome,mean_GPP_gCm2yr,SOC_gCm2,n_cstock,n_pool_blocks,n_resp,n_incubation,n_incubation_14c,tau_active_yr,tau_slow_yr,tau_passive_yr,J0,J_final,converged,n_iter
+Adventdalen Valley,Adventdalen (SJ-Adv),SJ-Adv,high-arctic tundra/permafrost,127,134116,1,1,4,0,0,1.7,18.68,243.0,274.1,61.7,True,19
+Appi forest,Appi forest (JP-Api),JP-Api,temperate forest,1255,44327,1,1,10,0,0,1.97,26.3,168.2,8.8,7.8,True,13
+Auchencorth Moss,Auchencorth Moss (UK-AMo),UK-AMo,temperate peatland,756,47873,1,1,2,0,0,9.12,18.17,154.5,43.9,17.2,True,15
+Baram Basin,Lambir Hills (MY-LHP),MY-LHP,tropical moist forest,3059,8052,1,1,2,0,0,1.85,17.57,215.5,1.2,0.7,True,10
+Blodgett Forest,Blodgett Forest (FluxCom fallback),,Mediterranean conifer forest,1408,10412,1,5,0,0,0,4.19,10.29,221.4,171.9,71.9,True,14
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),CA-NS4,boreal wet forest/fire chronosequence,289,4470,1,1,1,0,0,1.69,15.48,154.7,6.6,2.1,True,6
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),CA-NS1,boreal forest,655,9450,1,1,1,0,0,3.97,20.2,210.6,30.6,25.0,True,18
+EML,Eight Mile Lake (US-EML),US-EML,tundra/permafrost,480,7748,1,1,12,0,0,1.18,12.35,80.74,57.0,15.9,True,16
+FLONA,Santarém FLONA (BR-Sa3),BR-Sa3,tropical moist forest,3131,11768,1,1,3,0,0,3.62,18.12,266.8,20.2,10.6,True,19
+Harvard Forest,Harvard Forest (US-Ha1),US-Ha1,temperate deciduous forest,1500,31560,1,6,33,0,0,1.27,48.66,148.1,73.4,28.3,True,13
+Howland Forest,Howland Forest (US-Ho1),US-Ho1,temperate coniferous forest,915,11200,1,14,17,0,0,2.17,23.07,130.5,426.9,363.1,True,77
+MI-Coarse UMBS,UMBS (US-UMB),US-UMB,temperate mixed forest,1387,17556,1,4,0,0,0,4.51,9.81,216.8,54.4,13.4,True,6
+MO Ozark BREA,Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1630,10355,1,4,0,0,0,2.95,11.94,302.3,75.9,30.6,True,11
+NH Bartlett Forest,Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1315,12118,1,4,0,0,0,3.01,9.59,322.8,60.5,10.5,True,15
+Solling,Solling/Reinshof (DE-Rns),DE-Rns,temperate forest,1377,26518,1,4,1,0,0,1.72,17.53,330.4,130.4,91.2,True,17
+ZF2,Manaus ZF2 (BR-Ma2),BR-Ma2,tropical moist forest,3247,13206,1,1,1,0,0,2.68,25.6,164.9,7.0,2.6,True,14

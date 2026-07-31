@@ -31,6 +31,7 @@ from ecosystem_complexity.data.israd_14c import (
     build_incubation_14C_blocks,
     build_resp_14C_obs,
 )
+from ecosystem_complexity.data.israd_12c import build_fraction_12C_blocks
 from ecosystem_complexity.data.israd_incubation import build_incubation_rate_blocks
 from ecosystem_complexity.data.parsers import attach_atm14C
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
@@ -157,6 +158,7 @@ def run_site_canonical(
     include_incubation_constraint: bool = False,
     include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
+    include_fraction_12c_constraint: bool | None = None,
 ) -> dict:
     if observation_path not in {"bulk_resp", "fraction", "combined"}:
         raise ValueError(
@@ -279,6 +281,17 @@ def run_site_canonical(
     )
     if include_incubation_14c_constraint:
         logger.info("  ISRaD incubation Δ¹⁴C constraint: %d dated block(s) [σ≥20‰]", len(incubation_14c_blocks))
+    # Density-fraction ¹²C partition (and optional per-pool stock) blocks.
+    # Default on for `fraction`/`combined` paths, where fraction data is already
+    # loaded for ¹⁴C; off for `bulk_resp`, which deliberately avoids the
+    # fraction table. Explicit True/False from the caller overrides.
+    if include_fraction_12c_constraint is None:
+        include_fraction_12c_constraint = observation_path in {"fraction", "combined"}
+    fraction_12c_blocks = (
+        build_fraction_12C_blocks(spec.israd_name, model, spec.fraction_rules)
+        if include_fraction_12c_constraint
+        else []
+    )
     if (
         not pool_blocks
         or (
@@ -317,7 +330,8 @@ def run_site_canonical(
     t0 = time.perf_counter()
     result = optimize_oe(
         model, forcing, obs_full, state0=state0,
-        fields=OPT_FIELDS, extra_obs_blocks=pool_blocks + incubation_blocks + incubation_14c_blocks,
+        fields=OPT_FIELDS,
+        extra_obs_blocks=pool_blocks + incubation_blocks + incubation_14c_blocks + fraction_12c_blocks,
     )
     ch = np.array(result.cost_history)
     logger.info(
@@ -343,13 +357,15 @@ def run_site_canonical(
         "include_incubation_constraint": include_incubation_constraint,
         "n_incubation": n_incubation,
         "n_incubation_14c": len(incubation_14c_blocks),
+        "n_fraction_12c": len(fraction_12c_blocks),
         "tau_years": {n: float(t / 365.25) for n, t in zip(idx.pool_names, tau_days)},
         "cost0": float(ch[0]), "cost_final": float(ch[-1]),
         "converged": bool(result.converged), "n_iter": int(result.n_iter),
         "oe_result": result,
         # pieces needed for downstream information diagnostics (constraint ladder)
         "forcing": forcing, "state0": state0,
-        "obs_full": obs_full, "pool_blocks": pool_blocks + incubation_blocks + incubation_14c_blocks,
+        "obs_full": obs_full,
+        "pool_blocks": pool_blocks + incubation_blocks + incubation_14c_blocks + fraction_12c_blocks,
         "params_opt": result.params_opt,
     }
 
@@ -392,6 +408,7 @@ def _run_one(
     include_incubation_constraint: bool = False,
     include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
+    include_fraction_12c_constraint: bool | None = None,
     reduce: Callable[[dict], Any] | None = None,
 ) -> tuple[SiteSpec, Any, Exception | None]:
     """Run one site, capturing rather than raising, for use by both schedulers.
@@ -411,6 +428,7 @@ def _run_one(
             include_incubation_constraint=include_incubation_constraint,
             include_incubation_14c_constraint=include_incubation_14c_constraint,
             incubation_duration_types=incubation_duration_types,
+            include_fraction_12c_constraint=include_fraction_12c_constraint,
         )
     except Exception as exc:  # noqa: BLE001 — one bad site must not stop the rest
         return spec, None, exc
@@ -426,6 +444,7 @@ def run_sites(
     include_incubation_constraint: bool = False,
     include_incubation_14c_constraint: bool = False,
     incubation_duration_types: frozenset[str] | None = None,
+    include_fraction_12c_constraint: bool | None = None,
     workers: int = 1,
     reduce: Callable[[dict], Any] | None = None,
 ) -> tuple[list[Any], list[tuple[SiteSpec, Exception]]]:
@@ -475,6 +494,7 @@ def run_sites(
                     include_incubation_constraint,
                     include_incubation_14c_constraint,
                     incubation_duration_types,
+                    include_fraction_12c_constraint,
                     reduce,
                 ): spec
                 for spec in specs
@@ -501,6 +521,7 @@ def run_sites(
                 include_incubation_constraint,
                 include_incubation_14c_constraint,
                 incubation_duration_types,
+                include_fraction_12c_constraint,
                 reduce,
             )
             if exc is not None:

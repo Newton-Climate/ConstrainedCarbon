@@ -21,6 +21,7 @@ if __package__ in {None, ""}:
     from notebooks.paper_figs.fig_08 import make_figure_08
     from notebooks.paper_figs.fig_09 import make_figure_09
     from notebooks.paper_figs.fig_10 import make_figure_10
+    from notebooks.paper_figs.fig_11 import make_figure_11
     from notebooks.paper_figs.utils import close_or_show
 else:
     from .demo_data import build_demo_inputs
@@ -35,6 +36,7 @@ else:
     from .fig_08 import make_figure_08
     from .fig_09 import make_figure_09
     from .fig_10 import make_figure_10
+    from .fig_11 import make_figure_11
     from .utils import close_or_show
 
 try:
@@ -78,6 +80,11 @@ FIGURE_BUILDERS = {
         "required": ["network_summary", "warming_summary", "new_sites"],
         "optional": [],
     },
+    "figure_11": {
+        "builder": make_figure_11,
+        "required": ["transit_vulnerability_metrics"],
+        "optional": [],
+    },
 }
 
 CLI_TO_INPUT_KEY = {
@@ -92,6 +99,7 @@ CLI_TO_INPUT_KEY = {
     "network_summary": "network_summary",
     "warming_summary": "warming_summary",
     "new_sites": "new_sites",
+    "transit_vulnerability_metrics": "transit_vulnerability_metrics",
 }
 
 
@@ -198,6 +206,7 @@ def main() -> None:
     parser.add_argument("--network-summary", nargs="+", default=None)
     parser.add_argument("--warming-summary", nargs="+", default=None)
     parser.add_argument("--new-sites", nargs="+", default=None)
+    parser.add_argument("--transit-vulnerability-metrics", default=None)
     parser.add_argument("--config", default=None)
     parser.add_argument("--output-dir", default="outputs")
     parser.add_argument(

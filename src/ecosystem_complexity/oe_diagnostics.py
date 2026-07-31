@@ -332,6 +332,9 @@ _LADDER_FAMILY_PREFIXES: tuple[tuple[str, str], ...] = (
     ("c_stock", "C_stocks"),
     ("c_sum", "C_stocks"),
     ("israd_bulk", "bulk_14C"),
+    # Must precede `israd_fraction` — the 12C partition/stock blocks share the
+    # `israd_fraction` prefix but belong to a distinct family.
+    ("israd_fraction_12C", "fraction_12C"),
     ("israd_fraction", "fraction_14C"),
     ("resp_14C", "resp_14C"),
     ("er_annual", "ER_annual"),
@@ -353,8 +356,15 @@ LADDER_STEPS: tuple[tuple[str, tuple[str, ...]], ...] = (
         ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C"),
     ),
     (
-        "C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual",
-        ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "ER_annual"),
+        "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C",
+        ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "fraction_12C"),
+    ),
+    (
+        "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C+ER_annual",
+        (
+            "C_stocks", "bulk_14C", "fraction_14C", "resp_14C",
+            "fraction_12C", "ER_annual",
+        ),
     ),
 )
 

@@ -95,13 +95,19 @@ def build_figure(metrics: pd.DataFrame):
     return fig
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--metrics", default=str(ROOT / "notebooks/exports/cross_biome_with_ma_harvard_20260731/transit_vulnerability_site_metrics.csv"))
-    parser.add_argument("--output-dir", default=str(ROOT / "notebooks/paper_figs/outputs/cross_biome_with_ma_harvard_20260731"))
-    args = parser.parse_args()
-    setup_figure_config(None)
-    metrics = pd.read_csv(args.metrics).replace([np.inf, -np.inf], np.nan).dropna(
+def make_figure_11(
+    transit_vulnerability_metrics: str | pd.DataFrame,
+    output_dir: str = "outputs",
+    config_path: str | None = None,
+):
+    """Build Figure 11 through the shared manuscript-figure interface."""
+    setup_figure_config(config_path)
+    metrics = (
+        pd.read_csv(transit_vulnerability_metrics)
+        if isinstance(transit_vulnerability_metrics, (str, Path))
+        else transit_vulnerability_metrics.copy()
+    )
+    metrics = metrics.replace([np.inf, -np.inf], np.nan).dropna(
         subset=["turnover_separation", "environmental_protection", "frac_c_loss", "dfs_total"]
     )
     correlations = _correlation_table(metrics)
@@ -109,12 +115,23 @@ def main() -> int:
     finalize_figure(
         fig,
         "figure_11_turnover_transit_vulnerability",
-        args.output_dir,
+        output_dir,
         {"site_metrics": metrics, "correlations": correlations},
         "Two-axis summary across 30 direct-warming ecosystems. The x-axis is passive-to-active turnover separation; the y-axis is the log realized-to-intrinsic transit-time ratio, with zero indicating no environmental modification. Point colour denotes fractional soil-carbon loss under warming, point size denotes total DFS, and outline colour denotes biome group.",
         "Turnover separation, transit time, and vulnerability",
         "Turnover separation captures the inferred structural age contrast, while the realized-to-intrinsic ratio captures recurring environmental protection or acceleration. Warming loss and DFS are encoded without treating either as a substitute for the transit metrics.",
     )
+    return fig, fig.axes
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--metrics", default=str(ROOT / "notebooks/exports/cross_biome_with_ma_harvard_20260731/transit_vulnerability_site_metrics.csv"))
+    parser.add_argument("--output-dir", default=str(ROOT / "notebooks/paper_figs/outputs/cross_biome_with_ma_harvard_20260731"))
+    args = parser.parse_args()
+    fig, _ = make_figure_11(args.metrics, args.output_dir)
+    metrics = pd.read_csv(args.metrics)
+    correlations = _correlation_table(metrics)
     print(correlations.round(3).to_string(index=False))
     return 0
 

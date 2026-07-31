@@ -1,0 +1,36 @@
+site,config_stem,biome,family,n_obs,shapley_dfs,shapley_share,dfs_standalone,dfs_unique_last,dfs_joint_total
+Blodgett Forest,blodgett,Mediterranean conifer forest,C_stocks,1,0.2744,0.1313,0.3005,0.2484,2.0899
+Blodgett Forest,blodgett,Mediterranean conifer forest,bulk_14C,1,0.0076,0.0037,0.0152,0.0002,2.0899
+Blodgett Forest,blodgett,Mediterranean conifer forest,fraction_14C,4,0.0,0.0,0.0,0.0,2.0899
+Blodgett Forest,blodgett,Mediterranean conifer forest,resp_14C,0,0.0,0.0,0.0,0.0,2.0899
+Blodgett Forest,blodgett,Mediterranean conifer forest,fraction_12C,5,1.8079,0.8651,1.8414,1.7745,2.0899
+Harvard Forest,harvard_forest,temperate deciduous forest,C_stocks,1,0.2804,0.0995,0.4129,0.1304,2.8188
+Harvard Forest,harvard_forest,temperate deciduous forest,bulk_14C,1,0.4891,0.1735,0.6526,0.2899,2.8188
+Harvard Forest,harvard_forest,temperate deciduous forest,fraction_14C,5,0.1505,0.0534,0.2364,0.0763,2.8188
+Harvard Forest,harvard_forest,temperate deciduous forest,resp_14C,33,1.0791,0.3828,1.2418,0.9113,2.8188
+Harvard Forest,harvard_forest,temperate deciduous forest,fraction_12C,4,0.8198,0.2908,0.9721,0.6226,2.8188
+Howland Forest,howland_forest,temperate coniferous forest,C_stocks,1,0.8159,0.2904,0.9233,0.6262,2.809
+Howland Forest,howland_forest,temperate coniferous forest,bulk_14C,5,0.3122,0.1112,0.4507,0.0846,2.809
+Howland Forest,howland_forest,temperate coniferous forest,fraction_14C,9,0.4925,0.1753,0.6343,0.2691,2.809
+Howland Forest,howland_forest,temperate coniferous forest,resp_14C,17,0.3783,0.1347,0.4598,0.3128,2.809
+Howland Forest,howland_forest,temperate coniferous forest,fraction_12C,8,0.81,0.2884,0.9921,0.5282,2.809
+MI-Coarse UMBS,mi_coarse_umbs,temperate mixed forest,C_stocks,1,0.2812,0.1452,0.3031,0.26,1.9365
+MI-Coarse UMBS,mi_coarse_umbs,temperate mixed forest,bulk_14C,1,0.0438,0.0226,0.0843,0.0039,1.9365
+MI-Coarse UMBS,mi_coarse_umbs,temperate mixed forest,fraction_14C,3,0.0006,0.0003,0.0009,0.0003,1.9365
+MI-Coarse UMBS,mi_coarse_umbs,temperate mixed forest,resp_14C,0,0.0,0.0,0.0,0.0,1.9365
+MI-Coarse UMBS,mi_coarse_umbs,temperate mixed forest,fraction_12C,3,1.6109,0.8318,1.6722,1.5501,1.9365
+MO Ozark BREA,mo_ozark_brea,temperate deciduous forest,C_stocks,1,0.4928,0.2167,0.6184,0.3367,2.2742
+MO Ozark BREA,mo_ozark_brea,temperate deciduous forest,bulk_14C,1,0.0155,0.0068,0.0306,0.0021,2.2742
+MO Ozark BREA,mo_ozark_brea,temperate deciduous forest,fraction_14C,3,0.1745,0.0767,0.2594,0.0613,2.2742
+MO Ozark BREA,mo_ozark_brea,temperate deciduous forest,resp_14C,0,0.0,0.0,0.0,0.0,2.2742
+MO Ozark BREA,mo_ozark_brea,temperate deciduous forest,fraction_12C,3,1.5915,0.6998,1.7724,1.3818,2.2742
+NH Bartlett Forest,nh_bartlett_forest,temperate mixed forest,C_stocks,1,0.488,0.2379,0.6252,0.3662,2.0513
+NH Bartlett Forest,nh_bartlett_forest,temperate mixed forest,bulk_14C,1,0.0796,0.0388,0.1845,0.0068,2.0513
+NH Bartlett Forest,nh_bartlett_forest,temperate mixed forest,fraction_14C,3,0.1322,0.0645,0.1884,0.065,2.0513
+NH Bartlett Forest,nh_bartlett_forest,temperate mixed forest,resp_14C,0,0.0,0.0,0.0,0.0,2.0513
+NH Bartlett Forest,nh_bartlett_forest,temperate mixed forest,fraction_12C,3,1.3515,0.6588,1.5593,1.1633,2.0513
+Solling,solling,temperate forest,C_stocks,1,0.1195,0.0653,0.1617,0.0779,1.8305
+Solling,solling,temperate forest,bulk_14C,1,0.001,0.0005,0.0019,0.0001,1.8305
+Solling,solling,temperate forest,fraction_14C,3,0.0,0.0,0.0,0.0,1.8305
+Solling,solling,temperate forest,resp_14C,1,0.0219,0.012,0.026,0.0184,1.8305
+Solling,solling,temperate forest,fraction_12C,3,1.6881,0.9222,1.7331,1.6438,1.8305

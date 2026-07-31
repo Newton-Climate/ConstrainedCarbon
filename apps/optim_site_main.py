@@ -187,6 +187,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="include daily tower or FluxCom ER as a respiration-flux constraint when available",
     )
     p.add_argument(
+        "--no-fraction-12c", dest="fraction_12c", action="store_false",
+        help=(
+            "disable the ISRaD density-fraction ¹²C partition constraint "
+            "(auto-on for fraction/combined observation paths)."
+        ),
+    )
+    p.set_defaults(fraction_12c=None)
+    p.add_argument(
         "--incubation-duration-type",
         action="append",
         choices=INCUBATION_DURATION_TYPES,
@@ -254,6 +262,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.incubation_duration_type
             else None
         ),
+        include_fraction_12c_constraint=args.fraction_12c,
         workers=workers,
         reduce=summary_row,
     )
