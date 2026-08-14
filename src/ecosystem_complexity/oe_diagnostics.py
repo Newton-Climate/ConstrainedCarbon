@@ -16,9 +16,7 @@ from ._oe_helpers import (
     _analytical_c12_ss,
     _build_obs_blocks,
     _build_sa_diag,
-    analytical_c14_ss,
-    apply_ss_c12_c14,
-    prepare_c14_spinup,
+    apply_ss_c12,
 )
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
@@ -89,7 +87,6 @@ def _build_forward_oe_context(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
-    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
     ext_cfg = model.config.external_inputs
     assert ext_cfg is not None
     target_names = list(ext_cfg.partition.keys())
@@ -100,11 +97,7 @@ def _build_forward_oe_context(
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
         )
-        c14_ss = analytical_c14_ss(
-            p, c12_ss, n_pools, mean_input, mean_mod,
-            _atm_years, _atm_d14c, _t0_year, target_indices=target_idx,
-        )
-        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
+        state_ss = apply_ss_c12(state0, c12_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 
@@ -276,7 +269,6 @@ def oe_style_ablation(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
-    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
     ext_cfg = model.config.external_inputs
     assert ext_cfg is not None
     target_names = list(ext_cfg.partition.keys())
@@ -287,11 +279,7 @@ def oe_style_ablation(
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
         )
-        c14_ss = analytical_c14_ss(
-            p, c12_ss, n_pools, mean_input, mean_mod,
-            _atm_years, _atm_d14c, _t0_year, target_indices=target_idx,
-        )
-        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
+        state_ss = apply_ss_c12(state0, c12_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 
@@ -586,6 +574,52 @@ def constraint_orthogonality_from_context(
 ALL_FAMILIES: tuple[str, ...] = STOCK_FAMILIES + C14_FAMILIES
 
 
+def shapley_dfs_per_parameter_from_context(
+    ctx: dict[str, Any],
+    families: tuple[str, ...] = ALL_FAMILIES,
+) -> dict[str, Any]:
+    """Per-parameter Shapley attribution of AK-diagonal DFS to each family.
+
+    The scalar :func:`shapley_dfs_attribution_from_context` decomposes the joint
+    DFS scalar tr(A). This routine does the same decomposition on each diagonal
+    entry A[j, j] independently, so the result is a (family × parameter) matrix
+    whose column-sums are the total per-parameter DFS and whose grand sum is the
+    scalar Shapley total.
+
+    Returns a dict with ``state_names`` (length ``n_state``), ``families``
+    (length ``n_fam``), and ``shapley`` (``n_fam × n_state`` ndarray in the same
+    family/state order). Also returns ``dfs_per_param_total`` for convenience.
+    """
+    fams = tuple(families)
+    n = len(fams)
+    n_state = int(ctx["n_state"])
+    cache: dict[frozenset[str], np.ndarray] = {}
+
+    def v(subset: frozenset[str]) -> np.ndarray:
+        if subset not in cache:
+            rows = _rows_for_families(ctx, tuple(sorted(subset)))
+            _, per_param = _dfs_from_rows(ctx["k_tilde"], rows)
+            cache[subset] = np.asarray(per_param, dtype=float)
+        return cache[subset]
+
+    total = v(frozenset(fams))
+    phi = np.zeros((n, n_state), dtype=float)
+    for i, family in enumerate(fams):
+        others = [g for g in fams if g != family]
+        for size in range(len(others) + 1):
+            weight = factorial(size) * factorial(n - size - 1) / factorial(n)
+            for subset in combinations(others, size):
+                base = frozenset(subset)
+                phi[i] += weight * (v(base | {family}) - v(base))
+    return {
+        "families": list(fams),
+        "state_names": list(ctx["state_names"]),
+        "shapley": phi,
+        "dfs_per_param_total": total,
+        "n_obs_per_family": {f: int(ctx["n_obs_per_family"].get(f, 0)) for f in fams},
+    }
+
+
 def shapley_dfs_attribution_from_context(
     ctx: dict[str, Any],
     families: tuple[str, ...] = ALL_FAMILIES,
@@ -723,7 +757,6 @@ def oe_constraint_ladder(
     cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
     mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
     mean_input = mean_gpp * cue
-    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
     ext_cfg = model.config.external_inputs
     assert ext_cfg is not None
     target_names = list(ext_cfg.partition.keys())
@@ -734,11 +767,7 @@ def oe_constraint_ladder(
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_mod, target_indices=target_idx
         )
-        c14_ss = analytical_c14_ss(
-            p, c12_ss, n_pools, mean_input, mean_mod,
-            _atm_years, _atm_d14c, _t0_year, target_indices=target_idx,
-        )
-        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
+        state_ss = apply_ss_c12(state0, c12_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
 
