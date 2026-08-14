@@ -48,9 +48,6 @@ coverage.xml
 *.swo
 
 # Data / outputs (tracked separately if needed)
-# Anchored to the repo root so this ignores the top-level dataset dir only —
-# an unanchored "data/" also matched src/ecosystem_complexity/data/ and
-# silently hid tracked source modules (israd_observations.py, loaders.py).
 /data/
 results/
 # Stray duplicate of data/harvard_forest/hf324-06-soil-carbon.csv
@@ -76,3 +73,6 @@ package-lock.json
 agents.md
 .claude/
 **.png
+*.pptx
+*.pdf
+*.svg
