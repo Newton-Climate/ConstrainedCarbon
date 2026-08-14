@@ -16,7 +16,7 @@ Public names re-exported here:
 from __future__ import annotations
 
 import math
-from typing import NamedTuple, Optional
+from typing import Literal, NamedTuple, Optional
 
 import jax
 import jax.numpy as jnp
@@ -27,9 +27,7 @@ from ._oe_helpers import (
     _analytical_c12_ss,
     _build_obs_blocks,
     _build_sa_diag,
-    analytical_c14_ss,
-    apply_ss_c12_c14,
-    prepare_c14_spinup,
+    apply_ss_c12,
 )
 from .api import run_model
 from .data.schemas import ForcingData, ObservationData
@@ -69,6 +67,11 @@ class OEResult(NamedTuple):
     converged: bool
     n_iter: int
     state_names: list[str]  # length n_state — labels for diagnostics
+    # Convergence-test metadata (populated by optimize_oe; defaulted here so
+    # older callers unpacking positionally still work).
+    convergence_criterion: str = "unknown"
+    convergence_value: float = float("nan")
+    convergence_threshold: float = float("nan")
 
 
 def optimize_oe(  # noqa: C901
@@ -79,6 +82,8 @@ def optimize_oe(  # noqa: C901
     fields: Optional[tuple[str, ...]] = None,
     extra_obs_blocks: Optional[list[ObsBlock]] = None,
     sa_override_diag: Optional[jnp.ndarray] = None,
+    convergence_test: Literal["rodgers", "max_abs"] = "rodgers",
+    rodgers_tol: Optional[float] = None,
 ) -> OEResult:
     """
     Optimal Estimation inversion via Levenberg-Marquardt.
@@ -119,6 +124,12 @@ def optimize_oe(  # noqa: C901
     lam0 = float(inv_cfg.get("lm_lambda0", 1e-3))
     lam_factor = float(inv_cfg.get("lm_lambda_factor", 10.0))
     eps = float(inv_cfg.get("oe_convergence_eps", 1e-4))
+    # Rodgers d-i-squared convergence threshold, as fraction of n_state.
+    # Config precedence: kwarg > oe_rodgers_tol YAML key > default 0.01.
+    if rodgers_tol is None:
+        rodgers_tol = float(inv_cfg.get("oe_rodgers_tol", 0.01))
+    else:
+        rodgers_tol = float(rodgers_tol)
 
     params0 = make_default_params(model.config)
     if state0 is None:
@@ -236,24 +247,17 @@ def optimize_oe(  # noqa: C901
     print(f"  OE obs vector: {block_summary}  =  {int(y.shape[0])} total")  # noqa: T201
 
     Se_inv_diag = 1.0 / (Se_diag + 1e-30)
-    _atm_years, _atm_d14c, _t0_year = prepare_c14_spinup(forcing)
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
     def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = _vector_to_params(x_vec, params0, opt_fields)
 
-        # Replace C12 *and* C14 with the analytical steady state at these
-        # parameters. Deriving the ¹⁴C initial condition from τ (rather than
-        # pinning it to the observed Δ¹⁴C) is what keeps a pool-¹⁴C observation
-        # dated at t₀ from becoming self-predicting — see analytical_c14_ss.
+        # Replace C12 with analytical steady-state to eliminate spinup drift,
+        # rescaling C14 so the initial Δ¹⁴C stays fixed as τ (hence c12_ss) moves.
         c12_ss = _analytical_c12_ss(
             p, _n_pools, _mean_input, _mean_modifier, target_indices=_ext_target_idx
         )
-        c14_ss = analytical_c14_ss(
-            p, c12_ss, _n_pools, _mean_input, _mean_modifier,
-            _atm_years, _atm_d14c, _t0_year, target_indices=_ext_target_idx,
-        )
-        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
+        state_ss = apply_ss_c12(state0, c12_ss)
         out = run_model(model, forcing, state0=state_ss, params=p)
 
         return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
@@ -266,6 +270,8 @@ def optimize_oe(  # noqa: C901
     lam = lam0
     cost_hist: list[float] = []
     converged = False
+    n_state = int(xa.shape[0])
+    conv_value: float = float("nan")
 
     for _ in range(n_iter):
         F_x = _forward(x)
@@ -283,7 +289,11 @@ def optimize_oe(  # noqa: C901
         )
         cost_hist.append(cost)
 
-        H = KtSeK + jnp.diag(Sa_inv_diag) + lam * jnp.eye(int(xa.shape[0]))
+        # H_undamped = current-iterate posterior precision (Sx^{-1}); used
+        # both for the LM solve (with lam*I added) and, when the step is
+        # accepted, for the Rodgers d-i-squared convergence test.
+        H_undamped = KtSeK + jnp.diag(Sa_inv_diag)
+        H = H_undamped + lam * jnp.eye(n_state)
         g = KtSe_r + Sa_inv_diag * prior_r
         dx = jnp.linalg.solve(H, g)
 
@@ -298,12 +308,22 @@ def optimize_oe(  # noqa: C901
         if cost_new < cost:
             x = x_new
             lam = max(float(lam) / lam_factor, 1e-10)
+            # Convergence test evaluated ONLY on accepted steps. The old code
+            # tested on the trial dx unconditionally, which could return
+            # converged=True on a rejected step.
+            if convergence_test == "rodgers":
+                d_sq = float(dx @ H_undamped @ dx)
+                conv_value = d_sq / max(n_state, 1)
+                if conv_value < rodgers_tol:
+                    converged = True
+                    break
+            else:  # "max_abs"
+                conv_value = float(jnp.max(jnp.abs(dx)))
+                if conv_value < eps:
+                    converged = True
+                    break
         else:
             lam = min(float(lam) * lam_factor, 1e10)
-
-        if float(jnp.max(jnp.abs(dx))) < eps:
-            converged = True
-            break
 
     # ── Posterior covariance and averaging kernel ─────────────────────────────
     K_f = _jac_fn(x)
@@ -312,6 +332,7 @@ def optimize_oe(  # noqa: C901
     Sx = jnp.linalg.inv(H_f)
     A = Sx @ KtSeK_f
 
+    threshold = rodgers_tol if convergence_test == "rodgers" else eps
     return OEResult(
         params_opt=_vector_to_params(x, params0, opt_fields),
         x_opt=x,
@@ -325,4 +346,7 @@ def optimize_oe(  # noqa: C901
         converged=converged,
         n_iter=len(cost_hist),
         state_names=state_names,
+        convergence_criterion=convergence_test,
+        convergence_value=float(conv_value),
+        convergence_threshold=float(threshold),
     )
