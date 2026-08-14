@@ -9,6 +9,7 @@ datasource:
   israd_name: Appi forest
   forcing_glob: JPF_JP-Api_*
   forcing_kind: daily
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler

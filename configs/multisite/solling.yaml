@@ -9,6 +9,7 @@ datasource:
   israd_name: Solling
   forcing_glob: EUF_DE-Rns_*
   forcing_kind: daily
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler

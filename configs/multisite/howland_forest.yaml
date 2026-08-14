@@ -9,6 +9,7 @@ datasource:
   israd_name: Howland Forest
   forcing_glob: AMF_US-Ho1_FLUXNET_FULLSET_1996-2023_3-6
   forcing_kind: daily
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler

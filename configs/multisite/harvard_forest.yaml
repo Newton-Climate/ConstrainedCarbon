@@ -9,6 +9,7 @@ datasource:
   israd_name: Harvard Forest
   forcing_glob: AMF_US-Ha1_FLUXNET_1991-2025_v1.3_r1
   forcing_kind: daily
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler
