@@ -11,9 +11,13 @@ import os
 
 from ecosystem_complexity.data.forcing import (
     build_annual_mean_forcing,
+    load_daily_observations,
+    load_fluxcom_observations,
+    load_fluxcom_forcing,
     load_daily_forcing,
     resolve_dd_file,
 )
+from ecosystem_complexity.data.schemas import ObservationData
 from ecosystem_complexity.data.paths import REPO_ROOT as _REPO_ROOT
 from ecosystem_complexity.sites.spec import SiteSpec
 
@@ -21,6 +25,7 @@ from ecosystem_complexity.sites.spec import SiteSpec
 # place; the implementations are in data.forcing.
 __all__ = [
     "build_annual_mean_forcing",
+    "load_site_observations",
     "load_site_forcing",
     "resolve_forcing_file",
 ]
@@ -30,10 +35,23 @@ def resolve_forcing_file(spec: SiteSpec) -> str:
     """Resolve a site's configured ``forcing_glob`` to a concrete file."""
     if spec.forcing_kind == "daily":
         return resolve_dd_file(spec.forcing_glob)
+    if spec.forcing_kind == "fluxcom":
+        path = os.path.join(_REPO_ROOT, "data", spec.forcing_glob)
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"No FluxCom forcing file at data/{spec.forcing_glob}")
+        return path
     matches = glob.glob(os.path.join(_REPO_ROOT, "data", spec.forcing_glob))
     if not matches:
         raise FileNotFoundError(f"No forcing file matching data/{spec.forcing_glob}")
     return matches[0]
+
+
+def resolve_observation_file(relative_path: str) -> str:
+    """Resolve an observation file stored under ``data/``."""
+    path = os.path.join(_REPO_ROOT, "data", relative_path)
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"No observation file at data/{relative_path}")
+    return path
 
 
 def load_site_forcing(spec: SiteSpec, path: str, model):
@@ -55,11 +73,32 @@ def load_site_forcing(spec: SiteSpec, path: str, model):
     daily reader, because that silent fallthrough is exactly how a product
     mismatch like the above goes unnoticed.
     """
-    if spec.forcing_kind != "daily":
-        raise ValueError(
-            f"{spec.config_stem}: unsupported forcing_kind {spec.forcing_kind!r}; "
-            "the multisite recipe reads FLUXNET daily products only. Load a "
-            "one-off half-hourly product with the site loaders in "
-            "ecosystem_complexity.data.loaders instead."
-        )
-    return load_daily_forcing(path, model)
+    if spec.forcing_kind == "daily":
+        return load_daily_forcing(path, model)
+    if spec.forcing_kind == "fluxcom":
+        return load_fluxcom_forcing(path, model, spec)
+    raise ValueError(
+        f"{spec.config_stem}: unsupported forcing_kind {spec.forcing_kind!r}; "
+        "supported multisite forcing kinds are 'daily' and 'fluxcom'."
+    )
+
+
+def load_site_observations(
+    spec: SiteSpec,
+    path: str,
+    model,
+    forcing=None,
+) -> ObservationData | None:
+    """Load tower observations associated with a site's forcing product."""
+    if spec.forcing_kind == "daily":
+        return load_daily_observations(path, model)
+    if spec.forcing_kind == "fluxcom":
+        if not spec.er_observation_glob or forcing is None:
+            return None
+        er_path = resolve_observation_file(spec.er_observation_glob)
+        return load_fluxcom_observations(er_path, forcing.time)
+        return None
+    raise ValueError(
+        f"{spec.config_stem}: unsupported forcing_kind {spec.forcing_kind!r}; "
+        "supported multisite forcing kinds are 'daily' and 'fluxcom'."
+    )

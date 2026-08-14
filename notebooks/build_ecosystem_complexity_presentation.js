@@ -3,9 +3,17 @@
 
 const pptxgen = require("pptxgenjs");
 const path = require("path");
+const fs = require("fs");
 
 const FIG_DIR = "/Users/newtonnguyen/Documents/ecosystem-complexity/notebooks";
-const fig = (name) => path.join(FIG_DIR, name);
+const fig = (name) => {
+  const direct = path.join(FIG_DIR, name);
+  const archived = path.join(FIG_DIR, "figures", name);
+  const workspace = path.join(__dirname, name);
+  if (fs.existsSync(direct)) return direct;
+  if (fs.existsSync(archived)) return archived;
+  return workspace;
+};
 
 // ─── Palette: Forest + warm radiocarbon accent ─────────────────────────────
 const C = {
@@ -100,7 +108,7 @@ function placeholderBox(slide, x, y, w, h, label) {
   });
 }
 
-const TOTAL = 24;
+const TOTAL = 29;
 let n = 1;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1592,6 +1600,221 @@ let n = 1;
       fontSize: 11, fontFace: FONT_BODY, color: C.body,
       margin: 0, valign: "top", italic: true,
     });
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 25 — Cross-ecosystem pathway information (Figure 8)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "CROSS-ECOSYSTEM PATHWAYS", "Where each observation family adds information across biomes");
+  s.addImage({
+    path: fig("paper_figs/outputs/current_results/figures/figure_08.png"),
+    x: 0.55, y: 1.45, w: 8.75, h: 5.45,
+    sizing: { type: "contain", w: 8.75, h: 5.45 },
+  });
+  s.addText("WHAT FIGURE 8 SHOWS", {
+    x: 9.55, y: 1.65, w: 3.0, h: 0.32,
+    fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
+  });
+  s.addText("Pathway-level DFS across the network: each observation family carries a different information signature by biome, and no single pathway suffices everywhere.", {
+    x: 9.55, y: 2.05, w: 3.0, h: 1.3,
+    fontSize: 14.5, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
+  });
+  s.addText([
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Radiocarbon dominates where profiles span the bomb transient.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Density-fraction obs open subspaces bulk ¹⁴C cannot resolve.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Cross-biome comparability requires reporting the pathway, not just the DFS." },
+  ], {
+    x: 9.55, y: 3.7, w: 3.0, h: 1.85,
+    fontSize: 12, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 9.55, y: 5.65, w: 3.0, h: 0.85,
+    fill: { color: C.bgLight }, line: { color: C.accent, width: 0.8 },
+  });
+  s.addText("Every biome has a different constraint ladder — designing observation campaigns needs to match the biome.", {
+    x: 9.73, y: 5.82, w: 2.65, h: 0.55,
+    fontSize: 11.5, fontFace: FONT_HEAD, italic: true, color: C.primary, margin: 0, valign: "middle",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 26 — Cross-ecosystem turnover and vulnerability
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "CROSS-ECOSYSTEM RESULTS  ·  01", "Ecosystem type shapes vulnerability; observations shape constrainability");
+  s.addImage({
+    path: fig("paper_figs/outputs/current_results/figures/figure_09.png"),
+    x: 0.55, y: 1.45, w: 8.75, h: 5.45,
+    sizing: { type: "contain", w: 8.75, h: 5.45 },
+  });
+  s.addText("WHAT FIGURE 9 SHOWS", {
+    x: 9.55, y: 1.65, w: 3.0, h: 0.32,
+    fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
+  });
+  s.addText("Thirty direct-warming ecosystems now span six biome groups; MA Harvard Forest adds a high-information temperate replicate (DFS 1.53).", {
+    x: 9.55, y: 2.05, w: 3.0, h: 1.0,
+    fontSize: 15, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
+  });
+  s.addText([
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Boreal ecosystems have the largest mean fractional C loss.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Arctic/permafrost systems have the oldest excess respiration.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "C stocks, bulk ¹⁴C, respired ¹⁴C, and annual ER contribute differently across biomes." },
+  ], {
+    x: 9.55, y: 3.35, w: 3.0, h: 1.7,
+    fontSize: 12.5, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 9.55, y: 5.45, w: 3.0, h: 1.05,
+    fill: { color: C.bgLight }, line: { color: C.accent, width: 0.8 },
+  });
+  s.addText("Constrainability is a property of the observation set—not a proxy for vulnerability.", {
+    x: 9.73, y: 5.66, w: 2.65, h: 0.6,
+    fontSize: 12.5, fontFace: FONT_HEAD, italic: true, color: C.primary, margin: 0, valign: "middle",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 27 — Turnover separation and carbon vulnerability
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "CROSS-ECOSYSTEM RESULTS  ·  02", "Separated turnover pools mobilize older—not necessarily more—carbon");
+  s.addImage({
+    path: fig("paper_figs/outputs/current_results/figures/figure_10.png"),
+    x: 0.45, y: 1.45, w: 9.45, h: 5.45,
+    sizing: { type: "contain", w: 9.45, h: 5.45 },
+  });
+  s.addText("WHAT FIGURE 10 SHOWS", {
+    x: 10.0, y: 1.65, w: 2.8, h: 0.32,
+    fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
+  });
+  s.addText("Radiocarbon structure retains cross-biome predictive power: held-out correlation is 0.51 for old-C vulnerability and 0.43 for fractional loss.", {
+    x: 10.0, y: 2.05, w: 2.8, h: 1.35,
+    fontSize: 14.5, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
+  });
+  s.addText([
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "30-site leave-one-biome-out: old-C share RMSE = 0.139 (r = 0.51).\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Fractional loss RMSE = 0.070 (r = 0.43); stocks/GPP alone fail cross-biome transfer.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Environmental protection is most useful for predicting the age—not the amount—of vulnerable C." },
+  ], {
+    x: 10.0, y: 3.75, w: 2.8, h: 1.55,
+    fontSize: 12, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 10.0, y: 5.65, w: 2.8, h: 0.85,
+    fill: { color: C.primary }, line: { color: C.primary },
+  });
+  s.addText("Complexity shifts the source of vulnerability toward older C; it does not by itself determine its magnitude.", {
+    x: 10.16, y: 5.82, w: 2.45, h: 0.52,
+    fontSize: 11.5, fontFace: FONT_HEAD, italic: true, color: "FFFFFF", margin: 0, valign: "middle",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 28 — Turnover separation × environmental exposure (Figure 11)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "TURNOVER × EXPOSURE", "Two axes — structural turnover and environmental protection — organize vulnerability");
+  s.addImage({
+    path: fig("paper_figs/outputs/current_results/figures/figure_11_turnover_transit_vulnerability.png"),
+    x: 0.55, y: 1.45, w: 8.75, h: 5.45,
+    sizing: { type: "contain", w: 8.75, h: 5.45 },
+  });
+  s.addText("WHAT FIGURE 11 SHOWS", {
+    x: 9.55, y: 1.65, w: 3.0, h: 0.32,
+    fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
+  });
+  s.addText("Cross-biome vulnerability separates into a structural axis (τ_passive/τ_active) and an environmental one (T_realized/T_intrinsic).", {
+    x: 9.55, y: 2.05, w: 3.0, h: 1.3,
+    fontSize: 14.5, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
+  });
+  s.addText([
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Turnover separation captures the inferred structural age contrast.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Realized/intrinsic ratio captures recurring environmental modification.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Warming loss and DFS are encoded without treating either as a substitute for the transit metrics." },
+  ], {
+    x: 9.55, y: 3.7, w: 3.0, h: 1.85,
+    fontSize: 12, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 9.55, y: 5.65, w: 3.0, h: 0.85,
+    fill: { color: C.primary }, line: { color: C.primary },
+  });
+  s.addText("Structure and environment are distinct axes — vulnerability isn't reducible to either alone.", {
+    x: 9.71, y: 5.82, w: 2.65, h: 0.55,
+    fontSize: 11.5, fontFace: FONT_HEAD, italic: true, color: "FFFFFF", margin: 0, valign: "middle",
+  });
+  addPageNumber(s, n, TOTAL);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE 29 — ISRaD density-fraction ¹²C Shapley attribution
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  n++;
+  addSlideHeader(s, "NEW CONSTRAINT  ·  DENSITY-FRACTION ¹²C", "A previously-unused ISRaD observation carries most of the joint DFS at 5 of 7 fraction sites");
+  s.addImage({
+    path: fig("paper_figs/outputs/current_results/figures/fraction_12c_shapley.png"),
+    x: 0.45, y: 1.45, w: 9.45, h: 5.45,
+    sizing: { type: "contain", w: 9.45, h: 5.45 },
+  });
+  s.addText("WHAT THIS FIGURE SHOWS", {
+    x: 10.0, y: 1.65, w: 2.8, h: 0.32,
+    fontSize: 11, fontFace: FONT_BODY, bold: true, color: C.secondary, charSpacing: 2, margin: 0,
+  });
+  s.addText("Shapley attribution — order-independent DFS credit — for every observation family, at the 7 sites with ISRaD density fractions.", {
+    x: 10.0, y: 2.05, w: 2.8, h: 1.3,
+    fontSize: 14.5, fontFace: FONT_HEAD, bold: true, color: C.primary, margin: 0, valign: "top",
+  });
+  s.addText([
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Solling / Blodgett / UMBS / MO Ozark / Bartlett: fraction ¹²C = 66–92% of DFS.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Redundancy is small — standalone ≈ unique-last at every fraction site.\n", options: { breakLine: true } },
+    { text: "• ", options: { bold: true, color: C.accent } },
+    { text: "Only Harvard/Howland (respiration-rich) reduce the ¹²C share below 30%." },
+  ], {
+    x: 10.0, y: 3.7, w: 2.8, h: 1.85,
+    fontSize: 12, fontFace: FONT_BODY, color: C.body, margin: 0, valign: "top", paraSpaceAfter: 7,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 10.0, y: 5.65, w: 2.8, h: 0.85,
+    fill: { color: C.bgLight }, line: { color: C.accent, width: 0.8 },
+  });
+  s.addText("Where ¹⁴C is thin, density-fraction ¹²C partitions are the observation with real leverage.", {
+    x: 10.16, y: 5.82, w: 2.5, h: 0.55,
+    fontSize: 11.5, fontFace: FONT_HEAD, italic: true, color: C.primary, margin: 0, valign: "middle",
   });
   addPageNumber(s, n, TOTAL);
 }

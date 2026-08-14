@@ -69,7 +69,9 @@ Other figure assets used in the slide deck
 Deck output
 -----------
 - `ecosystem_complexity_soil_carbon_canonical_presentation.pptx`
-  Final PowerPoint deck built from `build_ecosystem_complexity_presentation.js`.
+  Sole published PowerPoint deck, built from
+  `build_ecosystem_complexity_presentation.js` with the current
+  cross-ecosystem results and transit-time slide.
 
 Compatibility / non-deck outputs
 --------------------------------

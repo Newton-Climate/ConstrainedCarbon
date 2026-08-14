@@ -31,7 +31,6 @@ from .state import EcosystemState, ModelParams, make_default_params
 _BLOCK_TO_OBSTYPE = {
     "pool_14C": OBS_POOL_D14C,
     "resp_14C": OBS_RESP_D14C,
-    "er_annual": "ER_annual",
     "c_stock": OBS_C_STOCKS,
     "c_sum": OBS_C_STOCKS,
     "israd": OBS_POOL_D14C,
@@ -345,11 +344,10 @@ _LADDER_FAMILY_PREFIXES: tuple[tuple[str, str], ...] = (
     ("c_stock", "C_stocks"),
     ("c_sum", "C_stocks"),
     ("israd_bulk", "bulk_14C"),
+    # Must precede `israd_fraction` — the 12C partition/stock blocks share the
+    # `israd_fraction` prefix but belong to a distinct family.
+    ("israd_fraction_12C", "fraction_12C"),
     ("israd_fraction", "fraction_14C"),
-    # Must precede the generic ``israd`` catch-all below, which would otherwise
-    # swallow ``israd_inc_rate_*`` into bulk_14C — silently attributing a
-    # *rate* constraint to a radiocarbon family.
-    ("israd_inc_rate", "inc_rate"),
     ("resp_14C", "resp_14C"),
     ("er_annual", "ER_annual"),
     ("pool_14C", "bulk_14C"),
@@ -370,20 +368,14 @@ LADDER_STEPS: tuple[tuple[str, tuple[str, ...]], ...] = (
         ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C"),
     ),
     (
-        "C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual",
-        ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "ER_annual"),
+        "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C",
+        ("C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "fraction_12C"),
     ),
-    # Incubation rates go last deliberately. Every rung above is an isotopic or
-    # stock constraint on the same τ/transfer directions; a lab rate constraint
-    # is the one family that observes a decay constant directly, so putting it
-    # at the end makes the cumulative increment read as "what a direct rate
-    # measurement adds once radiocarbon has said all it can". (Use the Shapley
-    # attribution for the order-independent number.)
     (
-        "C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual+inc_rate",
+        "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C+ER_annual",
         (
             "C_stocks", "bulk_14C", "fraction_14C", "resp_14C",
-            "ER_annual", "inc_rate",
+            "fraction_12C", "ER_annual",
         ),
     ),
 )
@@ -398,17 +390,10 @@ LADDER_STEPS_NO_STOCKS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "bulk_14C+fraction_14C+resp_14C",
         ("bulk_14C", "fraction_14C", "resp_14C"),
     ),
-    (
-        "bulk_14C+fraction_14C+resp_14C+inc_rate",
-        ("bulk_14C", "fraction_14C", "resp_14C", "inc_rate"),
-    ),
 )
 
 C14_FAMILIES: tuple[str, ...] = ("bulk_14C", "fraction_14C", "resp_14C")
 STOCK_FAMILIES: tuple[str, ...] = ("C_stocks",)
-# Laboratory incubation specific-respiration rates. Not radiocarbon and not a
-# stock — the only family that observes a rate constant directly.
-RATE_FAMILIES: tuple[str, ...] = ("inc_rate",)
 
 
 def ladder_family(block_name: str) -> str:
@@ -599,7 +584,6 @@ def constraint_orthogonality_from_context(
 
 
 ALL_FAMILIES: tuple[str, ...] = STOCK_FAMILIES + C14_FAMILIES
-ALL_FAMILIES = ALL_FAMILIES + ("ER_annual",) + RATE_FAMILIES
 
 
 def shapley_dfs_attribution_from_context(
@@ -619,10 +603,8 @@ def shapley_dfs_attribution_from_context(
 
     with ``v(S)`` the DFS of observation-family subset S. By the efficiency
     property the φ_i sum exactly to the joint DFS ``v(N)``, so they read as a
-    clean decomposition of the total information. With the six families in
-    ``ALL_FAMILIES`` this is 2⁶ = 64 evaluations of ``v`` against the cached
-    Jacobian — still cheap, since the Jacobian is computed once by
-    ``oe_ladder_context`` and only row subsets are re-traced.
+    clean decomposition of the total information. With four families this is only
+    2⁴ = 16 evaluations of ``v`` against the cached Jacobian.
 
     Also reports each family's standalone DFS (added first) and unique DFS (added
     last); the spread between those two is precisely the redundancy the Shapley

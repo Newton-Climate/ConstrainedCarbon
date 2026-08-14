@@ -1,0 +1,12 @@
+name: high_dfs_candidates
+description: >-
+  Unmodeled ISRaD sites selected for complementary pool/fraction and
+  incubation/respiration radiocarbon coverage, plus the available tower
+  geometry. Uses FluxCom GPP and ER where a tower GPP product is unavailable.
+run_options: {include_incubation: true, include_incubation_14c: true, include_er: true}
+configs:
+  - configs/expansion/camp_osceola.yaml
+  - configs/expansion/ma_harvard_forest.yaml
+  - configs/multisite/blodgett.yaml
+  - configs/expansion/rb_450_c.yaml
+  - configs/expansion/zelenyi_mys.yaml

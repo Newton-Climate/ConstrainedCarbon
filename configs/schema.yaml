@@ -11,11 +11,15 @@ site:
   lon: float
   tower_id: string
   biome: string
+  mat_c: float | null
+  map_mm: float | null
+  elevation_m: float | null
 
 datasource:
   israd_name: string
   forcing_glob: string
-  forcing_kind: daily
+  er_observation_glob: optional string
+  forcing_kind: daily | fluxcom
   observation_path: bulk_resp | fraction | combined
   fraction_rules: {frc_property: soil_pool_name | null}
 
