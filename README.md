@@ -22,7 +22,8 @@ before adapting the model to a new site.
 - Work with individual sites or the included multi-site collections.
 
 For a scientific overview and explanation of the configuration choices, see
-[the model guide](docs/TECHSPEC.md).
+[the model guide](docs/TECHSPEC.md). For step-by-step command help, see the
+[app guide](docs/apps/README.md).
 
 ## Install
 
@@ -126,14 +127,14 @@ put `AMERIFLUX_USER_ID` and `AMERIFLUX_EMAIL` in `.env`.
 
 | Command | When to use it |
 |---|---|
-| `ecosys optimize` | Fit one configuration, a site set, or a pool-structure sweep. |
-| `ecosys warming` | Run a standardized warming experiment from a site fit. |
-| `ecosys information shapley` | Compare how observation types constrain parameters. |
-| `ecosys mcmc` | Draw posterior and prior uncertainty for cross-site analysis. |
-| `ecosys fetch` | Download or extract forcing data. |
-| `ecosys config` | Find sites and build configuration files. |
-| `ecosys analyze` | Run network, transit-time, and summary analyses. |
-| `ecosys report` | Combine results and produce cross-ecosystem summaries. |
+| [`ecosys optimize`](docs/apps/optimize.md) | Fit one configuration, a site set, or a pool-structure sweep. |
+| [`ecosys warming`](docs/apps/warming.md) | Run a standardized warming experiment from a site fit. |
+| [`ecosys information shapley`](docs/apps/information.md) | Compare how observation types constrain parameters. |
+| [`ecosys mcmc`](docs/apps/mcmc.md) | Draw posterior and prior uncertainty for cross-site analysis. |
+| [`ecosys fetch`](docs/apps/fetch.md) | Download or extract forcing data. |
+| [`ecosys config`](docs/apps/config.md) | Find sites and build configuration files. |
+| [`ecosys analyze`](docs/apps/analyze.md) | Run network, transit-time, and summary analyses. |
+| [`ecosys report`](docs/apps/report.md) | Combine results and produce cross-ecosystem summaries. |
 
 Keep the exact config, command, input data version, and output tables together
 for every result you interpret or share.
