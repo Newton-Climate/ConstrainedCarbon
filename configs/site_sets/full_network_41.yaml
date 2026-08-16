@@ -1,0 +1,48 @@
+name: full_network_41
+description: 'The 41-site cross-ecosystem union: 24 direct-warming + 17 incubation-expansion.'
+run_options:
+  include_er: true
+  include_incubation: true
+  include_incubation_14c: true
+configs:
+- configs/multisite/adventdalen_valley.yaml
+- configs/multisite/eml.yaml
+- configs/expansion/cz_1981burn.yaml
+- configs/expansion/polar_desert.yaml
+- configs/expansion/cz_1930burn.yaml
+- configs/multisite/cz_old_black_spruce.yaml
+- configs/multisite/cz_1964burn_nsa.yaml
+- configs/multisite/auchencorth_moss.yaml
+- configs/expansion/arl.yaml
+- configs/multisite/mo_ozark_brea.yaml
+- configs/expansion/nahuelbuta.yaml
+- configs/multisite/nh_bartlett_forest.yaml
+- configs/expansion/willow_creek.yaml
+- configs/multisite/solling.yaml
+- configs/multisite/howland_forest.yaml
+- configs/multisite/mi_coarse_umbs.yaml
+- configs/multisite/appi_forest.yaml
+- configs/multisite/harvard_forest.yaml
+- configs/expansion/fichtelgeberge.yaml
+- configs/expansion/biadaski.yaml
+- configs/expansion/trumbore_musick.yaml
+- configs/expansion/santa_gracia.yaml
+- configs/expansion/ca_mollisol.yaml
+- configs/expansion/az_mollisol.yaml
+- configs/expansion/dinesen.yaml
+- configs/expansion/treynor.yaml
+- configs/expansion/trumbore_ahwahnee.yaml
+- configs/expansion/ga_740_c.yaml
+- configs/expansion/la_campana.yaml
+- configs/expansion/ga_450_c.yaml
+- configs/expansion/sedgwick_reserve.yaml
+- configs/expansion/nelson_farm.yaml
+- configs/expansion/trumbore_falbrook.yaml
+- configs/multisite/flona.yaml
+- configs/multisite/baram_basin.yaml
+- configs/expansion/luquillo_experimental_forest.yaml
+- configs/expansion/hi_andisol.yaml
+- configs/expansion/bci.yaml
+- configs/multisite/zf2.yaml
+- configs/expansion/maui.yaml
+- configs/expansion/fazenda_victoria.yaml

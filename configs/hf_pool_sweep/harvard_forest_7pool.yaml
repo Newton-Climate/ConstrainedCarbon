@@ -1,0 +1,130 @@
+site:
+  id: israd-multisite-harvard_forest-7pool
+  name: Harvard Forest (US-Ha1) — 7-pool (Sierra-like)
+  lat: 42.5378
+  lon: -72.1715
+  tower_id: US-Ha1
+  biome: temperate deciduous forest
+datasource:
+  israd_name: Harvard Forest
+  forcing_glob: AMF_US-Ha1_FLUXNET_1991-2025_v1.3_r1
+  forcing_kind: daily
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+  soil_layers:
+  - name: organic
+    depth_top_m: 0.0
+    depth_bot_m: 0.08
+    permafrost_eligible: false
+    som_pools:
+    - name: Oi
+      tau_prior_days: 547
+      tau_prior_std: 183
+    - name: Oe_a_L
+      tau_prior_days: 1460
+      tau_prior_std: 547
+    - name: Oe_a_H
+      tau_prior_days: 12775
+      tau_prior_std: 3650
+  - name: mineral
+    depth_top_m: 0.08
+    depth_bot_m: 0.6
+    permafrost_eligible: false
+    som_pools:
+    - name: ALF_gt80
+      tau_prior_days: 1095
+      tau_prior_std: 365
+    - name: ALF_lt80
+      tau_prior_days: 27375
+      tau_prior_std: 9125
+    - name: MinAss
+      tau_prior_days: 40150
+      tau_prior_std: 13150
+  - name: deep
+    depth_top_m: 0.6
+    depth_bot_m: 1.3
+    permafrost_eligible: false
+    som_pools:
+    - name: MinAss_slow
+      tau_prior_days: 100000
+      tau_prior_std: 50000
+  transfer_rules:
+  - - organic_Oi
+    - organic_Oe_a_L
+    - 0.658
+  - - organic_Oe_a_L
+    - organic_Oe_a_H
+    - 0.041
+  - - organic_Oe_a_H
+    - mineral_ALF_gt80
+    - 0.2
+  - - mineral_ALF_gt80
+    - mineral_ALF_lt80
+    - 0.8
+  - - mineral_ALF_lt80
+    - mineral_MinAss
+    - 0.098
+  - - mineral_MinAss
+    - deep_MinAss_slow
+    - 0.05
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+  partition:
+    organic_Oi: 1.0
+    organic_Oe_a_L: 0.0
+    organic_Oe_a_H: 0.0
+    mineral_ALF_gt80: 0.0
+    mineral_ALF_lt80: 0.0
+    mineral_MinAss: 0.0
+    deep_MinAss_slow: 0.0
+  optimize_partition: false
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+inversion:
+  sigma_soc_fraction: 0.5
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001
+analysis:
+  metrics:
+    reduced_chi2: true
+    rmse: true
+    degrees_of_freedom: true
+    averaging_kernel: true
+    gain_matrix: true
+    jacobian: true
+    constraint_ladder: true
+    shapley: false
+    ablation: false
+    orthogonality: false
+  plots:
+    model_results: true
+    information_content: true
+    observation_fit: true
+output:
+  artifact_dir: results/{config_stem}
+  summary_json: true
+  matrices_npz: true
+  observation_csv: true
+  diagnostics_csv: true
+  figure_png: true
