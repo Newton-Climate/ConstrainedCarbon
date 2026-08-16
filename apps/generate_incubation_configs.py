@@ -99,7 +99,3 @@ def main() -> int:
         print(out_path.relative_to(REPO_ROOT))
 
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

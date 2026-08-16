@@ -64,8 +64,3 @@ def main(argv: list[str] | None = None) -> int:
     outputs = export_site_run(run, export_dir)
     print(json.dumps(outputs, indent=2))
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-

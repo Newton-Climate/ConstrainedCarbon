@@ -52,8 +52,3 @@ def main(argv: list[str] | None = None) -> int:
     for item in outputs:
         print(item)
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-

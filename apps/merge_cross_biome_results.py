@@ -57,7 +57,3 @@ def main() -> int:
     transit.to_csv(outdir / "optimized_transit_input.csv", index=False)
     print(f"network={len(network)} warming={len(warming)} transit_input={len(transit)}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

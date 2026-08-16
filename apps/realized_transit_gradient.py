@@ -191,7 +191,3 @@ def main() -> int:
     print(df.to_string(index=False))
     print(f"Wrote {args.out} and {args.figure}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

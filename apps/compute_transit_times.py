@@ -211,7 +211,3 @@ def main() -> int:
         pd.DataFrame(failures).to_csv(Path(args.out).with_name("transit_time_failures.csv"), index=False)
     print(f"Wrote {len(df)} sites to {args.out} and {args.figure}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

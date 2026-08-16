@@ -24,9 +24,7 @@ Commands:
 
 from __future__ import annotations
 
-import argparse
 import importlib
-import os
 import sys
 from pathlib import Path
 
@@ -82,19 +80,9 @@ def _cmd_warming(argv: list[str]) -> int:
 
 
 def _cmd_transit(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(prog="ecosys transit", add_help=False)
-    parser.add_argument("--mode", required=True,
-                        choices=("intrinsic", "realized", "gradient"))
-    parser.add_argument("-h", "--help", action="store_true")
-    known, rest = parser.parse_known_args(argv)
-    module = {
-        "intrinsic": "compute_transit_times",
-        "realized": "realized_transit_all_sites",
-        "gradient": "realized_transit_gradient",
-    }[known.mode]
-    if known.help:
-        rest = [*rest, "--help"]
-    return _delegate(module, rest)
+    # Legacy alias for `analyze transit --mode ...`. Kept because the
+    # top-level `transit` verb is what earlier users typed.
+    return _delegate("analyze", ["transit", *argv])
 
 
 def _cmd_mcmc(argv: list[str]) -> int:
@@ -102,52 +90,19 @@ def _cmd_mcmc(argv: list[str]) -> int:
 
 
 def _cmd_analyze(argv: list[str]) -> int:
-    return _delegate("analyze_model", argv)
+    return _delegate("analyze", argv)
 
 
 def _cmd_fetch(argv: list[str]) -> int:
-    if not argv or argv[0] in {"-h", "--help"}:
-        print("usage: ecosys fetch {flux|fluxcom} [args...]", file=sys.stderr)
-        return 2
-    source, rest = argv[0], argv[1:]
-    module = {"flux": "download_flux", "fluxcom": "fetch_fluxcom"}.get(source)
-    if module is None:
-        print(f"unknown fetch source: {source!r}", file=sys.stderr)
-        return 2
-    return _delegate(module, rest)
+    return _delegate("fetch", argv)
 
 
 def _cmd_config(argv: list[str]) -> int:
-    if not argv or argv[0] in {"-h", "--help"}:
-        print("usage: ecosys config {build|incubation|locate} [args...]",
-              file=sys.stderr)
-        return 2
-    kind, rest = argv[0], argv[1:]
-    module = {
-        "build": "build_site_config",
-        "incubation": "generate_incubation_configs",
-        "locate": "locate_site",
-    }.get(kind)
-    if module is None:
-        print(f"unknown config action: {kind!r}", file=sys.stderr)
-        return 2
-    return _delegate(module, rest)
+    return _delegate("config", argv)
 
 
 def _cmd_report(argv: list[str]) -> int:
-    if not argv or argv[0] in {"-h", "--help"}:
-        print("usage: ecosys report {merge|cross-ecosystem} [args...]",
-              file=sys.stderr)
-        return 2
-    kind, rest = argv[0], argv[1:]
-    module = {
-        "merge": "merge_cross_biome_results",
-        "cross-ecosystem": "build_cross_ecosystem_summary",
-    }.get(kind)
-    if module is None:
-        print(f"unknown report kind: {kind!r}", file=sys.stderr)
-        return 2
-    return _delegate(module, rest)
+    return _delegate("report", argv)
 
 
 _COMMANDS = {
