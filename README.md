@@ -190,6 +190,85 @@ Full, runnable end-to-end examples live in [`notebooks/`](notebooks/).
 
 ---
 
+## Command-line apps
+
+Installing the package (`pip install -e .`) also installs the **`ecosys`**
+console script — a single entry point over eight verbs that cover the whole
+research loop: stage data, build configs, fit, project, quantify information
+content, sample the posterior, then aggregate and report. Everything can
+also be invoked as `python -m ecosystem_complexity.cli <verb>`.
+
+| Verb | What it does | Doc |
+|---|---|---|
+| `optimize` | Fit the model to observations at one site, a site set, or a sweep | [docs/apps/optimize.md](docs/apps/optimize.md) |
+| `warming`  | Project a fitted site under a standardized temperature perturbation | [docs/apps/warming.md](docs/apps/warming.md) |
+| `mcmc`     | Posterior sampling + cross-site rollups + structural-null test | [docs/apps/mcmc.md](docs/apps/mcmc.md) |
+| `information` | Shapley DFS / AK / gain diagnostics on the OE posterior | [docs/apps/information.md](docs/apps/information.md) |
+| `fetch`    | Stage tower, gridded, ISRaD, and atmospheric-¹⁴C inputs | [docs/apps/fetch.md](docs/apps/fetch.md) |
+| `analyze`  | Post-hoc summaries + transit-time diagnostics over exported artifacts | [docs/apps/analyze.md](docs/apps/analyze.md) |
+| `config`   | Build / discover site YAML configs | [docs/apps/config.md](docs/apps/config.md) |
+| `report`   | Cross-run report generators (merged tables + cross-ecosystem summary) | [docs/apps/report.md](docs/apps/report.md) |
+
+Full CLI reference: [`docs/apps/`](docs/apps/README.md).
+
+### Quick examples
+
+Fit one site:
+
+```bash
+ecosys optimize configs/multisite/harvard_forest.yaml
+```
+
+Fit an entire versioned site set in parallel:
+
+```bash
+ecosys optimize --site-set configs/site_sets/full_network_41.yaml -j 8
+```
+
+Project the standardized `+4 °C / 100-year` warming response for the same set:
+
+```bash
+ecosys warming --site-set configs/site_sets/full_network_41.yaml -j 8
+```
+
+Cross-network Shapley DFS with per-biome panels:
+
+```bash
+ecosys information shapley \
+    --site-set configs/site_sets/full_network_41.yaml \
+    --plot-by biome -j 8
+```
+
+Sample the posterior — MCMC where saved chains exist, Gaussian OE draws
+elsewhere — and roll everything up into cross-site regressions:
+
+```bash
+ecosys mcmc --site-set configs/site_sets/full_network_41.yaml -j 8
+```
+
+Stage a new AmeriFlux site and materialize its config from tower metadata:
+
+```bash
+ecosys config locate --flux-tower US-Ha1 --out /tmp/harvard.csv
+ecosys config build --tower-id US-Ha1 --lat 42.5378 --lon -72.1715 \
+                    --biome temperate_deciduous_forest \
+                    --observation-path combined
+ecosys fetch flux harvard_forest --accept-policy --accept-license
+```
+
+### Output contract
+
+Every verb writes into `./outputs/{name}/{verb}/` — `{name}` is the site id
+for single-site runs and the site-set YAML's `name:` for multi-site runs.
+Every run directory contains `manifest.json` (verb, git sha, config
+snapshot), `config.snapshot.yaml`, and `logs/run.log`; the per-verb docs
+enumerate the additional parquet, NPZ, and PNG artifacts.
+
+`analyze` and `report` only read from `outputs/`, so they are cheap to
+re-run and safely parallelizable across sites.
+
+---
+
 ## Configuration
 
 A single YAML file defines the site, model structure (pools and layers), spin-up, ¹⁴C
@@ -218,19 +297,21 @@ ecosystem-complexity/
 │   └── sites/                  # reusable per-site inversion modules
 ├── configs/                    # per-site YAML configurations
 ├── data/                       # AmeriFlux, ISRaD, CMIP forcing & observations
-├── notebooks/                  # remaining analysis scripts & figure studies
-├── apps/                       # reusable CLI apps for lookup, download, config, fit, analysis
-├── docs/                       # TECHSPEC.md + methodology notes
+├── notebooks/                  # analysis scripts & figure studies
+├── apps/                       # 8 `ecosys` verb dispatchers (see docs/apps/)
+├── docs/                       # TECHSPEC.md, methodology notes, CLI reference
 ├── tests/                      # pytest suite (unit + integration)
 ├── environment.yaml            # conda environment
 ├── pyproject.toml              # package metadata & tooling config
 └── Makefile                    # env / install / lint / format / test
 ```
 
-The application entry points under `apps/` now cover the generalized site
-workflows (`locate_site.py`, `download_flux.py`, `build_site_config.py`,
-`optim_site_main.py`, `analyze_model.py`). The `notebooks/` directory remains
-for figure-generation and one-off analyses such as `cross_site_information.py`.
+Every application lives under `apps/` as a thin dispatcher for one `ecosys`
+verb — see [`docs/apps/`](docs/apps/README.md) for the CLI reference. The
+underlying logic lives in `src/ecosystem_complexity/` (subpackages
+`network/`, `site_analysis/`, `site_config/`, `transit_time/`, `mcmc/`,
+`visualize/`, `outputs/`, `fetch/`). The `notebooks/` directory remains for
+paper-figure generation and exploratory analyses.
 
 ---
 
