@@ -10,7 +10,6 @@ temperature, moisture, and thaw modifiers for decomposition.
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import jax.nn
@@ -19,8 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[3]
 
 from ecosystem_complexity.sites.driver import run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec

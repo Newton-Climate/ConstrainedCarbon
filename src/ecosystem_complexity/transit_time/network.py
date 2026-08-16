@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
@@ -22,30 +21,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[3]
 
+from ecosystem_complexity.api import build_model
+from ecosystem_complexity.biome import BIOME_GROUP_COLORS as COLORS, biome_group
 from ecosystem_complexity.sites.driver import run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec
 from ecosystem_complexity.transit_time import intrinsic_mean_transit_time
-from ecosystem_complexity.api import build_model
-
-COLORS = {
-    "arctic_permafrost": "#355C7D", "boreal": "#6C8E4E", "peatland": "#7A4E7A",
-    "temperate_forest": "#C06C2B", "grassland_mediterranean": "#C89B2B",
-    "tropical": "#2C8C7B", "other": "#808080",
-}
-
-
-def biome_group(biome: str) -> str:
-    b = biome.lower()
-    if any(k in b for k in ("arctic", "tundra", "permafrost")): return "arctic_permafrost"
-    if "boreal" in b: return "boreal"
-    if any(k in b for k in ("peatland", "moss")): return "peatland"
-    if "tropical" in b: return "tropical"
-    if any(k in b for k in ("grassland", "mollisol", "mediterranean")): return "grassland_mediterranean"
-    if "temperate" in b or "conifer" in b: return "temperate_forest"
-    return "other"
 
 
 def _one(config_path: str, include_er: bool) -> dict:

@@ -43,11 +43,10 @@ from ecosystem_complexity.sites.driver import OPT_FIELDS, run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec
 from ecosystem_complexity.state import make_default_params
 from ecosystem_complexity.api import run_model
+from ecosystem_complexity.biome import biome_group as _biome_group
+from ecosystem_complexity.visualize.cross_ecosystem import build_cross_ecosystem_tables
+from ecosystem_complexity.visualize.figure_10 import make_figure_10_from_posterior_analysis
 from ecosystem_complexity.warming import compute_pool_rh, repeat_forcing, warm_forcing
-
-# NOTE: paper-figs shim; Session F step 1 lifts these into ecosystem_complexity.visualize.
-from notebooks.paper_figs.fig_09 import build_cross_ecosystem_tables  # noqa: E402
-from notebooks.paper_figs.fig_10 import make_figure_10_from_posterior_analysis  # noqa: E402
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _NB = _REPO_ROOT / "notebooks"
@@ -69,23 +68,6 @@ def _discover_all_specs() -> dict[str, str]:
             spec = load_site_spec(str(path))
             out[spec.israd_name] = str(path)
     return out
-
-
-def _biome_group(biome: str) -> str:
-    biome = biome.lower()
-    if any(key in biome for key in ("arctic", "tundra", "permafrost")):
-        return "arctic_permafrost"
-    if "boreal" in biome:
-        return "boreal"
-    if any(key in biome for key in ("peatland", "moss")):
-        return "peatland"
-    if "tropical" in biome:
-        return "tropical"
-    if any(key in biome for key in ("grassland", "mollisol", "mediterranean")):
-        return "grassland_mediterranean"
-    if any(key in biome for key in ("temperate", "conifer")):
-        return "temperate_forest"
-    return "other"
 
 
 def _selected_site_metadata(

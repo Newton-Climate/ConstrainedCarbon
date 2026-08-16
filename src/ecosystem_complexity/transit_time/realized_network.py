@@ -7,7 +7,6 @@ covariance and are calculated separately for the four-site pilot.
 """
 from __future__ import annotations
 
-import sys
 import argparse
 from pathlib import Path
 
@@ -15,10 +14,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[3]
 
-from realized_transit_gradient import transit_metrics
+from ecosystem_complexity.transit_time.realized_gradient import transit_metrics
 from ecosystem_complexity.api import build_model
 from ecosystem_complexity.sites.forcing import load_site_forcing, resolve_forcing_file
 from ecosystem_complexity.sites.spec import load_site_spec

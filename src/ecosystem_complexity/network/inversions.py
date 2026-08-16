@@ -27,24 +27,8 @@ from ecosystem_complexity.sites.driver import (
     OPT_FIELDS,
     run_site_canonical,
 )
+from ecosystem_complexity.biome import biome_group as _biome_group
 from ecosystem_complexity.sites.spec import load_site_spec
-
-
-def _biome_group(biome: str) -> str:
-    b = biome.lower()
-    if any(k in b for k in ("arctic", "tundra", "permafrost")):
-        return "arctic_permafrost"
-    if "boreal" in b:
-        return "boreal"
-    if any(k in b for k in ("peatland", "moss")):
-        return "peatland"
-    if "tropical" in b:
-        return "tropical"
-    if any(k in b for k in ("grassland", "mollisol", "mediterranean")):
-        return "grassland_mediterranean"
-    if "temperate" in b:
-        return "temperate_forest"
-    return "other"
 
 
 def _config_paths(include_expansion: bool, site_set: str | None = None) -> list[str]:

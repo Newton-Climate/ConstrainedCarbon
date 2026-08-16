@@ -5,15 +5,8 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 
-_APP_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_APP_DIR)
-_SRC = os.path.join(_REPO_ROOT, "src")
-if os.path.isdir(_SRC) and _SRC not in sys.path:
-    sys.path.insert(0, _SRC)
-
-from ecosystem_complexity.fetch import locate_site  # noqa: E402
+from ecosystem_complexity.fetch import locate_site
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -6,17 +6,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 
-_APP_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_APP_DIR)
-_SRC = os.path.join(_REPO_ROOT, "src")
-if os.path.isdir(_SRC) and _SRC not in sys.path:
-    sys.path.insert(0, _SRC)
-
-from ecosystem_complexity.site_analysis import export_site_run, load_exported_analysis  # noqa: E402
-from ecosystem_complexity.site_config import render_artifact_dir  # noqa: E402
-from ecosystem_complexity.sites import discover_site_specs, load_site_spec, run_site_canonical  # noqa: E402
+from ecosystem_complexity.site_analysis import export_site_run, load_exported_analysis
+from ecosystem_complexity.site_config import render_artifact_dir
+from ecosystem_complexity.sites import discover_site_specs, load_site_spec, run_site_canonical
 
 
 def _resolve_site(selector: str):
