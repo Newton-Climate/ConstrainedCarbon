@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
@@ -22,8 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[3]
 
 from ecosystem_complexity.sites.driver import run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec

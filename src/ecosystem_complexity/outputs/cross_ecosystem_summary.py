@@ -9,8 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-_APP_DIR = Path(__file__).resolve().parent
-_REPO_ROOT = _APP_DIR.parent
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 

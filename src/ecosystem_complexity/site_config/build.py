@@ -5,15 +5,11 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
+from pathlib import Path
 
-_APP_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_APP_DIR)
-_SRC = os.path.join(_REPO_ROOT, "src")
-if os.path.isdir(_SRC) and _SRC not in sys.path:
-    sys.path.insert(0, _SRC)
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
-from ecosystem_complexity.site_config import build_site_config_dict, write_site_config  # noqa: E402
+from ecosystem_complexity.site_config import build_site_config_dict, write_site_config
 
 
 def _build_parser() -> argparse.ArgumentParser:

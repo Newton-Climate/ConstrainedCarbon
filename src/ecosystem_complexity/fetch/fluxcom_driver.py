@@ -12,7 +12,7 @@ from ecosystem_complexity.data.fetch_fluxcom import (
     fetch_fluxcom_x_for_configs,
 )
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def parse_args() -> argparse.Namespace:

@@ -36,7 +36,7 @@ import yaml
 
 from ecosystem_complexity.config import ModelConfig
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUTS_ROOT = _REPO_ROOT / "outputs"
 
 # Bump when the output-contract shape changes in a way consumers must handle.
