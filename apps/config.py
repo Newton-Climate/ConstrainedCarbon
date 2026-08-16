@@ -3,11 +3,9 @@
 
 Subverbs
     build       synthesize a new per-site config from a template + site metadata
-                (build_site_config.py)
     incubation  generate per-site incubation-experiment configs from an ISRaD
-                extraction (generate_incubation_configs.py)
+                extraction
     locate      look up a site's tower + coordinates in the co-location table
-                (locate_site.py)
 
 Forwards argv to the underlying utility modules unchanged. These are
 config-authoring conveniences that do not produce experiment artifacts,
@@ -15,42 +13,44 @@ so they do not write to the ``outputs/`` tree.
 """
 from __future__ import annotations
 
-import importlib
 import logging
 import sys
-from pathlib import Path
-
-_APP_DIR = Path(__file__).resolve().parent
-_REPO_ROOT = _APP_DIR.parent
-_SRC = _REPO_ROOT / "src"
-if _SRC.is_dir() and str(_SRC) not in sys.path:
-    sys.path.insert(0, str(_SRC))
-if str(_APP_DIR) not in sys.path:
-    sys.path.insert(0, str(_APP_DIR))
-
 
 _SUBVERBS = ("build", "incubation", "locate")
 
 
-def _forward(module_name: str, argv: list[str]) -> int:
-    mod = importlib.import_module(module_name)
-    main = mod.main
+def _run(main_fn, argv: list[str]) -> int:
     try:
-        rc = main(argv)
+        rc = main_fn(argv)
     except TypeError:
         saved = sys.argv
-        sys.argv = [module_name, *argv]
+        sys.argv = [main_fn.__module__, *argv]
         try:
-            rc = main()
+            rc = main_fn()
         finally:
             sys.argv = saved
     return int(rc or 0)
 
 
+def _cmd_build(argv):
+    from ecosystem_complexity.site_config.build import main as m
+    return _run(m, argv)
+
+
+def _cmd_incubation(argv):
+    from ecosystem_complexity.site_config.incubation_manifest import main as m
+    return _run(m, argv)
+
+
+def _cmd_locate(argv):
+    from ecosystem_complexity.fetch.locate_cli import main as m
+    return _run(m, argv)
+
+
 _HANDLERS = {
-    "build":      lambda a: _forward("build_site_config", a),
-    "incubation": lambda a: _forward("generate_incubation_configs", a),
-    "locate":     lambda a: _forward("locate_site", a),
+    "build":      _cmd_build,
+    "incubation": _cmd_incubation,
+    "locate":     _cmd_locate,
 }
 
 

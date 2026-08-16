@@ -7,8 +7,6 @@ import argparse
 import json
 import logging
 import multiprocessing
-import os
-import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -17,23 +15,19 @@ import numpy as np
 import pandas as pd
 import yaml
 
-_APP_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_APP_DIR)
-_SRC = os.path.join(_REPO_ROOT, "src")
-if os.path.isdir(_SRC) and _SRC not in sys.path:
-    sys.path.insert(0, _SRC)
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
-from ecosystem_complexity.oe_diagnostics import (  # noqa: E402
+from ecosystem_complexity.oe_diagnostics import (
     cumulative_ladder_from_context,
     constraint_orthogonality_from_context,
     oe_ladder_context,
     shapley_dfs_attribution_from_context,
 )
-from ecosystem_complexity.sites.driver import (  # noqa: E402
+from ecosystem_complexity.sites.driver import (
     OPT_FIELDS,
     run_site_canonical,
 )
-from ecosystem_complexity.sites.spec import load_site_spec  # noqa: E402
+from ecosystem_complexity.sites.spec import load_site_spec
 
 
 def _biome_group(biome: str) -> str:
@@ -60,7 +54,7 @@ def _config_paths(include_expansion: bool, site_set: str | None = None) -> list[
         paths = payload.get("configs")
         if not isinstance(paths, list) or not paths or not all(isinstance(p, str) for p in paths):
             raise ValueError(f"{site_set}: expected a non-empty string list at 'configs'")
-        root = Path(_REPO_ROOT)
+        root = _REPO_ROOT
         resolved = [str(Path(p) if Path(p).is_absolute() else root / p) for p in paths]
         missing = [p for p in resolved if not Path(p).is_file()]
         if missing:
