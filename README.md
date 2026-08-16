@@ -1,338 +1,163 @@
 # ecosystem-complexity
 
-**An inference-first, differentiable ecosystem carbon-cycle model.**
+`ecosystem-complexity` is a research model for asking a practical soil-carbon
+question: when we combine carbon-flux measurements with radiocarbon, what can
+we learn about how quickly carbon moves through soil?
 
-`ecosystem-complexity` is a flexible, fully auto-differentiable model of the terrestrial
-carbon cycle that treats ¹²C and ¹⁴C (radiocarbon) as parallel tracers. It is built to
-answer a specific scientific question: **how much information do radiocarbon observations
-actually add** when constraining soil-carbon turnover times and pool sizes?
+The model follows ordinary carbon (¹²C) and radiocarbon (¹⁴C) through the same
+set of pools. You can fit a site to observations and compare how much each kind
+of measurement narrows the uncertainty. Each analysis is described by a
+plain-text configuration file (YAML), which records the model structure and
+scientific assumptions behind a run.
 
-The model is written in [JAX](https://jax.readthedocs.io/), so the same forward model can be:
+This is research code. Begin with one of the included site configurations
+before adapting the model to a new site.
 
-- **run** forward over a site's meteorological forcing,
-- **inverted** to fit eddy-covariance fluxes, radiocarbon, and stock observations
-  (gradient descent *or* Optimal Estimation), and
-- **analysed** with information-theoretic diagnostics (Fisher Information, degrees of
-  freedom for signal, posterior error covariance).
+## What you can do here
 
-Everything — pool structure, layers, site parameters, data paths, and inversion
-settings — is defined in a single YAML file.
+- Fit a site while accounting for measurements and prior knowledge.
+- Compare the information supplied by fluxes, soil-carbon stocks, and
+  radiocarbon measurements.
+- Explore standardized warming and transit-time experiments.
+- Work with individual sites or the included multi-site collections.
 
----
+For a scientific overview and explanation of the configuration choices, see
+[the model guide](docs/TECHSPEC.md).
 
-## Scientific objectives
+## Install
 
-1. **Quantify net carbon-exchange responses to climate** using eddy covariance,
-   inventory, and radiocarbon observations *jointly*.
-2. **Benchmark Earth System Models** with data-constrained posterior estimates of
-   turnover times and pool sizes.
-3. **Evaluate radiocarbon as a constraint** — measure the information content of ¹⁴C
-   across pool types, biomes, and measurement strategies.
-
-The [International Soil Radiocarbon Database (ISRaD)](https://soilradiocarbon.org) is the
-primary source of ¹⁴C observations. Reference sites include Harvard Forest (US-Ha1),
-Howland Forest (US-Ho1), Barrow Alaska (US-A10/US-Brw), and Eight Mile Lake (US-EML).
-
-See [`docs/TECHSPEC.md`](docs/TECHSPEC.md) for the full technical specification.
-
----
-
-## Architecture
-
-```
-                          ┌─────────────────────┐
-                          │   config.yaml        │   site, pools, layers,
-                          │  (one file drives     │   inversion + analysis
-                          │   everything)         │   settings
-                          └──────────┬───────────┘
-                                     │ load_config / PoolIndex
-                                     ▼
-        data/ (AmeriFlux, ISRaD,  ┌─────────────────────┐
-        CMIP, atm ¹⁴C record)     │  config.py           │
-              │                   │  state.py            │  frozen dataclasses:
-              │  parsers / loaders│  ModelParams,        │  validated config +
-              ▼                   │  EcosystemState      │  tracer state
-     ┌──────────────────┐         └──────────┬───────────┘
-     │ data/            │                    │
-     │  parsers.py      │  ForcingData        │
-     │  parsers_14C.py  │  ObservationData    ▼
-     │  loaders.py      │─────────►┌─────────────────────────────────────┐
-     │  israd_*.py      │          │        FORWARD MODEL (pure JAX)      │
-     │  alignment.py    │          │                                     │
-     │  schemas.py      │          │  climate.py   f_temp / f_moisture /  │
-     └──────────────────┘          │               thawed_frac           │
-                                   │  soil.py      SOM decomposition      │
-                                   │  above_ground.py  GPP / autotrophic  │
-                                   │  transfer.py  inter-pool transfers   │
-                                   │  tracer_14C.py  ¹⁴C step + Δ¹⁴C      │
-                                   │  model.py     step_12C / step_14C /  │
-                                   │               diagnose               │
-                                   └──────────────────┬──────────────────┘
-                                                      │ api.py
-                                          build_model / run_model / spinup
-                                                      │
-                     ┌────────────────────────────────┼────────────────────────────┐
-                     ▼                                 ▼                            ▼
-          ┌────────────────────┐        ┌──────────────────────────┐   ┌────────────────────┐
-          │  INVERSION         │        │  OPTIMAL ESTIMATION       │   │  INFORMATION        │
-          │  inversion.py      │        │  optimal_estimation.py    │   │  information.py     │
-          │                    │        │  oe_utils.py              │   │  complexity.py      │
-          │  optimize()        │        │  optimize_oe()            │   │  sensitivity.py     │
-          │  Adam / L-BFGS     │        │  Levenberg–Marquardt      │   │                     │
-          │  (optax)           │        │  + posterior covariance   │   │  Fisher Information  │
-          │                    │        │  oe_diagnostics.py        │   │  DFS, posterior Sₓ  │
-          └────────────────────┘        └──────────────────────────┘   └────────────────────┘
-```
-
-All traced computation lives in pure, module-level JAX functions so the whole pipeline is
-safe under `jax.jit`, `jax.lax.scan`, and `jax.grad`. Structural arguments (pool counts,
-pool→layer mapping, timestep) are held static.
-
-### Key modules (`src/ecosystem_complexity/`)
-
-| Module | Responsibility |
-|---|---|
-| `config.py` | Parse & validate YAML → frozen `ModelConfig`; `PoolIndex` maps pool names → state-vector positions |
-| `state.py` | `EcosystemState` (¹²C/¹⁴C pools), `ModelParams`, default constructors |
-| `model.py` | `EcosystemModel`: `step_12C`, `step_14C`, `diagnose` (NEE/GPP/ER/Rh/Ra) |
-| `climate.py` | Abiotic response functions (Lloyd–Taylor Q10, moisture, freeze/thaw). `fluxes.py` is a back-compat shim |
-| `soil.py` / `above_ground.py` / `transfer.py` | Soil decomposition, GPP & autotrophic respiration, inter-pool carbon transfers |
-| `tracer_14C.py` | ¹⁴C tracer step, Δ¹⁴C computation, historical-atmosphere spin-up |
-| `api.py` | Public runtime: `build_model`, `run_model`, `spinup` |
-| `inversion.py` | Gradient-based inversion (`optimize`) via `optax` + autodiff |
-| `optimal_estimation.py` / `oe_utils.py` / `oe_diagnostics.py` | Optimal Estimation (`optimize_oe`, Levenberg–Marquardt) with posterior covariance |
-| `information.py` / `complexity.py` / `sensitivity.py` | Fisher Information, degrees of freedom for signal, posterior error covariance |
-| `data/` | Parsers, loaders, ISRaD observations, alignment, and `ForcingData`/`ObservationData` schemas |
-
----
-
-## Installation
-
-Requires **Python 3.11+**.
-
-### Option A — conda (recommended)
+Python 3.11 or newer is required. The conda environment includes the model and
+development dependencies:
 
 ```bash
-make env                              # create the conda env from environment.yaml
+make env
 conda activate ecosystem-complexity
-make install                          # pip install -e .
+make install
 ```
 
-### Option B — pip / venv
+Or create a virtual environment and install the package with its development
+tools:
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"               # editable install + dev tools
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
 ```
 
-### Required: JAX and optax
-
-The forward model and inversions depend on **`jax`** and **`optax`**, which are not yet
-pinned in `environment.yaml` / `pyproject.toml`. Install them explicitly:
+Check that the package and its dependencies import, then run the test suite:
 
 ```bash
-pip install jax optax                 # CPU build; see JAX docs for GPU/TPU wheels
-```
-
-> For GPU/TPU support, follow the platform-specific instructions in the
-> [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html).
-
-Verify the install:
-
-```bash
-python -c "import ecosystem_complexity, jax, optax; print('OK')"
+python -c "import ecosystem_complexity, jax, optax; print('Ready')"
 make test
 ```
 
----
+If you need GPU support, install the appropriate JAX build for your platform
+after creating the environment. The [JAX installation guide](https://docs.jax.dev/en/latest/installation.html)
+has the current instructions.
 
-## Quick start
+## First run
 
-### 1. Run a forward simulation
-
-```python
-from ecosystem_complexity.api import build_model, run_model, spinup
-from ecosystem_complexity.data.loaders import load_forcing  # site-specific loader
-
-model = build_model("configs/harvard_3pool_config.yaml")
-forcing = load_forcing("configs/harvard_3pool_config.yaml")
-
-# Spin up to quasi-steady state (12C convergence + 14C historical spin-up)
-state0 = spinup(model, forcing)
-
-out = run_model(model, forcing, state0=state0)
-print(out.NEE.shape, out.delta14C.shape)   # (T,), (T, n_pools)
-```
-
-`ModelOutput` carries `C12`, `C14`, `delta14C`, `NEE`, `GPP`, `ER`, `Rh`, `Ra`, and the
-`final_state`.
-
-### 2. Invert against observations
-
-```python
-# Gradient-based (Adam / L-BFGS)
-from ecosystem_complexity.api import optimize
-result = optimize(model, forcing, observations, ...)
-
-# Optimal Estimation (Levenberg–Marquardt + posterior covariance)
-from ecosystem_complexity.api import optimize_oe
-oe = optimize_oe(model, forcing, observations, ...)
-```
-
-### 3. Analyse information content
-
-```python
-from ecosystem_complexity.information import analyze_information_content
-info = analyze_information_content(model, forcing, ...)   # Fisher, DFS, posterior Sₓ
-```
-
-Full, runnable end-to-end examples live in [`notebooks/`](notebooks/).
-
----
-
-## Command-line apps
-
-Installing the package (`pip install -e .`) also installs the **`ecosys`**
-console script — a single entry point over eight verbs that cover the whole
-research loop: stage data, build configs, fit, project, quantify information
-content, sample the posterior, then aggregate and report. Everything can
-also be invoked as `python -m ecosystem_complexity.cli <verb>`.
-
-| Verb | What it does | Doc |
-|---|---|---|
-| `optimize` | Fit the model to observations at one site, a site set, or a sweep | [docs/apps/optimize.md](docs/apps/optimize.md) |
-| `warming`  | Project a fitted site under a standardized temperature perturbation | [docs/apps/warming.md](docs/apps/warming.md) |
-| `mcmc`     | Posterior sampling + cross-site rollups + structural-null test | [docs/apps/mcmc.md](docs/apps/mcmc.md) |
-| `information` | Shapley DFS / AK / gain diagnostics on the OE posterior | [docs/apps/information.md](docs/apps/information.md) |
-| `fetch`    | Stage tower, gridded, ISRaD, and atmospheric-¹⁴C inputs | [docs/apps/fetch.md](docs/apps/fetch.md) |
-| `analyze`  | Post-hoc summaries + transit-time diagnostics over exported artifacts | [docs/apps/analyze.md](docs/apps/analyze.md) |
-| `config`   | Build / discover site YAML configs | [docs/apps/config.md](docs/apps/config.md) |
-| `report`   | Cross-run report generators (merged tables + cross-ecosystem summary) | [docs/apps/report.md](docs/apps/report.md) |
-
-Full CLI reference: [`docs/apps/`](docs/apps/README.md).
-
-### Quick examples
-
-Fit one site:
+The most approachable starting point is the Harvard Forest configuration. It
+already names the site, its pools, observations, and input data location.
 
 ```bash
 ecosys optimize configs/multisite/harvard_forest.yaml
 ```
 
-Fit an entire versioned site set in parallel:
+That command fits the configured model to the available observations. For a
+small, reproducible collection of sites, use the direct-warming site set:
 
 ```bash
-ecosys optimize --site-set configs/site_sets/full_network_41.yaml -j 8
+ecosys optimize \
+  --site-set configs/site_sets/direct_warming_network_24.yaml \
+  --include-er -j 4
 ```
 
-Project the standardized `+4 °C / 100-year` warming response for the same set:
+Once a fit is available, you can run a warming experiment for the same site
+set:
 
 ```bash
-ecosys warming --site-set configs/site_sets/full_network_41.yaml -j 8
+ecosys warming \
+  --site-set configs/site_sets/direct_warming_network_24.yaml \
+  --include-er -j 4
 ```
 
-Cross-network Shapley DFS with per-biome panels:
+To see which observations contribute most to the fitted parameters:
 
 ```bash
 ecosys information shapley \
-    --site-set configs/site_sets/full_network_41.yaml \
-    --plot-by biome -j 8
+  --site-set configs/site_sets/direct_warming_network_24.yaml \
+  --plot-by biome -j 4
 ```
 
-Sample the posterior — MCMC where saved chains exist, Gaussian OE draws
-elsewhere — and roll everything up into cross-site regressions:
+Use `ecosys <command> --help` before a longer run. It gives the current list
+of options for the workflow installed in your environment.
+
+## Add a site
+
+Configs under `configs/multisite/` are a good starting point for tower sites;
+`configs/expansion/` contains additional sites and forcing arrangements. A
+config records the site metadata, soil layers and pools, parameter priors,
+observations, and forcing source.
+
+To find a tower near an ISRaD site before creating a configuration:
 
 ```bash
-ecosys mcmc --site-set configs/site_sets/full_network_41.yaml -j 8
+ecosys config locate --flux-tower US-Ha1 --out /tmp/harvard_sites.csv
 ```
 
-Stage a new AmeriFlux site and materialize its config from tower metadata:
+Then create a starting configuration and stage its tower data:
 
 ```bash
-ecosys config locate --flux-tower US-Ha1 --out /tmp/harvard.csv
-ecosys config build --tower-id US-Ha1 --lat 42.5378 --lon -72.1715 \
-                    --biome temperate_deciduous_forest \
-                    --observation-path combined
-ecosys fetch flux harvard_forest --accept-policy --accept-license
+ecosys config build \
+  --selector US-Ha1 --tower-id US-Ha1 \
+  --lat 42.5378 --lon -72.1715 \
+  --biome "temperate deciduous forest" \
+  --out configs/multisite/my_site.yaml
+
+ecosys fetch flux my_site --accept-policy --accept-license
 ```
 
-### Output contract
+Review the new configuration before fitting it. Downloading AmeriFlux data
+requires your own credentials; provide them with `--user-id` and `--email`, or
+put `AMERIFLUX_USER_ID` and `AMERIFLUX_EMAIL` in `.env`.
 
-Every verb writes into `./outputs/{name}/{verb}/` — `{name}` is the site id
-for single-site runs and the site-set YAML's `name:` for multi-site runs.
-Every run directory contains `manifest.json` (verb, git sha, config
-snapshot), `config.snapshot.yaml`, and `logs/run.log`; the per-verb docs
-enumerate the additional parquet, NPZ, and PNG artifacts.
+## Common commands
 
-`analyze` and `report` only read from `outputs/`, so they are cheap to
-re-run and safely parallelizable across sites.
-
----
-
-## Configuration
-
-A single YAML file defines the site, model structure (pools and layers), spin-up, ¹⁴C
-options, data paths, inversion settings, and analysis options. Ready-made configs live in
-[`configs/`](configs/):
-
-| Config | Site |
+| Command | When to use it |
 |---|---|
-| `harvard_3pool_config.yaml`, `harvard_4pool_config.yaml` | Harvard Forest (US-Ha1) |
-| `howland_forest_3pool_config.yaml` | Howland Forest (US-Ho1) |
-| `barrow_3pool_config.yaml`, `barrow_alaska.yaml` | Barrow, Alaska (permafrost) |
-| `eight_mile_lake_3pool_config.yaml` | Eight Mile Lake (US-EML, permafrost) |
-| `schema.yaml` | Annotated reference schema |
+| `ecosys optimize` | Fit one configuration, a site set, or a pool-structure sweep. |
+| `ecosys warming` | Run a standardized warming experiment from a site fit. |
+| `ecosys information shapley` | Compare how observation types constrain parameters. |
+| `ecosys mcmc` | Draw posterior and prior uncertainty for cross-site analysis. |
+| `ecosys fetch` | Download or extract forcing data. |
+| `ecosys config` | Find sites and build configuration files. |
+| `ecosys analyze` | Run network, transit-time, and summary analyses. |
+| `ecosys report` | Combine results and produce cross-ecosystem summaries. |
 
-Pools are named `{layer}_{som_pool}` (e.g. `organic_litter`); microbial pools are
-`{layer}_mic`. See TECHSPEC §3 for the full schema.
+Keep the exact config, command, input data version, and output tables together
+for every result you interpret or share.
 
----
+## Project map
 
-## Repository layout
-
+```text
+src/ecosystem_complexity/   model, inference, data handling, and analysis code
+configs/                    example site configs and site-set manifests
+data/                       local forcing and observation inputs (not all tracked)
+notebooks/                  exploratory and paper-figure workflows
+docs/                       scientific background and reference notes
+tests/                      unit and integration tests
 ```
-ecosystem-complexity/
-├── src/ecosystem_complexity/   # the package (see module table above)
-│   └── data/                   # parsers, loaders, schemas, ISRaD observations
-│   └── sites/                  # reusable per-site inversion modules
-├── configs/                    # per-site YAML configurations
-├── data/                       # AmeriFlux, ISRaD, CMIP forcing & observations
-├── notebooks/                  # analysis scripts & figure studies
-├── apps/                       # 8 `ecosys` verb dispatchers (see docs/apps/)
-├── docs/                       # TECHSPEC.md, methodology notes, CLI reference
-├── tests/                      # pytest suite (unit + integration)
-├── environment.yaml            # conda environment
-├── pyproject.toml              # package metadata & tooling config
-└── Makefile                    # env / install / lint / format / test
-```
-
-Every application lives under `apps/` as a thin dispatcher for one `ecosys`
-verb — see [`docs/apps/`](docs/apps/README.md) for the CLI reference. The
-underlying logic lives in `src/ecosystem_complexity/` (subpackages
-`network/`, `site_analysis/`, `site_config/`, `transit_time/`, `mcmc/`,
-`visualize/`, `outputs/`, `fetch/`). The `notebooks/` directory remains for
-paper-figure generation and exploratory analyses.
-
----
 
 ## Development
 
 ```bash
-make lint      # ruff check + mypy (strict)
-make format    # black + ruff --fix
-make test      # pytest -v with coverage
-make clean     # remove caches and build artifacts
+make lint
+make format
+make test
 ```
 
-Scientific naming conventions (`C12`, `C14`, `log_Q10`, `GPP`, `Ra`, …) are intentionally
-preserved; the corresponding lint rules are disabled in `pyproject.toml`.
+## License and contact
 
----
-
-## License
-
-See [`LICENSE`](LICENSE).
-
-## Citation / contact
-
-Newton H. Nguyen — nnewton@stanford.edu
+See [LICENSE](LICENSE). For questions about the research workflow, contact
+Newton H. Nguyen at nnewton@stanford.edu.
