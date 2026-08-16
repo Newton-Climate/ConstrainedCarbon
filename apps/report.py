@@ -3,49 +3,52 @@
 
 Subverbs
     merge            concat cross-biome result tables into one CSV
-                     (merge_cross_biome_results.py)
     cross-ecosystem  build the cross-ecosystem summary markdown/CSV bundle
-                     (build_cross_ecosystem_summary.py)
-
-Forwards argv to the underlying report modules unchanged.
 """
 from __future__ import annotations
 
-import importlib
 import logging
 import sys
 from pathlib import Path
 
 _APP_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _APP_DIR.parent
-_SRC = _REPO_ROOT / "src"
-if _SRC.is_dir() and str(_SRC) not in sys.path:
-    sys.path.insert(0, str(_SRC))
-if str(_APP_DIR) not in sys.path:
-    sys.path.insert(0, str(_APP_DIR))
+_NB = _REPO_ROOT / "notebooks"
+if str(_NB) not in sys.path:
+    sys.path.insert(0, str(_NB))
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 
 _SUBVERBS = ("merge", "cross-ecosystem")
 
 
-def _forward(module_name: str, argv: list[str]) -> int:
-    mod = importlib.import_module(module_name)
-    main = mod.main
+def _run(main_fn, argv: list[str]) -> int:
     try:
-        rc = main(argv)
+        rc = main_fn(argv)
     except TypeError:
         saved = sys.argv
-        sys.argv = [module_name, *argv]
+        sys.argv = [main_fn.__module__, *argv]
         try:
-            rc = main()
+            rc = main_fn()
         finally:
             sys.argv = saved
     return int(rc or 0)
 
 
+def _cmd_merge(argv):
+    from ecosystem_complexity.network.merge_results import main as m
+    return _run(m, argv)
+
+
+def _cmd_cross_ecosystem(argv):
+    from ecosystem_complexity.outputs.cross_ecosystem_summary import main as m
+    return _run(m, argv)
+
+
 _HANDLERS = {
-    "merge":           lambda a: _forward("merge_cross_biome_results", a),
-    "cross-ecosystem": lambda a: _forward("build_cross_ecosystem_summary", a),
+    "merge":           _cmd_merge,
+    "cross-ecosystem": _cmd_cross_ecosystem,
 }
 
 

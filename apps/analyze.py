@@ -2,15 +2,13 @@
 """``ecosys analyze`` — post-hoc analysis over exported inversion artifacts.
 
 Subverbs
-    model            per-site model export/reload (analyze_model.py)
+    model            per-site model export/reload
     network          network-wide inversion + OE ladder aggregation
-                       (analyze_network_inversions.py)
     transit          intrinsic / realized / gradient transit-time diagnostics
     transit-vulnerability
                      ridge / LOBO regression testing whether transit metrics
                      improve cross-biome vulnerability prediction
     cross-ecosystem  cross-ecosystem summary markdown/CSV
-                       (build_cross_ecosystem_summary.py)
 
 These subverbs are post-hoc consumers of the tables written by
 ``ecosys optimize``, ``ecosys warming``, and ``ecosys information``.
@@ -22,34 +20,29 @@ from __future__ import annotations
 
 import argparse
 import logging
-import os
 import sys
 from pathlib import Path
 
 _APP_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _APP_DIR.parent
-_SRC = _REPO_ROOT / "src"
-if _SRC.is_dir() and str(_SRC) not in sys.path:
-    sys.path.insert(0, str(_SRC))
-if str(_APP_DIR) not in sys.path:
-    sys.path.insert(0, str(_APP_DIR))
+_NB = _REPO_ROOT / "notebooks"
+if str(_NB) not in sys.path:
+    sys.path.insert(0, str(_NB))
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 
 _SUBVERBS = ("model", "network", "transit", "transit-vulnerability", "cross-ecosystem")
 
 
-def _forward(module_name: str, argv: list[str]) -> int:
-    """Import ``apps/<module_name>`` and invoke its ``main(argv)``."""
-    import importlib
-    mod = importlib.import_module(module_name)
-    main = mod.main
+def _run(main_fn, argv: list[str]) -> int:
     try:
-        rc = main(argv)
+        rc = main_fn(argv)
     except TypeError:
         saved = sys.argv
-        sys.argv = [module_name, *argv]
+        sys.argv = [main_fn.__module__, *argv]
         try:
-            rc = main()
+            rc = main_fn()
         finally:
             sys.argv = saved
     return int(rc or 0)
@@ -62,22 +55,43 @@ def _cmd_transit(argv: list[str]) -> int:
                         choices=("intrinsic", "realized", "gradient"))
     parser.add_argument("-h", "--help", action="store_true")
     known, rest = parser.parse_known_args(argv)
-    module = {
-        "intrinsic": "compute_transit_times",
-        "realized": "realized_transit_all_sites",
-        "gradient": "realized_transit_gradient",
-    }[known.mode]
     if known.help:
         rest = [*rest, "--help"]
-    return _forward(module, rest)
+    if known.mode == "intrinsic":
+        from ecosystem_complexity.transit_time.network import main as m
+    elif known.mode == "realized":
+        from ecosystem_complexity.transit_time.realized_network import main as m
+    else:
+        from ecosystem_complexity.transit_time.realized_gradient import main as m
+    return _run(m, rest)
+
+
+def _cmd_model(argv):
+    from ecosystem_complexity.site_analysis.analyze_run import main as m
+    return _run(m, argv)
+
+
+def _cmd_network(argv):
+    from ecosystem_complexity.network.inversions import main as m
+    return _run(m, argv)
+
+
+def _cmd_transit_vulnerability(argv):
+    from ecosystem_complexity.network.transit_vulnerability import main as m
+    return _run(m, argv)
+
+
+def _cmd_cross_ecosystem(argv):
+    from ecosystem_complexity.outputs.cross_ecosystem_summary import main as m
+    return _run(m, argv)
 
 
 _HANDLERS = {
-    "model":                 lambda a: _forward("analyze_model", a),
-    "network":               lambda a: _forward("analyze_network_inversions", a),
+    "model":                 _cmd_model,
+    "network":               _cmd_network,
     "transit":               _cmd_transit,
-    "transit-vulnerability": lambda a: _forward("analyze_transit_vulnerability", a),
-    "cross-ecosystem":       lambda a: _forward("build_cross_ecosystem_summary", a),
+    "transit-vulnerability": _cmd_transit_vulnerability,
+    "cross-ecosystem":       _cmd_cross_ecosystem,
 }
 
 
