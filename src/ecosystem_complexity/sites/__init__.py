@@ -2,7 +2,7 @@
 
 This package holds the code that used to live under ``notebooks/sites/`` and was
 importable only via ``sys.path`` manipulation. The analysis scripts in
-``notebooks/`` and the CLI in ``apps/optim_site_main.py`` both import from here.
+``notebooks/`` and the ``ecosys optimize`` CLI dispatcher (apps/optimize.py) both import from here.
 
 What belongs here is what needs a *site* — a ``SiteSpec``, a config, or the
 inversion itself:

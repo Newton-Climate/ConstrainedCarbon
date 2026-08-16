@@ -177,30 +177,33 @@ limit SOC alone can't remove.
 PY=/Users/newtonnguyen/miniforge3/envs/ecosystem-complexity/bin/python
 
 # 1. site selection
-$PY apps/locate_site.py --flux-tower US-Ha1 --out notebooks/exports/flux_tower_israd_colocations.csv
+ecosys config locate --flux-tower US-Ha1 --out notebooks/exports/flux_tower_israd_colocations.csv
 
 # 2. forcing (needs .env for AmeriFlux; ICOS is CC-BY)
-$PY apps/download_flux.py harvard_forest --accept-policy
-$PY apps/download_flux.py solling --accept-license
+ecosys fetch flux harvard_forest --accept-policy
+ecosys fetch flux solling --accept-license
 
 # 3. soil-carbon stocks
 $PY notebooks/download_soilgrids_soc.py
 
 # 4. config + inversion + analysis
-$PY apps/build_site_config.py --selector harvard_forest
-$PY apps/optim_site_main.py solling
-$PY apps/analyze_model.py solling
+ecosys config build --selector harvard_forest
+ecosys optimize solling
+ecosys analyze model solling
 ```
+
+Every `ecosys <verb>` run writes its artifacts under `./outputs/{site_or_set_name}/{verb}/`
+with a `manifest.json` declaring the file list (see
+`src/ecosystem_complexity/outputs.py` for the shared contract).
 
 ## 7. Files
 
 | File | Purpose |
 |---|---|
-| `apps/locate_site.py` | ISRaD eligibility + tower colocation |
-| `apps/download_flux.py` | AmeriFlux / ICOS / EUF / JPF FLUXNET download |
-| `apps/build_site_config.py` | generate site config YAMLs |
-| `apps/optim_site_main.py` | run the config-driven OE inversion and export artifacts |
-| `apps/analyze_model.py` | compute standardized diagnostics from a site fit or exported artifacts |
+| `apps/fetch.py` | `ecosys fetch {flux\|fluxcom\|clm\|israd\|atm14c}` — download / stage forcing and observation data |
+| `apps/config.py` | `ecosys config {build\|incubation\|locate}` — config-authoring utilities |
+| `apps/optimize.py` | `ecosys optimize` — canonical OE inversion for site / site-set / sweep |
+| `apps/analyze.py` | `ecosys analyze {model\|network\|transit\|transit-vulnerability\|cross-ecosystem}` |
 | `notebooks/download_soilgrids_soc.py` | SoilGrids ¹²C SOC stocks by pool |
 | `configs/israd_multisite_3pool_config.yaml` | the shared recipe template (source for the per-site configs) |
 | `configs/multisite/<site>.yaml` | one transparent config per site (recipe + `site`/`datasource`) |
