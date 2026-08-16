@@ -3,6 +3,11 @@ site:
   name: "Harvard Forest \u2013 4-Pool Optimal (active + slow + passive + stable)"
   lat: 42.54
   lon: -72.17
+datasource:
+  israd_name: Harvard Forest
+  forcing_glob: AMF_US-Ha1_FLUXNET_1991-2025_v1.3_r1
+  forcing_kind: daily
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler

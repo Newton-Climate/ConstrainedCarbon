@@ -4,6 +4,12 @@ site:
   lat: 71.28
   lon: -156.61
   T_annual_mean_C: -11.5
+datasource:
+  israd_name: Barrow
+  forcing_glob: shared/fluxcom/barrow_fluxcom.csv
+  er_observation_glob: shared/fluxcom/barrow_fluxcom_er.csv
+  forcing_kind: fluxcom
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler

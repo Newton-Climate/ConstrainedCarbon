@@ -8,6 +8,12 @@ site:
   mat_c: -12.0
   map_mm: 110
   permafrost: true
+datasource:
+  israd_name: Barrow
+  forcing_glob: shared/fluxcom/barrow_fluxcom.csv
+  er_observation_glob: shared/fluxcom/barrow_fluxcom_er.csv
+  forcing_kind: fluxcom
+  observation_path: combined
 model:
   dt_days: 1.0
   solver: euler
