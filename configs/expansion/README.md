@@ -1,7 +1,7 @@
 # Expansion Site Configs
 
 These configs are intentionally kept outside `configs/multisite/` so they do not
-enter the default `apps/optim_site_main.py --all` sweep before their FluxCom GPP
+enter the default `ecosys optimize --all` sweep before their FluxCom GPP
 series have been added under `data/shared/fluxcom/`.
 
 They target ecosystem classes that are underrepresented or absent in the current
@@ -15,6 +15,6 @@ tower-backed multisite set:
 Run one explicitly once its FluxCom file exists:
 
 ```bash
-python apps/optim_site_main.py configs/expansion/luquillo_experimental_forest.yaml
-python apps/analyze_model.py configs/expansion/luquillo_experimental_forest.yaml
+ecosys optimize configs/expansion/luquillo_experimental_forest.yaml
+ecosys analyze model configs/expansion/luquillo_experimental_forest.yaml
 ```

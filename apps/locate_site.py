@@ -42,8 +42,3 @@ def main(argv: list[str] | None = None) -> int:
     print(table.to_string(index=False))
     print(f"\nWrote {len(table)} rows to {out_path}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-

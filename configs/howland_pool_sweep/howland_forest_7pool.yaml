@@ -1,0 +1,173 @@
+site:
+  id: israd-multisite-howland_forest-7pool
+  name: Howland Forest (US-Ho1) — 7-pool (Sierra-like)
+  lat: 45.2
+  lon: -68.74
+  tower_id: US-Ho1
+  biome: temperate coniferous forest
+datasource:
+  israd_name: Howland Forest
+  forcing_glob: AMF_US-Ho1_FLUXNET_FULLSET_1996-2023_3-6
+  forcing_kind: daily
+  observation_path: combined
+  fraction_rules:
+    free light: soil_Oi
+    occluded light: soil_Oe_a_L
+    heavy: soil_Oe_a_H
+    coarse: null
+    fine: null
+    silt+sand: null
+    silt+clay: null
+    sand: null
+    silt: null
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+  soil_layers:
+  - name: soil
+    depth_top_m: 0.0
+    depth_bot_m: 1.3
+    permafrost_eligible: false
+    som_pools:
+    - name: Oi
+      tau_prior_days: 547
+      tau_prior_std: 183
+    - name: Oe_a_L
+      tau_prior_days: 1460
+      tau_prior_std: 547
+    - name: Oe_a_H
+      tau_prior_days: 12775
+      tau_prior_std: 3650
+    - name: ALF_gt80
+      tau_prior_days: 1095
+      tau_prior_std: 365
+    - name: ALF_lt80
+      tau_prior_days: 27375
+      tau_prior_std: 9125
+    - name: MinAss
+      tau_prior_days: 40150
+      tau_prior_std: 13150
+    - name: MinAss_slow
+      tau_prior_days: 100000
+      tau_prior_std: 50000
+  transfer_rules:
+  - - soil_Oi
+    - soil_Oe_a_L
+    - 0.658
+  - - soil_Oe_a_L
+    - soil_Oe_a_H
+    - 0.041
+  - - soil_Oe_a_H
+    - soil_ALF_gt80
+    - 0.2
+  - - soil_ALF_gt80
+    - soil_ALF_lt80
+    - 0.8
+  - - soil_ALF_lt80
+    - soil_MinAss
+    - 0.098
+  - - soil_MinAss
+    - soil_MinAss_slow
+    - 0.05
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+  partition:
+    soil_Oi: 1.0
+    soil_Oe_a_L: 0.0
+    soil_Oe_a_H: 0.0
+    soil_ALF_gt80: 0.0
+    soil_ALF_lt80: 0.0
+    soil_MinAss: 0.0
+    soil_MinAss_slow: 0.0
+  optimize_partition: false
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+inversion:
+  sigma_soc_fraction: 0.5
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001
+analysis:
+  metrics:
+    reduced_chi2: true
+    rmse: true
+    degrees_of_freedom: true
+    averaging_kernel: true
+    gain_matrix: true
+    jacobian: true
+    constraint_ladder: true
+    shapley: false
+    ablation: false
+    orthogonality: false
+  plots:
+    model_results: true
+    information_content: true
+    observation_fit: true
+output:
+  artifact_dir: results/{config_stem}
+  summary_json: true
+  matrices_npz: true
+  observation_csv: true
+  diagnostics_csv: true
+  figure_png: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional experiment blocks (phase 1 apps/ reorg). Uncomment and edit to
+# override CLI-flag defaults. Absent blocks fall back to today's defaults;
+# see configs/schema.yaml for the full shape.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# warming:                        # consumed by `ecosys warming` and `ecosys mcmc`
+#   horizon_years: 100
+#   warming_delta_c: 4.0
+#   metric: vulnerability         # vulnerability | transit
+#   include_constraints:
+#     er: true
+#     incubation: false
+#     incubation_14c: false
+
+# mcmc:                           # consumed by `ecosys mcmc`
+#   rng_seed: 7
+#   mc_iterations: 2000
+#   null_iterations: 500
+#   posterior_draw_count: 200
+#   prior_draw_count: 200
+#   old_pools: []                 # e.g. [mineral_A_slow, mineral_B_passive] — must match model pool names
+#   warming_horizon_years: 100
+#   warming_delta_c: 4.0
+
+# information:                    # consumed by `ecosys information` subverbs
+#   metrics:
+#     dfs: true
+#     averaging_kernel: true
+#     gain_matrix: true
+#     posterior_covariance: true
+#     shapley: true
+#     ose: false
+#   shapley:
+#     sigma_rule: "0.20:500"      # REL:ABS; folds the tight_c variant
+#     plot_by: biome              # null | biome | pool_count
+#   ose:
+#     scenarios:
+#       - {name: bulk_only,     include: [bulk_14c]}
+#       - {name: with_fraction, include: [bulk_14c, fraction_14c]}
+#       - {name: full,          include: [bulk_14c, fraction_14c, respired_14c]}

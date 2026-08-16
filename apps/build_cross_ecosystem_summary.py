@@ -212,7 +212,3 @@ def main() -> int:
     print(f"Wrote {figure_path}")
     print(f"Wrote {markdown_path}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

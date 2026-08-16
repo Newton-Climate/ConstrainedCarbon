@@ -27,7 +27,7 @@ Public API
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 import yaml
@@ -145,6 +145,17 @@ class ModelConfig:
     inversion_raw: dict[str, Any]
     analysis_raw: dict[str, Any]
     output_raw: dict[str, Any]
+
+    # Optional experiment-scoped blocks used by the `ecosys` app dispatchers.
+    # Each is an empty dict when the corresponding YAML block is absent.
+    #   warming_raw     – consumed by `ecosys warming` and `ecosys mcmc`
+    #   mcmc_raw        – consumed by `ecosys mcmc`
+    #   information_raw – consumed by `ecosys information` subverbs
+    #   sweep_raw       – consumed by `ecosys optimize --sweep`
+    warming_raw: dict[str, Any] = field(default_factory=dict)
+    mcmc_raw: dict[str, Any] = field(default_factory=dict)
+    information_raw: dict[str, Any] = field(default_factory=dict)
+    sweep_raw: dict[str, Any] = field(default_factory=dict)
 
     # Optional typed external-inputs config (None when block is absent from YAML)
     external_inputs: Optional[ExternalInputsConfig] = None
@@ -406,6 +417,11 @@ def load_config(path: str) -> ModelConfig:
         inversion_raw=dict(raw.get("inversion", {})),
         analysis_raw=normalize_analysis_config(raw.get("analysis")),
         output_raw=normalize_output_config(raw.get("output")),
+        # Optional experiment-scoped blocks (absent → empty dict)
+        warming_raw=dict(raw.get("warming") or {}),
+        mcmc_raw=dict(raw.get("mcmc") or {}),
+        information_raw=dict(raw.get("information") or {}),
+        sweep_raw=dict(raw.get("sweep") or {}),
         # Typed external-inputs config
         external_inputs=external_inputs,
     )

@@ -1,0 +1,140 @@
+site:
+  id: israd-multisite-howland_forest-3pool
+  name: Howland Forest (US-Ho1) — 3-pool
+  lat: 45.2
+  lon: -68.74
+  tower_id: US-Ho1
+  biome: temperate coniferous forest
+datasource:
+  israd_name: Howland Forest
+  forcing_glob: AMF_US-Ho1_FLUXNET_FULLSET_1996-2023_3-6
+  forcing_kind: daily
+  observation_path: combined
+model:
+  dt_days: 1.0
+  solver: euler
+  spinup_years: 400
+  enable_14C: true
+  microbial_pool_per_layer: false
+  aboveground_pools: []
+  soil_layers:
+  - name: soil
+    depth_top_m: 0.0
+    depth_bot_m: 1.3
+    permafrost_eligible: false
+    som_pools:
+    - name: active
+      depth_top_m: 0.0
+      depth_bot_m: 0.1
+      tau_prior_days: 730
+      tau_prior_std: 365
+    - name: slow
+      depth_top_m: 0.1
+      depth_bot_m: 0.3
+      tau_prior_days: 7300
+      tau_prior_std: 3650
+    - name: passive
+      depth_top_m: 0.3
+      depth_bot_m: 1.3
+      tau_prior_days: 73000
+      tau_prior_std: 36500
+  transfer_rules:
+  - - soil_active
+    - soil_slow
+    - 0.25
+  - - soil_slow
+    - soil_passive
+    - 0.1
+external_inputs:
+  enabled: true
+  source: GPP_obs
+  CUE: 0.47
+  optimize_CUE: false
+  soil_input_fraction: 1.0
+  optimize_soil_input_fraction: false
+  partition:
+    soil_active: 1.0
+    soil_slow: 0.0
+  optimize_partition: false
+parameters:
+  alloc: {}
+  Q10: 2.0
+  theta_opt: 0.35
+  gamma_moisture: 5.0
+inversion:
+  sigma_soc_fraction: 0.5
+  oe_max_iterations: 100
+  sigma_pool_14C: 15.0
+  sigma_resp_14C: 15.0
+  sigma_carbon_gCm2: 1500.0
+  f_hetero: 0.55
+  sigma_f_hetero: 0.08
+  sigma_er_frac: 0.15
+  lm_lambda0: 0.01
+  lm_lambda_factor: 10.0
+  oe_convergence_eps: 0.0001
+analysis:
+  metrics:
+    reduced_chi2: true
+    rmse: true
+    degrees_of_freedom: true
+    averaging_kernel: true
+    gain_matrix: true
+    jacobian: true
+    constraint_ladder: true
+    shapley: false
+    ablation: false
+    orthogonality: false
+  plots:
+    model_results: true
+    information_content: true
+    observation_fit: true
+output:
+  artifact_dir: results/{config_stem}
+  summary_json: true
+  matrices_npz: true
+  observation_csv: true
+  diagnostics_csv: true
+  figure_png: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional experiment blocks (phase 1 apps/ reorg). Uncomment and edit to
+# override CLI-flag defaults. Absent blocks fall back to today's defaults;
+# see configs/schema.yaml for the full shape.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# warming:                        # consumed by `ecosys warming` and `ecosys mcmc`
+#   horizon_years: 100
+#   warming_delta_c: 4.0
+#   metric: vulnerability         # vulnerability | transit
+#   include_constraints:
+#     er: true
+#     incubation: false
+#     incubation_14c: false
+
+# mcmc:                           # consumed by `ecosys mcmc`
+#   rng_seed: 7
+#   mc_iterations: 2000
+#   null_iterations: 500
+#   posterior_draw_count: 200
+#   prior_draw_count: 200
+#   old_pools: []                 # e.g. [mineral_A_slow, mineral_B_passive] — must match model pool names
+#   warming_horizon_years: 100
+#   warming_delta_c: 4.0
+
+# information:                    # consumed by `ecosys information` subverbs
+#   metrics:
+#     dfs: true
+#     averaging_kernel: true
+#     gain_matrix: true
+#     posterior_covariance: true
+#     shapley: true
+#     ose: false
+#   shapley:
+#     sigma_rule: "0.20:500"      # REL:ABS; folds the tight_c variant
+#     plot_by: biome              # null | biome | pool_count
+#   ose:
+#     scenarios:
+#       - {name: bulk_only,     include: [bulk_14c]}
+#       - {name: with_fraction, include: [bulk_14c, fraction_14c]}
+#       - {name: full,          include: [bulk_14c, fraction_14c, respired_14c]}

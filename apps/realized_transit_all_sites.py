@@ -83,7 +83,3 @@ def main() -> int:
         pd.DataFrame(failures).to_csv(out.with_name("realized_transit_all_sites_failures_20260731.csv"), index=False)
     print(f"Wrote {len(rows)} sites to {out} and {figure}; failures={len(failures)}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

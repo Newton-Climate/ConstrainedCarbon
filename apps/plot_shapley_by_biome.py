@@ -184,7 +184,3 @@ def main() -> int:
     print(pdf_path)
     print(csv_path)
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

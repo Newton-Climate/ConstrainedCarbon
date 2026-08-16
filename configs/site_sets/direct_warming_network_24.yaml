@@ -1,0 +1,29 @@
+name: direct_warming_network_24
+description: The 24-site direct-warming network used in cross-ecosystem results.
+run_options:
+  include_er: true
+configs:
+- configs/multisite/baram_basin.yaml
+- configs/multisite/auchencorth_moss.yaml
+- configs/multisite/cz_1964burn_nsa.yaml
+- configs/multisite/appi_forest.yaml
+- configs/multisite/cz_old_black_spruce.yaml
+- configs/multisite/eml.yaml
+- configs/multisite/flona.yaml
+- configs/multisite/mi_coarse_umbs.yaml
+- configs/multisite/harvard_forest.yaml
+- configs/multisite/mo_ozark_brea.yaml
+- configs/multisite/nh_bartlett_forest.yaml
+- configs/multisite/howland_forest.yaml
+- configs/multisite/zf2.yaml
+- configs/expansion/arl.yaml
+- configs/multisite/solling.yaml
+- configs/expansion/az_mollisol.yaml
+- configs/expansion/ca_mollisol.yaml
+- configs/expansion/bci.yaml
+- configs/expansion/luquillo_experimental_forest.yaml
+- configs/expansion/hi_andisol.yaml
+- configs/expansion/willow_creek.yaml
+- configs/expansion/nahuelbuta.yaml
+- configs/expansion/santa_gracia.yaml
+- configs/multisite/adventdalen_valley.yaml

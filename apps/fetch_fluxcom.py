@@ -70,7 +70,3 @@ def main() -> int:
             f"grid {grid_lat:.2f}, {grid_lon:.2f})"
         )
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
