@@ -67,19 +67,18 @@ def _cmd_network(argv: list[str]) -> int:
 
 
 def _cmd_shapley(argv: list[str]) -> int:
-    # Split off --sigma-rule REL:ABS and forward it via the env var the
-    # underlying script already honors (previously the tight_c copy).
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--sigma-rule", default=None,
-                        help="σ_carbon rule as REL:ABS, e.g. 0.20:500.")
-    known, rest = parser.parse_known_args(argv)
-    if known.sigma_rule:
-        os.environ["CARBON_SIGMA_RULE"] = known.sigma_rule
-    return _delegate("analyze_shapley_per_parameter", rest)
+    # Legacy verb: forward to `information shapley`. The dedicated
+    # `--sigma-rule` flag is now handled inside apps/information.py, so
+    # no env-var monkey-patching happens here.
+    return _delegate("information", ["shapley", *argv])
+
+
+def _cmd_information(argv: list[str]) -> int:
+    return _delegate("information", argv)
 
 
 def _cmd_warming(argv: list[str]) -> int:
-    return _delegate("analyze_warming_vulnerability", argv)
+    return _delegate("warming", argv)
 
 
 def _cmd_transit(argv: list[str]) -> int:
@@ -99,7 +98,7 @@ def _cmd_transit(argv: list[str]) -> int:
 
 
 def _cmd_mcmc(argv: list[str]) -> int:
-    return _delegate("sample_mcmc", argv)
+    return _delegate("mcmc", argv)
 
 
 def _cmd_analyze(argv: list[str]) -> int:
@@ -154,8 +153,9 @@ def _cmd_report(argv: list[str]) -> int:
 _COMMANDS = {
     "optimize": _cmd_optimize,
     "run": _cmd_optimize,  # legacy alias
+    "information": _cmd_information,
+    "shapley": _cmd_shapley,  # legacy alias → `information shapley`
     "network": _cmd_network,
-    "shapley": _cmd_shapley,
     "warming": _cmd_warming,
     "transit": _cmd_transit,
     "mcmc": _cmd_mcmc,
