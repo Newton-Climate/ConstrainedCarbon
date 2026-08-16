@@ -11,10 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from ecosystem_complexity import mcmc as _mcmc
-
-# NOTE: `src` importing from `notebooks` is a Session F step-1 target.
-# For this PR the shim is preserved so the pipeline still runs.
-from notebooks.paper_figs.utils import finalize_figure  # noqa: E402
+from ecosystem_complexity.visualize.utils import finalize_figure
 
 
 def _supplementary_null_figure(

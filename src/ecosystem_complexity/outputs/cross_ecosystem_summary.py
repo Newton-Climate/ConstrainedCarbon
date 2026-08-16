@@ -4,17 +4,15 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import pandas as pd
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
+from ecosystem_complexity.biome import BIOME_GROUP_LABELS
+from ecosystem_complexity.visualize.cross_ecosystem import build_cross_ecosystem_tables, make_figure_09
+from ecosystem_complexity.visualize.utils import close_or_show
 
-from notebooks.paper_figs.fig_09 import BIOME_GROUP_LABELS, build_cross_ecosystem_tables, make_figure_09  # noqa: E402
-from notebooks.paper_figs.utils import close_or_show  # noqa: E402
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _default_paths() -> tuple[Path, Path, list[Path]]:
