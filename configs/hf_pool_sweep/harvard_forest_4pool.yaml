@@ -105,3 +105,45 @@ output:
   observation_csv: true
   diagnostics_csv: true
   figure_png: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional experiment blocks (phase 1 apps/ reorg). Uncomment and edit to
+# override CLI-flag defaults. Absent blocks fall back to today's defaults;
+# see configs/schema.yaml for the full shape.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# warming:                        # consumed by `ecosys warming` and `ecosys mcmc`
+#   horizon_years: 100
+#   warming_delta_c: 4.0
+#   metric: vulnerability         # vulnerability | transit
+#   include_constraints:
+#     er: true
+#     incubation: false
+#     incubation_14c: false
+
+# mcmc:                           # consumed by `ecosys mcmc`
+#   rng_seed: 7
+#   mc_iterations: 2000
+#   null_iterations: 500
+#   posterior_draw_count: 200
+#   prior_draw_count: 200
+#   old_pools: []                 # e.g. [mineral_A_slow, mineral_B_passive] — must match model pool names
+#   warming_horizon_years: 100
+#   warming_delta_c: 4.0
+
+# information:                    # consumed by `ecosys information` subverbs
+#   metrics:
+#     dfs: true
+#     averaging_kernel: true
+#     gain_matrix: true
+#     posterior_covariance: true
+#     shapley: true
+#     ose: false
+#   shapley:
+#     sigma_rule: "0.20:500"      # REL:ABS; folds the tight_c variant
+#     plot_by: biome              # null | biome | pool_count
+#   ose:
+#     scenarios:
+#       - {name: bulk_only,     include: [bulk_14c]}
+#       - {name: with_fraction, include: [bulk_14c, fraction_14c]}
+#       - {name: full,          include: [bulk_14c, fraction_14c, respired_14c]}
