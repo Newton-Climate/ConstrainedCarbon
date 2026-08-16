@@ -59,6 +59,12 @@ REPO_ROOT = repo_root()
 
 ISRAD_DIR = os.path.join(REPO_ROOT, "data", "shared", "israd")
 ISRAD_VERSION = "2.6.6.2024-01-25"
+# The matching release's compiled tables; individual site spreadsheets are not
+# sufficient for the flattened tables consumed by this project.
+ISRAD_COMPILED_ARCHIVE_URL = (
+    "https://raw.githubusercontent.com/International-Soil-Radiocarbon-Database/"
+    "ISRaD/v2.6.6/ISRaD_data_files/database/ISRaD_database_files.zip"
+)
 ISRAD_LAYER = os.path.join(ISRAD_DIR, f"ISRaD_data_flat_layer_v {ISRAD_VERSION}.csv")
 ISRAD_FRACTION = os.path.join(
     ISRAD_DIR, f"ISRaD_data_flat_fraction_v {ISRAD_VERSION}.csv"

@@ -4,9 +4,9 @@
 Subverbs
     flux     AmeriFlux/FLUXNET tower CSV for one site (requires .env credentials)
     fluxcom  FLUXCOM-X 2021 global GPP/NEE grids → per-site CSV extraction
-    clm      Community Land Model site-level series from local NetCDF(s)
-    israd    prints where the ISRaD parser reads from (no download step)
-    atm14c   prints where the atmospheric ¹⁴C record is stored (no download step)
+    clm      Stage Community Land Model NetCDF(s) and extract site series
+    israd    Download the versioned ISRaD compiled tables
+    atm14c   Download atmospheric ¹⁴C source records
 
 Every subverb writes a small manifest under
 ``outputs/{name}/fetch/{source}/`` recording what was retrieved, so
@@ -140,15 +140,26 @@ def _cmd_fluxcom(argv: list[str]) -> int:
 def _cmd_clm(argv: list[str]) -> int:
     p = argparse.ArgumentParser(
         prog="ecosys fetch clm",
-        description="Extract CLM site series from a local directory of NetCDFs.",
+        description="Stage CLM NetCDFs or extract site series from Pangeo CMIP6.",
     )
     p.add_argument("configs", nargs="*",
                    help="site config paths; defaults to configs/multisite/*.yaml "
                         "filtered to forcing_kind: clm")
-    p.add_argument("--source-dir", required=True,
+    p.add_argument("--source-dir", default=str(_REPO_ROOT / "data" / "raw" / "clm"),
                    help="directory containing CLM history NetCDFs (one shared file "
                         "for the domain, or per-site files with the tower id in the name)")
-    p.add_argument("--variables", nargs="+", default=["GPP", "NEE", "HR"],
+    p.add_argument("--url", action="append", default=[],
+                   help="direct HTTP(S) URL of a CLM NetCDF; repeat for multiple files")
+    p.add_argument("--pangeo", action="store_true",
+                   help="read public CMIP6 Zarr stores through Pangeo instead of local NetCDFs")
+    p.add_argument("--pangeo-model", default="CESM2", help="Pangeo CMIP6 source_id")
+    p.add_argument("--pangeo-experiment", default="historical", help="Pangeo CMIP6 experiment_id")
+    p.add_argument("--pangeo-member", default="r1i1p1f1", help="Pangeo CMIP6 member_id")
+    p.add_argument("--pangeo-ssp", action="append", default=[],
+                   help="also retrieve this CMIP6 SSP experiment; repeat as needed")
+    p.add_argument("--pangeo-include-14c", action="store_true",
+                   help="also request c14Soil; errors if the selected Pangeo data lack it")
+    p.add_argument("--variables", nargs="+", default=None,
                    help="CLM variables to extract (aliases are tried in order)")
     p.add_argument("--out-root", default=None,
                    help="site CSV output directory (default data/shared/clm/)")
@@ -156,6 +167,15 @@ def _cmd_clm(argv: list[str]) -> int:
     p.add_argument("--outdir", default=None,
                    help="root for the fetch manifest (default ./outputs/)")
     args = p.parse_args(argv)
+    variables = args.variables or (
+        ["CSOILFAST", "CSOILMEDIUM", "CSOILSLOW", "CSOIL", "CLITTER",
+         "GPP", "NPP", "HR"] if args.pangeo else ["GPP", "NEE", "HR"]
+    )
+    pangeo_experiments = [args.pangeo_experiment, *args.pangeo_ssp]
+    if args.pangeo_include_14c:
+        if not args.pangeo:
+            p.error("--pangeo-include-14c requires --pangeo")
+        variables.append("C14SOIL")
 
     from ecosystem_complexity.data.fetch_clm import (
         _CLM_ROOT, fetch_clm_for_configs,
@@ -168,16 +188,36 @@ def _cmd_clm(argv: list[str]) -> int:
     run = open_run_dir(
         verb="fetch", subverb="clm", name="clm_site_extract",
         outdir=(Path(args.outdir) / "clm_site_extract" / "fetch" / "clm") if args.outdir else None,
-        inputs={"source_dir": args.source_dir, "variables": args.variables,
+        inputs={"source_dir": args.source_dir, "urls": args.url, "pangeo": args.pangeo,
+                "pangeo_model": args.pangeo_model, "pangeo_experiment": args.pangeo_experiment,
+                "pangeo_ssp": args.pangeo_ssp, "pangeo_member": args.pangeo_member,
+                "pangeo_include_14c": args.pangeo_include_14c, "variables": variables,
                 "out_root": str(out_root), "overwrite": args.overwrite,
                 "n_configs": len(config_paths)},
     )
     try:
-        rows = fetch_clm_for_configs(
-            config_paths, source_dir=args.source_dir,
-            variables=args.variables, overwrite=args.overwrite, out_root=out_root,
-        )
-    except FileNotFoundError as exc:
+        if args.pangeo and args.url:
+            raise ValueError("--pangeo and --url cannot be used together")
+        if args.pangeo:
+            from ecosystem_complexity.data.fetch_clm import fetch_pangeo_clm_for_configs
+            rows = fetch_pangeo_clm_for_configs(
+                config_paths, source_id=args.pangeo_model,
+                experiment_ids=pangeo_experiments,
+                member_id=args.pangeo_member, variables=variables,
+                overwrite=args.overwrite, out_root=out_root,
+            )
+        else:
+            if args.url:
+                from ecosystem_complexity.data.fetch_clm import download_clm_sources
+                staged = download_clm_sources(
+                    args.url, source_dir=args.source_dir, overwrite=args.overwrite,
+                )
+                run.add_manifest_field("staged_netcdf_paths", [str(path) for path in staged])
+            rows = fetch_clm_for_configs(
+                config_paths, source_dir=args.source_dir,
+                variables=variables, overwrite=args.overwrite, out_root=out_root,
+            )
+    except (FileNotFoundError, ValueError, RuntimeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         run.add_manifest_field("error", str(exc))
         run.finalize()
@@ -191,39 +231,75 @@ def _cmd_clm(argv: list[str]) -> int:
     for row in rows:
         status = str(row["status"])
         if status == "skipped":
-            print(f"- {row['site_id']}: kept existing {row['forcing_output_path']}")
+            path = row.get("archive_output_path", row.get("forcing_output_path"))
+            print(f"- {row['site_id']}: kept existing {path}")
         else:
-            print(f"- {row['site_id']}: wrote {row['forcing_output_path']} "
-                  f"({row['n_days']} days)")
+            if args.pangeo:
+                print(f"- {row['site_id']} ({row['experiment_id']}): wrote "
+                      f"{row['archive_output_path']}")
+            else:
+                print(f"- {row['site_id']}: wrote {row['forcing_output_path']} "
+                      f"({row['n_days']} days)")
     run.add_manifest_field("site_rows", rows)
     run.finalize()
     return 0
 
 
 # ---------------------------------------------------------------------------
-# israd / atm14c — pointer subverbs (no downloader; parsers read from data/)
+# israd / atm14c — versioned observation inputs
 # ---------------------------------------------------------------------------
 
 
 def _cmd_israd(argv: list[str]) -> int:
-    print(
-        "ISRaD is read directly from the parser at "
-        "src/ecosystem_complexity/data/parsers_14C.py by the site drivers.\n"
-        "There is no separate download step in this repo; the ISRaD tables "
-        "already live under data/ and are updated by refreshing them there.\n"
-        "See build_bulk_14C_blocks / build_fraction_14C_blocks in "
-        "src/ecosystem_complexity/data/israd_14c.py for how they are consumed.",
-        file=sys.stderr,
+    p = argparse.ArgumentParser(prog="ecosys fetch israd")
+    p.add_argument("--url", default=None, help="official ISRaD compiled-database zip URL")
+    p.add_argument("--overwrite", action="store_true")
+    args = p.parse_args(argv)
+    from ecosystem_complexity.data.paths import (
+        ISRAD_COMPILED_ARCHIVE_URL,
+        ISRAD_DIR,
+        ISRAD_FRACTION,
+        ISRAD_FLUX,
+        ISRAD_INCUBATION,
+        ISRAD_LAYER,
     )
+    from ecosystem_complexity.fetch.external import download_file, extract_named_zip_members
+    required = [Path(p).name for p in (ISRAD_LAYER, ISRAD_FRACTION, ISRAD_FLUX, ISRAD_INCUBATION)]
+    missing = [name for name in required if not (Path(ISRAD_DIR) / name).is_file()]
+    if not missing and not args.overwrite:
+        print(f"ISRaD {Path(ISRAD_LAYER).name.split('_v ')[-1].removesuffix('.csv')} is already staged: {ISRAD_DIR}")
+        return 0
+    archive = download_file(
+        args.url or ISRAD_COMPILED_ARCHIVE_URL,
+        Path(ISRAD_DIR) / ".israd-download.zip",
+        overwrite=True,
+    )
+    outputs = extract_named_zip_members(archive, ISRAD_DIR, required, overwrite=args.overwrite)
+    archive.unlink(missing_ok=True)
+    print("Downloaded ISRaD tables:")
+    for output in outputs:
+        print(output)
     return 0
 
 
 def _cmd_atm14c(argv: list[str]) -> int:
+    p = argparse.ArgumentParser(prog="ecosys fetch atm14c")
+    p.add_argument("--hua-url", help="direct URL for Hua_2021.csv")
+    p.add_argument("--graven-url", help="direct URL for Graven_2017.csv")
+    p.add_argument("--intcal-url", default="https://intcal.org/curves/intcal20.14c",
+                   help="direct URL for intcal20.14c")
+    p.add_argument("--overwrite", action="store_true")
+    args = p.parse_args(argv)
     from ecosystem_complexity.data.paths import GRAVEN_PATH, HUA_PATH, INTCAL_PATH
-    print("Atmospheric ¹⁴C record paths already staged under data/:")
-    for name, p in (("HUA", HUA_PATH), ("GRAVEN", GRAVEN_PATH), ("INTCAL", INTCAL_PATH)):
-        exists = "OK" if Path(p).is_file() else "MISSING"
-        print(f"  [{exists}] {name}: {p}")
+    from ecosystem_complexity.fetch.external import download_file
+    sources = (("HUA", HUA_PATH, args.hua_url), ("GRAVEN", GRAVEN_PATH, args.graven_url),
+               ("INTCAL", INTCAL_PATH, args.intcal_url))
+    for name, path, url in sources:
+        if url and (args.overwrite or not Path(path).is_file()):
+            download_file(url, path, overwrite=args.overwrite)
+        exists = "OK" if Path(path).is_file() else "MISSING"
+        detail = f" from {url}" if url else " (no URL supplied)"
+        print(f"  [{exists}] {name}: {path}{detail}")
     return 0
 
 
@@ -252,7 +328,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"unknown fetch source: {sub!r}", file=sys.stderr)
         return 2
     logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
-    return handler(rest)
+    try:
+        return handler(rest)
+    except (OSError, RuntimeError, ValueError, PermissionError, KeyError) as exc:
+        logger.error("error: %s", exc)
+        return 2
 
 
 if __name__ == "__main__":

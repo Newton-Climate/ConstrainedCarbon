@@ -23,10 +23,13 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+from ecosystem_complexity.fetch.external import download_file
 
 if TYPE_CHECKING:
     from ecosystem_complexity.sites.spec import SiteSpec
@@ -49,6 +52,33 @@ _ALIASES = {
 
 # Default output columns and their aliases
 _DEFAULT_VARS: tuple[str, ...] = ("GPP", "NEE", "HR")
+
+PANGEO_CMIP6_CATALOG = "https://storage.googleapis.com/cmip6/pangeo-cmip6.json"
+_PANGEO_VARIABLES = {
+    # CMIP6 uses lowercase controlled-vocabulary names; CESM2 exposes CLM5
+    # GPP and soil heterotrophic respiration in Lmon.
+    "GPP": ("gpp", "Lmon"),
+    "HR": ("rh", "Lmon"),
+    # NEE is not a standard CMIP6 land-output variable.  NBP is the closest
+    # available carbon-balance diagnostic when a caller explicitly requests it.
+    "NEE": ("nbp", "Lmon"),
+    "ER": ("rh", "Lmon"),
+    "TSOI": ("tsl", "Lmon"),
+    "H2OSOI": ("mrsos", "Lmon"),
+    "CSOILFAST": ("cSoilFast", "Lmon"),
+    "CSOILMEDIUM": ("cSoilMedium", "Lmon"),
+    "CSOILSLOW": ("cSoilSlow", "Lmon"),
+    "CSOIL": ("cSoil", "Emon"),
+    "CLITTER": ("cLitter", "Lmon"),
+    "NPP": ("npp", "Lmon"),
+    # Not part of the standard CESM2 CMIP6 publication; retained as an
+    # opt-in discovery request for archives that expose the field.
+    "C14SOIL": ("c14Soil", "Lmon"),
+}
+_PANGEO_SOIL_CARBON_VARS = (
+    "CSOILFAST", "CSOILMEDIUM", "CSOILSLOW", "CSOIL", "CLITTER",
+    "GPP", "NPP", "HR",
+)
 
 
 def load_clm_site_specs(config_paths: Iterable[str | Path]) -> list[SiteSpec]:
@@ -82,6 +112,16 @@ def _pick_var(ds: xr.Dataset, wanted: str) -> str:
         f"CLM dataset lacks any alias for {wanted!r}. "
         f"Tried: {aliases}. Present: {sorted(ds.data_vars)[:20]}…"
     )
+
+
+def _pangeo_values(point: xr.DataArray, wanted: str) -> np.ndarray:
+    """Convert CMIP6 carbon fluxes to the forcing CSV's gC m-2 day-1."""
+    values = np.asarray(point.values, dtype=np.float64)
+    if wanted in {"GPP", "HR", "NEE", "ER"}:
+        units = str(point.attrs.get("units", "")).replace(" ", "").lower()
+        if "kg" in units and ("s-1" in units or "/s" in units):
+            return values * 1000.0 * 86400.0
+    return values
 
 
 def extract_site_series_from_clm_netcdf(
@@ -177,25 +217,31 @@ def write_clm_site_csvs(
     include enough terms to derive ER (either directly, or as
     ``ER = GPP + NEE`` when only those two are present).
     """
+    frame, meta = extract_site_series_from_clm_netcdf(
+        nc_path, lat=spec.lat, lon=spec.lon, variables=variables,
+    )
+    return write_clm_site_frame(
+        spec, frame, metadata=meta, overwrite=overwrite, out_root=out_root,
+    )
+
+
+def write_clm_site_frame(
+    spec: SiteSpec,
+    frame: pd.DataFrame,
+    *,
+    metadata: dict[str, float | str],
+    overwrite: bool = False,
+    out_root: str | Path = _CLM_ROOT,
+) -> dict[str, float | str]:
+    """Write an extracted CLM site frame in the canonical forcing layout."""
     out_root = Path(out_root)
     out_root.mkdir(parents=True, exist_ok=True)
     forcing_path = out_root / f"{spec.config_stem}.csv"
     er_path = out_root / f"{spec.config_stem}.er.csv"
-
     if forcing_path.exists() and er_path.exists() and not overwrite:
-        frame = pd.read_csv(forcing_path)
-        return {
-            "site_id": spec.config_stem,
-            "site_name": spec.label,
-            "forcing_output_path": str(forcing_path),
-            "er_output_path": str(er_path),
-            "status": "skipped",
-            "n_days": float(len(frame)),
-        }
-
-    frame, meta = extract_site_series_from_clm_netcdf(
-        nc_path, lat=spec.lat, lon=spec.lon, variables=variables,
-    )
+        return {"site_id": spec.config_stem, "site_name": spec.label,
+                "forcing_output_path": str(forcing_path), "er_output_path": str(er_path),
+                "status": "skipped", "n_days": float(len(pd.read_csv(forcing_path)))}
     if frame.empty:
         raise ValueError(f"{spec.config_stem}: CLM extraction produced no rows.")
 
@@ -210,6 +256,9 @@ def write_clm_site_csvs(
                            "ER": frame["gpp_gCm2day"] + frame["nee_gCm2day"]})
         er.to_csv(er_path, index=False)
         er_out = str(er_path)
+    elif "hr_gCm2day" in frame.columns:
+        pd.DataFrame({"date": frame["date"], "ER": frame["hr_gCm2day"]}).to_csv(er_path, index=False)
+        er_out = str(er_path)
     elif "ER" in frame.columns:
         pd.DataFrame({"date": frame["date"], "ER": frame["ER"]}).to_csv(er_path, index=False)
         er_out = str(er_path)
@@ -222,7 +271,7 @@ def write_clm_site_csvs(
         "forcing_output_path": str(forcing_path),
         "er_output_path": er_out,
         "status": "written",
-        **meta,
+        **metadata,
     }
 
 
@@ -252,4 +301,111 @@ def fetch_clm_for_configs(
         rows.append(write_clm_site_csvs(
             spec, nc, variables=variables, overwrite=overwrite, out_root=out_root,
         ))
+    return rows
+
+
+def download_clm_sources(
+    urls: Iterable[str],
+    *,
+    source_dir: str | Path,
+    overwrite: bool = False,
+) -> list[Path]:
+    """Stage CLM NetCDF files supplied as direct HTTP(S) URLs.
+
+    CLM/CTSM and CMIP products are not one dataset: their experiment, member,
+    variables, and temporal resolution are analysis choices.  Callers therefore
+    provide the exact file URLs selected from ESGF, NCAR, or another archive.
+    """
+    destination = Path(source_dir)
+    outputs: list[Path] = []
+    for url in urls:
+        name = Path(urlparse(url).path).name
+        if not name.lower().endswith((".nc", ".nc4")):
+            raise ValueError(f"CLM source URL must name a NetCDF (.nc/.nc4): {url}")
+        outputs.append(download_file(url, destination / name, overwrite=overwrite))
+    return outputs
+
+
+def fetch_pangeo_clm_for_configs(
+    config_paths: Iterable[str | Path],
+    *,
+    source_id: str = "CESM2",
+    experiment_ids: Sequence[str] = ("historical",),
+    member_id: str = "r1i1p1f1",
+    variables: Sequence[str] = _PANGEO_SOIL_CARBON_VARS,
+    overwrite: bool = False,
+    out_root: str | Path = _CLM_ROOT,
+    catalog_url: str = PANGEO_CMIP6_CATALOG,
+) -> list[dict[str, float | str]]:
+    """Extract configured CLM sites directly from Pangeo CMIP6 Zarr stores."""
+    try:
+        import intake
+    except ImportError as exc:  # pragma: no cover - optional deployment dependency
+        raise RuntimeError("Pangeo fetch requires intake-esm, gcsfs, and zarr.") from exc
+    specs = load_clm_site_specs(config_paths)
+    if not specs:
+        return []
+    unknown = [name for name in variables if name not in _PANGEO_VARIABLES]
+    if unknown:
+        raise ValueError(f"Pangeo does not map CLM variables: {', '.join(unknown)}")
+    catalog = intake.open_esm_datastore(catalog_url)
+    rows: list[dict[str, float | str]] = []
+    out_root = Path(out_root)
+    for experiment_id in experiment_ids:
+        for spec in specs:
+            archive_path = out_root / f"{spec.config_stem}_{experiment_id}_pangeo.nc"
+            if archive_path.exists() and not overwrite:
+                rows.append({"site_id": spec.config_stem, "experiment_id": experiment_id,
+                             "archive_output_path": str(archive_path), "status": "skipped"})
+                continue
+            columns: dict[str, np.ndarray] = {}
+            series: dict[str, xr.DataArray] = {}
+            dates = None
+            metadata: dict[str, float | str] = {
+                "source": "Pangeo CMIP6 Zarr", "source_id": source_id,
+                "experiment_id": experiment_id, "member_id": member_id,
+            }
+            for wanted in variables:
+                variable_id, table_id = _PANGEO_VARIABLES[wanted]
+                found = catalog.search(
+                    source_id=source_id, experiment_id=experiment_id,
+                    member_id=member_id, variable_id=variable_id, table_id=table_id,
+                )
+                if found.df.empty:
+                    raise FileNotFoundError(
+                        "Pangeo has no "
+                        f"{source_id}/{experiment_id}/{member_id} {table_id}/{variable_id} store."
+                    )
+                zstore = str(found.df.iloc[0]["zstore"])
+                ds = xr.open_zarr(
+                    zstore, consolidated=True, storage_options={"token": "anon"},
+                )
+                lons = np.asarray(ds["lon"].values, dtype=np.float64)
+                point = ds[variable_id].sel(
+                    lat=spec.lat, lon=_match_longitude(spec.lon, lons), method="nearest",
+                ).squeeze(drop=True).load()
+                series[variable_id] = point
+                columns[wanted] = _pangeo_values(point, wanted)
+                if dates is None:
+                    dates = pd.to_datetime(point["time"].values)
+                    metadata.update({
+                        "grid_lat": float(point["lat"].item()),
+                        "grid_lon": _restore_longitude(float(point["lon"].item()), lons),
+                        "pangeo_zstore": zstore,
+                    })
+            out_root.mkdir(parents=True, exist_ok=True)
+            archive = xr.Dataset(series, attrs=metadata)
+            archive.to_netcdf(archive_path)
+            record: dict[str, float | str] = {
+                "site_id": spec.config_stem, "experiment_id": experiment_id,
+                "archive_output_path": str(archive_path), "status": "written",
+            }
+            # The operational forcing files retain their historical default.
+            if experiment_id == "historical":
+                frame = pd.DataFrame({"date": dates, **columns})
+                metadata["n_days"] = float(len(frame))
+                record.update(write_clm_site_frame(
+                    spec, frame, metadata=metadata, overwrite=overwrite, out_root=out_root,
+                ))
+            rows.append(record)
     return rows

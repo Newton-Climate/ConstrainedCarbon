@@ -11,14 +11,16 @@ from ecosystem_complexity.fetch.flux import (
     download_flux_data,
     resolve_flux_download_plan,
 )
+from ecosystem_complexity.fetch.external import DatasetDownloadError, download_file
 
 __all__ = [
     "FluxDownloadPlan",
+    "DatasetDownloadError",
     "build_colocation_table",
     "build_israd_site_catalog",
     "download_flux_data",
+    "download_file",
     "load_flux_tower_catalog",
     "locate_site",
     "resolve_flux_download_plan",
 ]
-

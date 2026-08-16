@@ -121,7 +121,9 @@ ecosys fetch flux my_site --accept-policy --accept-license
 
 Review the new configuration before fitting it. Downloading AmeriFlux data
 requires your own credentials; provide them with `--user-id` and `--email`, or
-put `AMERIFLUX_USER_ID` and `AMERIFLUX_EMAIL` in `.env`.
+put `AMERIFLUX_USER_ID` and `AMERIFLUX_EMAIL` in the repository-root `.env`.
+See [`ecosys fetch`](docs/apps/fetch.md) for external sources, destinations,
+access requirements, and failure handling.
 
 ## Common commands
 

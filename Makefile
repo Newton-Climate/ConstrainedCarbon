@@ -1,6 +1,7 @@
-.PHONY: env install lint format test clean
+.PHONY: env install download-data lint format test clean
 
 ENV_NAME = ecosystem-complexity
+PYTHON ?= python
 
 env:
 	conda env create -f environment.yaml
@@ -10,6 +11,13 @@ env-update:
 
 install:
 	pip install -e .
+	$(MAKE) download-data
+
+# Required observation inputs are staged on installation.  Fetch is idempotent:
+# existing files are retained, and only a missing IntCal20 file is fetched.
+download-data:
+	PYTHONPATH=src $(PYTHON) apps/fetch.py israd
+	PYTHONPATH=src $(PYTHON) apps/fetch.py atm14c
 
 lint:
 	ruff check src/ tests/
