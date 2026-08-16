@@ -147,6 +147,138 @@ def _check_external_inputs(config: ModelConfig, valid_names: set[str]) -> None:
         )
 
 
+def _check_warming(config: ModelConfig) -> None:
+    """Shape-check the optional ``warming`` block."""
+    block = config.warming_raw
+    if not block:
+        return
+    if "horizon_years" in block:
+        v = block["horizon_years"]
+        if not isinstance(v, (int, float)) or v <= 0:
+            raise ConfigValidationError(
+                f"warming.horizon_years must be a positive number, got {v!r}."
+            )
+    if "warming_delta_c" in block:
+        v = block["warming_delta_c"]
+        if not isinstance(v, (int, float)):
+            raise ConfigValidationError(
+                f"warming.warming_delta_c must be numeric, got {v!r}."
+            )
+    if "metric" in block and block["metric"] not in {"vulnerability", "transit"}:
+        raise ConfigValidationError(
+            f"warming.metric must be 'vulnerability' or 'transit', "
+            f"got {block['metric']!r}."
+        )
+    if "include_constraints" in block and not isinstance(
+        block["include_constraints"], dict
+    ):
+        raise ConfigValidationError(
+            "warming.include_constraints must be a mapping of "
+            "{constraint_name: bool}."
+        )
+
+
+def _check_mcmc(config: ModelConfig) -> None:
+    """Shape-check the optional ``mcmc`` block."""
+    block = config.mcmc_raw
+    if not block:
+        return
+    positive_ints = (
+        "rng_seed",
+        "mc_iterations",
+        "null_iterations",
+        "posterior_draw_count",
+        "prior_draw_count",
+    )
+    for key in positive_ints:
+        if key in block:
+            v = block[key]
+            if not isinstance(v, int) or v < 0:
+                raise ConfigValidationError(
+                    f"mcmc.{key} must be a non-negative integer, got {v!r}."
+                )
+    for key in ("warming_horizon_years", "warming_delta_c"):
+        if key in block and not isinstance(block[key], (int, float)):
+            raise ConfigValidationError(
+                f"mcmc.{key} must be numeric, got {block[key]!r}."
+            )
+    if "old_pools" in block:
+        v = block["old_pools"]
+        if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+            raise ConfigValidationError(
+                "mcmc.old_pools must be a list of pool-name strings."
+            )
+        valid = _all_valid_pool_names(config)
+        unknown = [name for name in v if name not in valid]
+        if unknown:
+            raise ConfigValidationError(
+                f"mcmc.old_pools references unknown pool(s): {unknown}. "
+                f"Known pools: {sorted(valid)}"
+            )
+
+
+def _check_information(config: ModelConfig) -> None:
+    """Shape-check the optional ``information`` block."""
+    block = config.information_raw
+    if not block:
+        return
+    if "metrics" in block and not isinstance(block["metrics"], dict):
+        raise ConfigValidationError(
+            "information.metrics must be a mapping of {metric_name: bool}."
+        )
+    shapley = block.get("shapley")
+    if shapley is not None:
+        if not isinstance(shapley, dict):
+            raise ConfigValidationError("information.shapley must be a mapping.")
+        rule = shapley.get("sigma_rule")
+        if rule is not None:
+            if not isinstance(rule, str) or rule.count(":") != 1:
+                raise ConfigValidationError(
+                    f"information.shapley.sigma_rule must be 'REL:ABS' "
+                    f"(e.g. '0.20:500'), got {rule!r}."
+                )
+            rel_s, abs_s = rule.split(":")
+            try:
+                float(rel_s)
+                float(abs_s)
+            except ValueError as exc:
+                raise ConfigValidationError(
+                    f"information.shapley.sigma_rule={rule!r} has non-numeric parts."
+                ) from exc
+    ose = block.get("ose")
+    if ose is not None:
+        if not isinstance(ose, dict) or not isinstance(ose.get("scenarios", []), list):
+            raise ConfigValidationError(
+                "information.ose must be a mapping with a 'scenarios' list."
+            )
+        for i, sc in enumerate(ose.get("scenarios", [])):
+            if not isinstance(sc, dict) or "name" not in sc or "include" not in sc:
+                raise ConfigValidationError(
+                    f"information.ose.scenarios[{i}] must have 'name' and 'include'."
+                )
+            if not isinstance(sc["include"], list):
+                raise ConfigValidationError(
+                    f"information.ose.scenarios[{i}].include must be a list."
+                )
+
+
+def _check_sweep(config: ModelConfig) -> None:
+    """Shape-check the optional ``sweep`` block."""
+    block = config.sweep_raw
+    if not block:
+        return
+    valid_kinds = {"pool_count", "sigma", "forcing"}
+    if "kind" in block and block["kind"] not in valid_kinds:
+        raise ConfigValidationError(
+            f"sweep.kind must be one of {sorted(valid_kinds)}, got {block['kind']!r}."
+        )
+    for key in ("member_dir", "member_glob", "combine_output"):
+        if key in block and not isinstance(block[key], str):
+            raise ConfigValidationError(
+                f"sweep.{key} must be a string, got {block[key]!r}."
+            )
+
+
 def _validate(config: ModelConfig) -> None:
     """
     Raise ``ConfigValidationError`` if any semantic constraint is violated.
@@ -157,6 +289,8 @@ def _validate(config: ModelConfig) -> None:
     3. Soil layer depths are strictly monotonic and contiguous.
     4. NPP alloc fractions exist for every aboveground pool.
     5. external_inputs block (when present and enabled) is self-consistent.
+    6. Optional experiment blocks (warming, mcmc, information, sweep) are
+       shape-valid when present.
     """
     valid_names = _all_valid_pool_names(config)
     _check_transfer_pool_names(config, valid_names)
@@ -164,3 +298,7 @@ def _validate(config: ModelConfig) -> None:
     _check_layer_depths(config)
     _check_alloc_coverage(config)
     _check_external_inputs(config, valid_names)
+    _check_warming(config)
+    _check_mcmc(config)
+    _check_information(config)
+    _check_sweep(config)

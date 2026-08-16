@@ -464,3 +464,115 @@ def test_external_inputs_absent_has_no_effect() -> None:
     assert (
         cfg.external_inputs is None
     ), "harvard_forest.yaml has no external_inputs block — field should be None"
+
+
+# ---------------------------------------------------------------------------
+# Optional experiment blocks: warming, mcmc, information, sweep
+# ---------------------------------------------------------------------------
+
+
+def test_experiment_blocks_absent_default_to_empty(tmp_path: pathlib.Path) -> None:
+    """When new experiment blocks are absent, raw fields default to {}."""
+    cfg = load_config(_write_yaml(tmp_path, _VALID_BASE))
+    assert cfg.warming_raw == {}
+    assert cfg.mcmc_raw == {}
+    assert cfg.information_raw == {}
+    assert cfg.sweep_raw == {}
+
+
+def test_experiment_blocks_valid_loads(tmp_path: pathlib.Path) -> None:
+    """A config carrying all four optional blocks parses and validates."""
+    yaml_text = _VALID_BASE + """
+warming:
+  horizon_years: 100
+  warming_delta_c: 4.0
+  metric: vulnerability
+  include_constraints:
+    er: true
+    incubation: false
+    incubation_14c: false
+
+mcmc:
+  rng_seed: 7
+  mc_iterations: 2000
+  posterior_draw_count: 200
+  prior_draw_count: 200
+  old_pools: [org_litter]
+  warming_horizon_years: 100
+  warming_delta_c: 4.0
+
+information:
+  metrics:
+    dfs: true
+    averaging_kernel: true
+    gain_matrix: true
+    posterior_covariance: true
+    shapley: true
+    ose: false
+  shapley:
+    sigma_rule: "0.20:500"
+    plot_by: biome
+
+sweep:
+  kind: pool_count
+  member_dir: configs/hf_pool_sweep/
+  member_glob: "*.yaml"
+"""
+    cfg = load_config(_write_yaml(tmp_path, yaml_text))
+    assert cfg.warming_raw["horizon_years"] == 100
+    assert cfg.warming_raw["metric"] == "vulnerability"
+    assert cfg.mcmc_raw["rng_seed"] == 7
+    assert cfg.mcmc_raw["old_pools"] == ["org_litter"]
+    assert cfg.information_raw["shapley"]["sigma_rule"] == "0.20:500"
+    assert cfg.sweep_raw["kind"] == "pool_count"
+
+
+def test_warming_bad_metric_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + "\nwarming:\n  metric: not_a_metric\n"
+    with pytest.raises(ConfigValidationError, match="metric"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_warming_negative_horizon_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + "\nwarming:\n  horizon_years: -5\n"
+    with pytest.raises(ConfigValidationError, match="horizon_years"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_mcmc_unknown_pool_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + "\nmcmc:\n  old_pools: [not_a_pool]\n"
+    with pytest.raises(ConfigValidationError, match="old_pools"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_mcmc_negative_seed_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + "\nmcmc:\n  rng_seed: -1\n"
+    with pytest.raises(ConfigValidationError, match="rng_seed"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_information_bad_sigma_rule_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + (
+        "\ninformation:\n"
+        "  shapley:\n"
+        "    sigma_rule: \"not-a-rule\"\n"
+    )
+    with pytest.raises(ConfigValidationError, match="sigma_rule"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_information_bad_ose_scenario_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + (
+        "\ninformation:\n"
+        "  ose:\n"
+        "    scenarios:\n"
+        "      - {name: bulk_only}\n"   # missing 'include'
+    )
+    with pytest.raises(ConfigValidationError, match="ose"):
+        load_config(_write_yaml(tmp_path, yaml_text))
+
+
+def test_sweep_bad_kind_raises(tmp_path: pathlib.Path) -> None:
+    yaml_text = _VALID_BASE + "\nsweep:\n  kind: not_a_kind\n"
+    with pytest.raises(ConfigValidationError, match="sweep.kind"):
+        load_config(_write_yaml(tmp_path, yaml_text))

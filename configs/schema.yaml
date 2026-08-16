@@ -97,3 +97,50 @@ output:
   observation_csv: bool
   diagnostics_csv: bool
   figure_png: bool
+
+# ─────────────────────────────────────────────────────────────
+# Optional experiment blocks consumed by the `ecosys` dispatchers.
+# All four are optional; if absent, the corresponding CLI verb
+# falls back to its built-in defaults.
+# ─────────────────────────────────────────────────────────────
+
+warming:                        # consumed by `ecosys warming` and `ecosys mcmc`
+  horizon_years: float          # positive
+  warming_delta_c: float
+  metric: vulnerability | transit
+  include_constraints:          # which OE rungs seed the posterior used for warming
+    er: bool
+    incubation: bool
+    incubation_14c: bool
+
+mcmc:                           # consumed by `ecosys mcmc`
+  rng_seed: int                 # non-negative
+  mc_iterations: int
+  null_iterations: int
+  posterior_draw_count: int
+  prior_draw_count: int
+  old_pools: [pool_name, ...]   # names must exist in model.aboveground_pools/soil_layers
+  warming_horizon_years: float  # may override warming.horizon_years for MCMC only
+  warming_delta_c: float
+
+information:                    # consumed by `ecosys information` subverbs
+  metrics:
+    dfs: bool
+    averaging_kernel: bool
+    gain_matrix: bool
+    posterior_covariance: bool
+    shapley: bool
+    ose: bool
+  shapley:
+    sigma_rule: "REL:ABS"       # e.g. "0.20:500"; folds the tight_c variant
+    plot_by: null | biome | pool_count
+  ose:
+    scenarios:
+      - name: string
+        include: [constraint_name, ...]
+
+sweep:                          # consumed by `ecosys optimize --sweep`
+  kind: pool_count | sigma | forcing
+  member_dir: string            # directory of per-site YAMLs to iterate
+  member_glob: string           # default "*.yaml"
+  combine_output: string        # directory template; {date} substituted
