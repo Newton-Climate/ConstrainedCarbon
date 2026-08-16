@@ -48,6 +48,7 @@ coverage.xml
 *.swo
 
 # Data / outputs (tracked separately if needed)
+/outputs/
 /data/
 results/
 # Stray duplicate of data/harvard_forest/hf324-06-soil-carbon.csv
