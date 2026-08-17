@@ -11,11 +11,11 @@ import logging
 
 import numpy as np
 
-from ecosystem_complexity.api import run_model
+from ecosystem_complexity.model.api import run_model
 from ecosystem_complexity.data.schemas import ForcingData
-from ecosystem_complexity.oe_utils import ss_state_for_params
+from ecosystem_complexity.inference.utilities import ss_state_for_params
 from ecosystem_complexity.sites.forcing import build_annual_mean_forcing
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 logger = logging.getLogger(__name__)
 

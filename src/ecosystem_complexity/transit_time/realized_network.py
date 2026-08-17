@@ -17,10 +17,10 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[3]
 
 from ecosystem_complexity.transit_time.realized_gradient import transit_metrics
-from ecosystem_complexity.api import build_model
+from ecosystem_complexity.model.api import build_model
 from ecosystem_complexity.sites.forcing import load_site_forcing, resolve_forcing_file
 from ecosystem_complexity.sites.spec import load_site_spec
-from ecosystem_complexity.state import make_default_params
+from ecosystem_complexity.model.state import make_default_params
 
 EXPANSION_CONFIGS = {
     "La Campana": "configs/expansion/la_campana.yaml", "Biadaski": "configs/expansion/biadaski.yaml",

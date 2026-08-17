@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity._oe_helpers import build_oe_prior_sigma
-from ecosystem_complexity.analysis import compute_age_diagnostics
-from ecosystem_complexity.oe_diagnostics import (
+from ecosystem_complexity.inference._helpers import build_oe_prior_sigma
+from ecosystem_complexity.synthesis.analysis import compute_age_diagnostics
+from ecosystem_complexity.inference.diagnostics import (
     cumulative_ladder_from_context,
     constraint_orthogonality_from_context,
     oe_gain_matrix_diagnostics,
@@ -21,7 +21,7 @@ from ecosystem_complexity.oe_diagnostics import (
     oe_style_ablation,
     shapley_dfs_attribution_from_context,
 )
-from ecosystem_complexity.state import make_default_params
+from ecosystem_complexity.model.state import make_default_params
 
 
 def _json_default(value: Any) -> Any:
@@ -396,4 +396,3 @@ def load_exported_analysis(export_dir: str) -> dict[str, Any]:
         k_tilde=np.asarray(matrices["k_tilde"], dtype=float),
     )
     return {"summary": summary, "metrics": metrics}
-

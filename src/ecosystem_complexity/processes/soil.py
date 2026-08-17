@@ -29,7 +29,7 @@ from ecosystem_complexity.processes.climate import _pool_env_vecs
 from ecosystem_complexity.model.transfers import get_transfer_matrix
 
 if TYPE_CHECKING:
-    from ecosystem_complexity.state import EcosystemState, ModelParams
+    from ecosystem_complexity.model.state import EcosystemState, ModelParams
 
 
 def decomp_flux(

@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 from ecosystem_complexity.sites.driver import run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec
-from ecosystem_complexity.optimizer import vector_to_params
+from ecosystem_complexity.inference.parameters import vector_to_params
 from ecosystem_complexity.transit_time import intrinsic_mean_transit_time, realized_mean_transit_time
 
 SITES = {

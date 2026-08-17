@@ -37,16 +37,16 @@ from ecosystem_complexity.mcmc.priors import (
     _observed_gap_for_spec,
     _prior_mean_and_cov,
 )
-from ecosystem_complexity.oe_utils import ss_state_for_params
-from ecosystem_complexity.optimizer import vector_to_params
+from ecosystem_complexity.inference.utilities import ss_state_for_params
+from ecosystem_complexity.inference.parameters import vector_to_params
 from ecosystem_complexity.sites.driver import OPT_FIELDS, run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec
-from ecosystem_complexity.state import make_default_params
-from ecosystem_complexity.api import run_model
-from ecosystem_complexity.biome import biome_group as _biome_group
+from ecosystem_complexity.model.state import make_default_params
+from ecosystem_complexity.model.api import run_model
+from ecosystem_complexity.synthesis.biomes import biome_group as _biome_group
 from ecosystem_complexity.visualize.cross_ecosystem import build_cross_ecosystem_tables
 from ecosystem_complexity.visualize.figure_10 import make_figure_10_from_posterior_analysis
-from ecosystem_complexity.warming import compute_pool_rh, repeat_forcing, warm_forcing
+from ecosystem_complexity.synthesis.warming import compute_pool_rh, repeat_forcing, warm_forcing
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _NB = _REPO_ROOT / "notebooks"

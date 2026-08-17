@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import jax.numpy as jnp
 
-from ecosystem_complexity.config import ModelConfig
+from ecosystem_complexity.model.configuration import ModelConfig
 from ecosystem_complexity.data.alignment import align_to_layers
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 

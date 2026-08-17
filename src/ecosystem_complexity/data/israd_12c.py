@@ -36,7 +36,7 @@ import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity._oe_helpers import ObsBlock
+from ecosystem_complexity.inference._helpers import ObsBlock
 from ecosystem_complexity.data.fraction_mapping import build_fraction_mapping
 from ecosystem_complexity.data.paths import ISRAD_FRACTION
 

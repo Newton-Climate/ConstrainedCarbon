@@ -24,7 +24,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ecosystem_complexity.api import build_model, optimize_oe, run_model
+from ecosystem_complexity.model.api import build_model, optimize_oe, run_model
 from ecosystem_complexity.data.custom_14c import (
     build_custom_14c_observations,
     load_custom_14c_manifest,
@@ -53,7 +53,7 @@ from ecosystem_complexity.data.soc_stocks import (
     build_measured_soc_total,
     build_soilgrids_soc_total,
 )
-from ecosystem_complexity.oe_utils import ss_state_for_params
+from ecosystem_complexity.inference.utilities import ss_state_for_params
 from ecosystem_complexity.sites.forcing import (
     load_site_observations,
     load_site_forcing,
@@ -61,7 +61,7 @@ from ecosystem_complexity.sites.forcing import (
 )
 from ecosystem_complexity.sites.soc import build_soc_prior
 from ecosystem_complexity.sites.spec import SiteSpec
-from ecosystem_complexity.state import make_default_params
+from ecosystem_complexity.model.state import make_default_params
 
 logger = logging.getLogger(__name__)
 

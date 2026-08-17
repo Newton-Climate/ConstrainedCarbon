@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import jax.numpy as jnp
 
-from ecosystem_complexity.config import ModelConfig
+from ecosystem_complexity.model.configuration import ModelConfig
 
 
 def align_to_layers(

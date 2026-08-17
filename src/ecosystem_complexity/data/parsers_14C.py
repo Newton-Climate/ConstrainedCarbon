@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import CubicSpline
 
-from ecosystem_complexity.config import ModelConfig
+from ecosystem_complexity.model.configuration import ModelConfig
 from ecosystem_complexity.data.alignment import align_to_layers
 
 logger = logging.getLogger(__name__)

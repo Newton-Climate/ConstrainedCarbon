@@ -17,7 +17,7 @@ import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
-from ecosystem_complexity.oe_diagnostics import (
+from ecosystem_complexity.inference.diagnostics import (
     cumulative_ladder_from_context,
     constraint_orthogonality_from_context,
     oe_ladder_context,
@@ -27,7 +27,7 @@ from ecosystem_complexity.sites.driver import (
     OPT_FIELDS,
     run_site_canonical,
 )
-from ecosystem_complexity.biome import biome_group as _biome_group
+from ecosystem_complexity.synthesis.biomes import biome_group as _biome_group
 from ecosystem_complexity.sites.spec import load_site_spec
 
 
