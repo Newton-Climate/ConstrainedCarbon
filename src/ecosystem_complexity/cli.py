@@ -20,6 +20,7 @@ Commands:
     fetch      Download forcing data (flux | fluxcom).
     config     Config utilities (build | incubation | locate).
     report     Result merging / cross-ecosystem summary.
+    model      Validate inputs or run the forward carbon model.
 """
 
 from __future__ import annotations
@@ -105,6 +106,10 @@ def _cmd_report(argv: list[str]) -> int:
     return _delegate("report", argv)
 
 
+def _cmd_model(argv: list[str]) -> int:
+    return _delegate("model", argv)
+
+
 _COMMANDS = {
     "optimize": _cmd_optimize,
     "run": _cmd_optimize,  # legacy alias
@@ -118,6 +123,7 @@ _COMMANDS = {
     "fetch": _cmd_fetch,
     "config": _cmd_config,
     "report": _cmd_report,
+    "model": _cmd_model,
 }
 
 

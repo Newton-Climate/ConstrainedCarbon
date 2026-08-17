@@ -125,6 +125,53 @@ put `AMERIFLUX_USER_ID` and `AMERIFLUX_EMAIL` in the repository-root `.env`.
 See [`ecosys fetch`](docs/apps/fetch.md) for external sources, destinations,
 access requirements, and failure handling.
 
+### Run with your own laboratory ¹⁴C data
+
+Use a CSV for measurements and a small YAML manifest for metadata and
+fraction-to-pool mapping. Start by copying the tracked
+[example manifest](examples/custom_14c/example_lab_14c.yaml) and
+[example measurements](examples/custom_14c/example_lab_14c.csv) into a local
+input folder such as `data/custom/`. The input format and required columns are
+described in [the example README](examples/custom_14c/README.md).
+
+Copy a working site configuration, retaining its model, inversion, and forcing
+blocks. Update the site metadata and datasource block to point to your
+meteorological forcing and laboratory manifest:
+
+```yaml
+datasource:
+  forcing_glob: path-or-pattern-for-your-daily-forcing
+  forcing_kind: daily
+  radiocarbon_manifest: ../../data/custom/my_site_14c.yaml
+```
+
+`israd_name` is not needed with `radiocarbon_manifest`. The manifest overrides
+the configured ISRaD observation path, so the CSV's bulk, fraction, and
+respiration records are used automatically. A forcing file is still required:
+it supplies the climate and GPP/NPP time series that drive the model.
+
+Run the fit by passing the new configuration directly:
+
+```bash
+ecosys optimize configs/multisite/my_lab_site.yaml --outdir outputs/my_lab_site
+```
+
+Before a long fit, validate that the config, forcing, and lab-data mapping load
+correctly:
+
+```bash
+ecosys model validate configs/multisite/my_lab_site.yaml
+```
+
+The run writes its configuration snapshot, fitted pool turnover times,
+diagnostics, and raw posterior arrays under the selected output directory.
+Start without `--include-er`, `--include-incubation`, or
+`--include-incubation-14c`; add those only when you also have the corresponding
+observations and want them to constrain the fit.
+
+For the full input format, constraint choices, and examples of adding ER or
+adjusting inversion assumptions, see [custom data and constraints](docs/custom-data-and-constraints.md).
+
 ## Common commands
 
 | Command | When to use it |
@@ -137,6 +184,7 @@ access requirements, and failure handling.
 | [`ecosys config`](docs/apps/config.md) | Find sites and build configuration files. |
 | [`ecosys analyze`](docs/apps/analyze.md) | Run network, transit-time, and summary analyses. |
 | [`ecosys report`](docs/apps/report.md) | Combine results and produce cross-ecosystem summaries. |
+| [`ecosys model`](docs/apps/model.md) | Validate site inputs or run a forward model simulation. |
 
 Keep the exact config, command, input data version, and output tables together
 for every result you interpret or share.

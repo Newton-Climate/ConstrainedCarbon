@@ -17,6 +17,11 @@ from ecosystem_complexity.data.israd_14c import (
     build_fraction_14C_blocks,
     build_resp_14C_obs,
 )
+from ecosystem_complexity.data.custom_14c import (
+    Custom14CData,
+    build_custom_14c_observations,
+    load_custom_14c_manifest,
+)
 from ecosystem_complexity.data.israd_observations import (
     FractionMappingRule,
     add_layer_midpoint,
@@ -77,6 +82,9 @@ __all__ = [
     "build_measured_soc_stocks",
     "build_measured_soc_total",
     "build_resp_14C_obs",
+    "Custom14CData",
+    "load_custom_14c_manifest",
+    "build_custom_14c_observations",
     "build_soilgrids_soc_total",
     "load_daily_forcing",
     "resolve_dd_file",

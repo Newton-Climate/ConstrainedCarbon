@@ -49,6 +49,11 @@ The config is part of the scientific method for a run. Before editing one, make 
 
 For a new site, use `ecosys config locate` to find likely ISRaD–tower matches and `ecosys config build` to make a starting YAML. Review and adjust the resulting file before downloading data or fitting the site.
 
+For sites with laboratory measurements outside ISRaD, see [custom data inputs
+and fit constraints](custom-data-and-constraints.md). It explains the
+CSV-plus-manifest input, source-specific constraint options, and validation
+workflow.
+
 ## Reproducibility
 
 Keep the exact site YAML, site-set YAML if used, command and options, input data versions, and output tables together. The repository includes exploratory notebooks and historical exports; a config plus an explicit `ecosys` command is the clearest starting point for a reproducible analysis.

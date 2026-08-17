@@ -30,6 +30,7 @@ class SiteSpec:
     biome: str = "unclassified"
     forcing_kind: str = "daily"
     observation_path: str = "bulk_resp"   # bulk_resp | fraction | combined
+    radiocarbon_manifest: str = ""         # optional custom CSV+YAML observations
     mat_c: float | None = None
     map_mm: float | None = None
     elevation_m: float | None = None
@@ -47,7 +48,9 @@ def load_site_spec(config_path: str) -> SiteSpec:
         cfg = yaml.safe_load(fh) or {}
     site = cfg.get("site") or {}
     ds = cfg.get("datasource") or {}
-    missing = [k for k in ("israd_name", "forcing_glob") if not ds.get(k)]
+    missing = [k for k in ("forcing_glob",) if not ds.get(k)]
+    if not ds.get("radiocarbon_manifest") and not ds.get("israd_name"):
+        missing.append("israd_name")
     if missing:
         raise ValueError(
             f"{os.path.basename(config_path)}: datasource missing {missing}"
@@ -56,7 +59,7 @@ def load_site_spec(config_path: str) -> SiteSpec:
     return SiteSpec(
         config_path=config_path,
         config_stem=stem,
-        israd_name=str(ds["israd_name"]),
+        israd_name=str(ds.get("israd_name", site.get("name", stem))),
         forcing_glob=str(ds["forcing_glob"]),
         er_observation_glob=str(ds.get("er_observation_glob", "")),
         lat=float(site.get("lat", 0.0)),
@@ -66,6 +69,7 @@ def load_site_spec(config_path: str) -> SiteSpec:
         biome=str(site.get("biome", "unclassified")),
         forcing_kind=str(ds.get("forcing_kind", "daily")),
         observation_path=str(ds.get("observation_path", "bulk_resp")),
+        radiocarbon_manifest=str(ds.get("radiocarbon_manifest", "")),
         mat_c=(float(site["mat_c"]) if "mat_c" in site else None),
         map_mm=(float(site["map_mm"]) if "map_mm" in site else None),
         elevation_m=(

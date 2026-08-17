@@ -21,6 +21,7 @@ datasource:
   er_observation_glob: optional string
   forcing_kind: daily | fluxcom
   observation_path: bulk_resp | fraction | combined
+  radiocarbon_manifest: optional path to a custom ¹⁴C YAML manifest
   fraction_rules: {frc_property: soil_pool_name | null}
 
 model:
