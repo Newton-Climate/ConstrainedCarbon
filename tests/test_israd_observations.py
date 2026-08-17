@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ecosystem_complexity.api import build_model
+from ecosystem_complexity.model.api import build_model
 from ecosystem_complexity.data.israd_observations import (
     FractionMappingRule,
     add_layer_midpoint,

@@ -20,7 +20,7 @@ import textwrap
 
 import pytest
 
-from ecosystem_complexity.config import (
+from ecosystem_complexity.model.configuration import (
     ConfigValidationError,
     ModelConfig,
     PoolIndex,

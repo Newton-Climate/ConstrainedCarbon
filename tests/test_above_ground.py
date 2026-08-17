@@ -13,7 +13,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.above_ground import (
+from ecosystem_complexity.processes.vegetation import (
     compute_external_soil_inputs,
     npp_allocation,
 )

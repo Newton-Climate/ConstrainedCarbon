@@ -31,10 +31,10 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from ecosystem_complexity.api import build_model, run_model, spinup
-from ecosystem_complexity.config import PoolIndex, load_config
+from ecosystem_complexity.model.api import build_model, run_model, spinup
+from ecosystem_complexity.model.configuration import PoolIndex, load_config
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _SOIL_ONLY_PATH = str(CONFIGS_DIR / "harvard_forest_soil_only.yaml")
@@ -177,7 +177,7 @@ def test_harvard_soil_only_inversion_tau_recovery_synthetic(soil_only_model):
     """
     import optax
 
-    from ecosystem_complexity.api import (
+    from ecosystem_complexity.model.api import (
         _params_to_vector,
         _vector_to_params,
     )

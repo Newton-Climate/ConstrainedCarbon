@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ecosystem_complexity.api import build_model
+from ecosystem_complexity.model.api import build_model
 from ecosystem_complexity.data.custom_14c import (
     build_custom_14c_observations,
     load_custom_14c_manifest,

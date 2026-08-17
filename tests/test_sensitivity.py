@@ -43,12 +43,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.api import build_model, run_model
+from ecosystem_complexity.model.api import build_model, run_model
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.information import (
+from ecosystem_complexity.inference.information import (
     _default_fields,
 )
-from ecosystem_complexity.sensitivity import (
+from ecosystem_complexity.inference.sensitivity import (
     OBS_C_STOCKS,
     OBS_POOL_D14C,
     OBS_RESP_D14C,
@@ -60,7 +60,7 @@ from ecosystem_complexity.sensitivity import (
     make_prior_covariance,
     unflatten_params,
 )
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HF_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")

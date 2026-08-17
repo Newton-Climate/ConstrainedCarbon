@@ -1,4 +1,4 @@
-from ecosystem_complexity.oe_diagnostics import (
+from ecosystem_complexity.inference.diagnostics import (
     ALL_FAMILIES,
     LADDER_STEPS,
     classify_block,

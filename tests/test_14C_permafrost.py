@@ -46,14 +46,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.model import EcosystemModel
-from ecosystem_complexity.state import (
+from ecosystem_complexity.model.configuration import PoolIndex, load_config
+from ecosystem_complexity.model.simulator import EcosystemModel
+from ecosystem_complexity.model.state import (
     EcosystemState,
     make_default_params,
     make_initial_state,
 )
-from ecosystem_complexity.tracer_14C import (
+from ecosystem_complexity.processes.radiocarbon import (
     _CUE,
     _K_EXT,
     _LAI,
@@ -63,7 +63,7 @@ from ecosystem_complexity.tracer_14C import (
     initialize_permafrost_14C,
     step_14C,
 )
-from ecosystem_complexity.transfer import get_transfer_matrix
+from ecosystem_complexity.model.transfers import get_transfer_matrix
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HARVARD_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")

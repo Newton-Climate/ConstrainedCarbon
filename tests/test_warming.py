@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from ecosystem_complexity.data.schemas import ForcingData
-from ecosystem_complexity.warming import repeat_forcing, warm_forcing
+from ecosystem_complexity.synthesis.warming import repeat_forcing, warm_forcing
 
 
 def _forcing() -> ForcingData:

@@ -17,7 +17,7 @@ import jax.numpy as jnp
 import pandas as pd
 import pytest
 
-from ecosystem_complexity.config import ModelConfig, load_config
+from ecosystem_complexity.model.configuration import ModelConfig, load_config
 from ecosystem_complexity.data.loaders import (
     load_barrow_alaska,
     load_harvard_forest,

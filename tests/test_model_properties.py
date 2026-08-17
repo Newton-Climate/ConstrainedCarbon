@@ -39,9 +39,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.model import EcosystemModel
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.configuration import PoolIndex, load_config
+from ecosystem_complexity.model.simulator import EcosystemModel
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HARVARD_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")
@@ -191,7 +191,7 @@ def soil_only_config():
 
 @pytest.fixture(scope="module")
 def soil_only_model(soil_only_config):
-    from ecosystem_complexity.state import make_default_params
+    from ecosystem_complexity.model.state import make_default_params
 
     idx = PoolIndex(soil_only_config)
     params = make_default_params(soil_only_config)
@@ -200,7 +200,7 @@ def soil_only_model(soil_only_config):
 
 @pytest.fixture(scope="module")
 def soil_only_state(soil_only_config):
-    from ecosystem_complexity.state import make_initial_state
+    from ecosystem_complexity.model.state import make_initial_state
 
     site_cfg = {"mat_c": 8.5, "permafrost": False}
     return make_initial_state(soil_only_config, site_cfg)
@@ -208,7 +208,7 @@ def soil_only_state(soil_only_config):
 
 @pytest.fixture(scope="module")
 def soil_only_params(soil_only_config):
-    from ecosystem_complexity.state import make_default_params
+    from ecosystem_complexity.model.state import make_default_params
 
     return make_default_params(soil_only_config)
 

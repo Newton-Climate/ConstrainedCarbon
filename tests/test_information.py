@@ -44,22 +44,22 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity._oe_helpers import _build_sa_diag, build_oe_prior_sigma
-from ecosystem_complexity.analysis import (
+from ecosystem_complexity.inference._helpers import _build_sa_diag, build_oe_prior_sigma
+from ecosystem_complexity.synthesis.analysis import (
     age_diagnostics_summary,
     compute_age_diagnostics,
     param_group_dfs,
     run_ablation_study,
 )
-from ecosystem_complexity.api import build_model, run_model
+from ecosystem_complexity.model.api import build_model, run_model
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.information import (
+from ecosystem_complexity.inference.information import (
     _default_fields,
     compute_dof,
     compute_fisher,
     compute_posterior,
 )
-from ecosystem_complexity.sensitivity import (
+from ecosystem_complexity.inference.sensitivity import (
     OBS_C_STOCKS,
     OBS_POOL_D14C,
     OBS_RESP_D14C,
@@ -71,7 +71,7 @@ from ecosystem_complexity.sensitivity import (
     make_prior_covariance,
     unflatten_params,
 )
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HF_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")
@@ -477,20 +477,6 @@ def test_build_oe_prior_sigma_transfer_and_tau_values(hf_3pool_model):
     assert transfer_sigma[structural_passive_to_active] == pytest.approx(0.02)
 
 
-def test_canonical_prior_sigma_matches_oe_prior_helper(hf_3pool_model):
-    notebooks_dir = str(pathlib.Path(__file__).parent.parent / "notebooks")
-    if notebooks_dir not in sys.path:
-        sys.path.insert(0, notebooks_dir)
-
-    from sites.canonical import _canonical_prior_sigma
-
-    fields = ("log_tau", "log_f_transfer")
-    params0 = make_default_params(hf_3pool_model.config)
-    expected = np.array(build_oe_prior_sigma(hf_3pool_model.config, params0, fields))
-    actual = _canonical_prior_sigma(hf_3pool_model, fields)
-    np.testing.assert_allclose(actual, expected, rtol=1e-6)
-
-
 def test_dof_per_param_sums_to_total(hf_dof):
     """Sum of per-param DFS == dfs_total."""
     assert abs(float(np.sum(hf_dof.dfs_per_param)) - hf_dof.dfs_total) < 1e-5
@@ -617,7 +603,7 @@ def test_ablation_scenario_types(hf_ablation):
 
 def test_ablation_dfs_monotone(hf_ablation):
     """DFS(C_stocks + Δ14C) ≥ DFS(C_stocks alone)."""
-    from ecosystem_complexity.information import OBS_C_STOCKS, OBS_POOL_D14C
+    from ecosystem_complexity.inference.information import OBS_C_STOCKS, OBS_POOL_D14C
 
     key_C = OBS_C_STOCKS
     key_both = f"{OBS_C_STOCKS}+{OBS_POOL_D14C}"

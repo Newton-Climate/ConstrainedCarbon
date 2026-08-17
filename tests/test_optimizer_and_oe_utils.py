@@ -6,26 +6,26 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.api import build_model
+from ecosystem_complexity.model.api import build_model
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.oe_diagnostics import (
+from ecosystem_complexity.inference.diagnostics import (
     fit_param_subset_labels,
     oe_constraint_ladder,
     oe_gain_matrix_diagnostics,
     oe_style_ablation,
 )
-from ecosystem_complexity.oe_utils import (
+from ecosystem_complexity.inference.utilities import (
     build_mean_ss_modifier,
     build_oe_observation_sets,
     ss_state_for_params,
 )
-from ecosystem_complexity.optimizer import (
+from ecosystem_complexity.inference.parameters import (
     get_oe_fields,
     get_opt_fields,
     params_to_vector,
     vector_to_params,
 )
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HF_3POOL_PATH = str(CONFIGS_DIR / "harvard_3pool_config.yaml")

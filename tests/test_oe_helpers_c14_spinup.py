@@ -11,14 +11,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity._oe_helpers import (
+from ecosystem_complexity.inference._helpers import (
     _R_STD,
     _analytical_c12_ss,
     analytical_c14_ss,
     apply_ss_c12_c14,
 )
-from ecosystem_complexity.api import build_model
-from ecosystem_complexity.state import make_default_params
+from ecosystem_complexity.model.api import build_model
+from ecosystem_complexity.model.state import make_default_params
 
 _MEAN_INPUT = 1.79
 _MEAN_MOD = 0.47
@@ -93,7 +93,7 @@ def test_gradient_flows_to_tau(setup):
 
 def test_apply_ss_c12_c14_sets_both(setup):
     model, params, n, tgt, *_ = setup
-    from ecosystem_complexity.state import make_initial_state
+    from ecosystem_complexity.model.state import make_initial_state
     st = make_initial_state(model.config, {"mat_c": 8.5, "permafrost": False})
     c12 = jnp.ones(n) * 100.0
     c14 = jnp.ones(n) * 1e-10

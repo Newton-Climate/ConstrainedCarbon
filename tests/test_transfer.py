@@ -31,9 +31,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.state import make_default_params
-from ecosystem_complexity.transfer import (
+from ecosystem_complexity.model.configuration import PoolIndex, load_config
+from ecosystem_complexity.model.state import make_default_params
+from ecosystem_complexity.model.transfers import (
     build_transfer_matrix,
     get_transfer_matrix,
     validate_transfer_rules,
@@ -175,7 +175,7 @@ def test_row_sum_exceeds_one_raises():
     load_config's own _check_transfer_sums would raise ConfigValidationError
     first.  build_transfer_matrix must be an independent line of defence.
     """
-    from ecosystem_complexity.config import (
+    from ecosystem_complexity.model.configuration import (
         AboveGroundPoolDef,
         ModelConfig,
         SoilLayerDef,

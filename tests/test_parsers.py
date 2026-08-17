@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ecosystem_complexity.config import ModelConfig, load_config
+from ecosystem_complexity.model.configuration import ModelConfig, load_config
 from ecosystem_complexity.data.alignment import align_to_layers
 from ecosystem_complexity.data.loaders import (
     load_harvard_forest,

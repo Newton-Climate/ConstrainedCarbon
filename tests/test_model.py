@@ -39,10 +39,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.above_ground import _CUE
-from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.model import EcosystemModel
-from ecosystem_complexity.state import make_default_params, make_initial_state
+from ecosystem_complexity.processes.vegetation import _CUE
+from ecosystem_complexity.model.configuration import PoolIndex, load_config
+from ecosystem_complexity.model.simulator import EcosystemModel
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HARVARD_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")

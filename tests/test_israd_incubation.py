@@ -11,13 +11,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ecosystem_complexity.api import build_model
-from ecosystem_complexity.climate import f_temp
+from ecosystem_complexity.model.api import build_model
+from ecosystem_complexity.processes.climate import f_temp
 from ecosystem_complexity.data.israd_incubation import (
     build_incubation_rate_blocks,
     load_incubation_rates,
 )
-from ecosystem_complexity.state import make_default_params
+from ecosystem_complexity.model.state import make_default_params
 
 _SITE = "test_site"
 

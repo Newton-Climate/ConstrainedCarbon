@@ -31,8 +31,8 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from ecosystem_complexity.config import PoolIndex, load_config
-from ecosystem_complexity.state import (
+from ecosystem_complexity.model.configuration import PoolIndex, load_config
+from ecosystem_complexity.model.state import (
     _LAMBDA_14C,
     EcosystemState,
     ModelParams,

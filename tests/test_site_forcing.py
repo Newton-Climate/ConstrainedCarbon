@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity.config import load_config
+from ecosystem_complexity.model.configuration import load_config
 from ecosystem_complexity.data.forcing import (
     load_fluxcom_forcing,
     load_fluxcom_observations,

@@ -12,7 +12,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from ecosystem_complexity.climate import (
+from ecosystem_complexity.processes.climate import (
     f_moisture,
     f_temp,
     thawed_frac,

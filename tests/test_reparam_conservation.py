@@ -23,12 +23,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.api import build_model, run_model
+from ecosystem_complexity.model.api import build_model, run_model
 from ecosystem_complexity.data.schemas import ForcingData
-from ecosystem_complexity.optimizer import params_to_vector, vector_to_params
-from ecosystem_complexity.soil import het_respiration
-from ecosystem_complexity.state import make_default_params, make_initial_state
-from ecosystem_complexity.transfer import get_transfer_matrix
+from ecosystem_complexity.inference.parameters import params_to_vector, vector_to_params
+from ecosystem_complexity.processes.soil import het_respiration
+from ecosystem_complexity.model.state import make_default_params, make_initial_state
+from ecosystem_complexity.model.transfers import get_transfer_matrix
 
 CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
 _HF_3POOL_PATH = str(CONFIGS_DIR / "harvard_3pool_config.yaml")

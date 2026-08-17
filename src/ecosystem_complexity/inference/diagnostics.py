@@ -31,6 +31,8 @@ _BLOCK_TO_OBSTYPE = {
     "resp_14C": OBS_RESP_D14C,
     "c_stock": OBS_C_STOCKS,
     "c_sum": OBS_C_STOCKS,
+    "er_annual": "ER_annual",
+    "israd_inc_rate": "inc_rate",
     "israd": OBS_POOL_D14C,
 }
 
@@ -331,6 +333,7 @@ def oe_style_ablation(
 _LADDER_FAMILY_PREFIXES: tuple[tuple[str, str], ...] = (
     ("c_stock", "C_stocks"),
     ("c_sum", "C_stocks"),
+    ("israd_inc_rate", "inc_rate"),
     ("israd_bulk", "bulk_14C"),
     # Must precede `israd_fraction` — the 12C partition/stock blocks share the
     # `israd_fraction` prefix but belong to a distinct family.
@@ -364,6 +367,13 @@ LADDER_STEPS: tuple[tuple[str, tuple[str, ...]], ...] = (
         (
             "C_stocks", "bulk_14C", "fraction_14C", "resp_14C",
             "fraction_12C", "ER_annual",
+        ),
+    ),
+    (
+        "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C+ER_annual+inc_rate",
+        (
+            "C_stocks", "bulk_14C", "fraction_14C", "resp_14C",
+            "fraction_12C", "ER_annual", "inc_rate",
         ),
     ),
 )
@@ -571,7 +581,9 @@ def constraint_orthogonality_from_context(
     }
 
 
-ALL_FAMILIES: tuple[str, ...] = STOCK_FAMILIES + C14_FAMILIES
+ALL_FAMILIES: tuple[str, ...] = (
+    STOCK_FAMILIES + C14_FAMILIES + ("fraction_12C", "ER_annual", "inc_rate")
+)
 
 
 def shapley_dfs_per_parameter_from_context(

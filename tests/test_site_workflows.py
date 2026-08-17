@@ -6,7 +6,7 @@ import textwrap
 
 import numpy as np
 
-from ecosystem_complexity.config import load_config
+from ecosystem_complexity.model.configuration import load_config
 from ecosystem_complexity.fetch.colocation import locate_site
 from ecosystem_complexity.site_analysis import (
     compute_information_metrics,
@@ -129,4 +129,3 @@ def test_load_exported_analysis_round_trip(tmp_path: pathlib.Path) -> None:
     loaded = load_exported_analysis(str(export_dir))
     assert loaded["metrics"]["reduced_chi2"] == 2.0
     assert loaded["summary"]["rows_by_family"]["C_stocks"] == [0]
-

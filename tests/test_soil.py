@@ -13,7 +13,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ecosystem_complexity.soil import (
+from ecosystem_complexity.processes.soil import (
     decomp_flux,
     het_respiration,
     nee,
@@ -188,8 +188,8 @@ def _resp_inputs(n_pools=3, T=4):
 
 
 def test_respired_delta14C_matches_flux_weighting_when_flux_is_live():
-    from ecosystem_complexity.soil import respiration_fractions
-    from ecosystem_complexity.tracer_14C import respired_delta14C
+    from ecosystem_complexity.processes.soil import respiration_fractions
+    from ecosystem_complexity.processes.radiocarbon import respired_delta14C
 
     d14, C12, log_tau, log_f = _resp_inputs()
     n = C12.shape[-1]
@@ -205,8 +205,8 @@ def test_respired_delta14C_matches_flux_weighting_when_flux_is_live():
 
 def test_respired_delta14C_falls_back_to_intrinsic_when_frozen():
     """All-zero flux must give the intrinsic mixture, not 0 permil."""
-    from ecosystem_complexity.soil import respiration_fractions
-    from ecosystem_complexity.tracer_14C import respired_delta14C
+    from ecosystem_complexity.processes.soil import respiration_fractions
+    from ecosystem_complexity.processes.radiocarbon import respired_delta14C
 
     d14, C12, log_tau, log_f = _resp_inputs()
     n = C12.shape[-1]
@@ -224,7 +224,7 @@ def test_respired_delta14C_falls_back_to_intrinsic_when_frozen():
 
 def test_respired_delta14C_gradient_is_finite_when_frozen():
     """A frozen timestep must not poison the gradient."""
-    from ecosystem_complexity.tracer_14C import respired_delta14C
+    from ecosystem_complexity.processes.radiocarbon import respired_delta14C
 
     d14, C12, log_tau, log_f = _resp_inputs(T=3)
     n = C12.shape[-1]
@@ -244,7 +244,7 @@ def test_respired_delta14C_gradient_is_finite_when_frozen():
 
 def test_env_scalars_cancel_in_a_single_layer_mixture():
     """A scalar common to every pool must not change the normalised mixture."""
-    from ecosystem_complexity.tracer_14C import respired_delta14C
+    from ecosystem_complexity.processes.radiocarbon import respired_delta14C
 
     d14, C12, log_tau, log_f = _resp_inputs()
     n = C12.shape[-1]
