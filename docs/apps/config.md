@@ -23,3 +23,16 @@ discovery aid, not confirmation that a tower and soil profile represent the
 same ecosystem. `build` and `incubation` write YAML configuration candidates.
 Review pool definitions, depth mapping, priors, observation dates, forcing, and
 site metadata before treating the configuration as an analysis protocol.
+
+## Harvard Forest example
+
+```bash
+ecosys model validate configs/multisite/harvard_forest.yaml
+```
+
+The Harvard config defines one 0–1.3 m soil layer with active, slow, and passive
+kinetic pools. That is a modeling choice, not a direct statement that each
+depth interval contains only one pool. The later diagnostic below helps check
+whether the resulting observation model behaves plausibly.
+
+![Harvard Forest fitted diagnostic](artifacts/harvard_forest_site_diagnostics.png)

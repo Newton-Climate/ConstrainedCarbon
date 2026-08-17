@@ -56,3 +56,17 @@ state, or from the requested spinup. It is not a fitted posterior result unless
 you have separately supplied fitted parameters through the model workflow.
 Before using it for a mechanism claim, check the forcing provenance,
 `spinup_years`, pool order, and final total C in the manifest and diagnostics.
+
+## Harvard Forest example
+
+```bash
+ecosys model run configs/multisite/harvard_forest.yaml \
+  --spinup-years 400 --outdir outputs/harvard_example_forward
+```
+
+This produces a forward simulation from the configured state; it does not fit
+the parameters. Compare its pool order and total carbon with the fitted
+diagnostic below only after confirming that the same forcing and assumptions
+were used.
+
+![Harvard Forest fitted diagnostic for comparison](artifacts/harvard_forest_site_diagnostics.png)

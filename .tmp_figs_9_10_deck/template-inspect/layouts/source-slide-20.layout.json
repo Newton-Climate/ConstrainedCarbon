@@ -1,0 +1,1375 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/zyxsni5k",
+    "id": "zyxsni5k",
+    "slide": 20,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qpwjmh8n",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "FUTURE WORK",
+      "textPreview": "FUTURE WORK",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "FUTURE WORK"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "FUTURE WORK",
+          "runs": [
+            {
+              "index": 1,
+              "text": "FUTURE WORK",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rq50vmp8",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Four experiments that complete the story",
+      "textPreview": "Four experiments that complete the story",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Four experiments that complete the story"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Four experiments that complete the story",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Four experiments that complete the story",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4nu1krqh",
+      "id": "4",
+      "name": "Shape 2",
+      "bbox": [
+        57.6,
+        168,
+        576,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#4A7C59",
+      "lineWidth": 1
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/po3itc72",
+      "id": "5",
+      "name": "Shape 3",
+      "bbox": [
+        57.6,
+        168,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2lczih8r",
+      "id": "6",
+      "name": "Text 4",
+      "bbox": [
+        57.6,
+        168,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "text": "01",
+      "textPreview": "01",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "01"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "01",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "01",
+              "fontSize": 48,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3ml0rmpw",
+      "id": "7",
+      "name": "Text 5",
+      "bbox": [
+        153.6,
+        182.4,
+        460.8,
+        48
+      ],
+      "geometry": "rect",
+      "text": "Spatial extension to 10–20 ISRaD sites",
+      "textPreview": "Spatial extension to 10–20 ISRaD sites",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Spatial extension to 10–20 ISRaD sites"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Spatial extension to 10–20 ISRaD sites",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Spatial extension to 10–20 ISRaD sites",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gjuhg7ql",
+      "id": "8",
+      "name": "Text 6",
+      "bbox": [
+        153.6,
+        230.4,
+        460.8,
+        134.4
+      ],
+      "geometry": "rect",
+      "text": "Apply canonical pipeline along climate / biome gradient. Map posterior τ vs MAT, MAP, % permafrost. Tests whether the HF / Barrow contrast generalizes.",
+      "textPreview": "Apply canonical pipeline along climate / biome gradient. Map posterior τ vs MAT, MAP, % permafrost. Tests whether the HF / Barrow contras...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Apply canonical pipeline along climate / biome gradient. Map"
+          },
+          {
+            "index": 2,
+            "text": "posterior τ vs MAT, MAP, % permafrost. Tests whether the HF / Barrow"
+          },
+          {
+            "index": 3,
+            "text": "contrast generalizes."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Apply canonical pipeline along climate / biome gradient. Map posterior τ vs MAT, MAP, % permafrost. Tests whether the HF / Barrow contrast generalizes.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Apply canonical pipeline along climate / biome gradient. Map posterior τ vs MAT, MAP, % permafrost. Tests whether the HF / Barrow contrast generalizes.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hk3ipcr6",
+      "id": "9",
+      "name": "Text 7",
+      "bbox": [
+        153.6,
+        360,
+        460.8,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "generalizes Q1",
+      "textPreview": "generalizes Q1",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "generalizes Q1"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "generalizes Q1",
+          "runs": [
+            {
+              "index": 1,
+              "text": "generalizes Q1",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dkfmp4zy",
+      "id": "10",
+      "name": "Shape 8",
+      "bbox": [
+        662.4,
+        168,
+        576,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#4A7C59",
+      "lineWidth": 1
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cj65wzyd",
+      "id": "11",
+      "name": "Shape 9",
+      "bbox": [
+        662.4,
+        168,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rid4nuhs",
+      "id": "12",
+      "name": "Text 10",
+      "bbox": [
+        662.4,
+        168,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "text": "02",
+      "textPreview": "02",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "02",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "02",
+              "fontSize": 48,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qh4nupg7",
+      "id": "13",
+      "name": "Text 11",
+      "bbox": [
+        758.4,
+        182.4,
+        460.8,
+        48
+      ],
+      "geometry": "rect",
+      "text": "Warming-scenario forecast",
+      "textPreview": "Warming-scenario forecast",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Warming-scenario forecast"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Warming-scenario forecast",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Warming-scenario forecast",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pwvmlkzm",
+      "id": "14",
+      "name": "Text 12",
+      "bbox": [
+        758.4,
+        230.4,
+        460.8,
+        134.4
+      ],
+      "geometry": "rect",
+      "text": "Project posterior model forward to 2100 with +2 °C, +4 °C scenarios. Compare to CMIP6 land outputs at the same grid cells.",
+      "textPreview": "Project posterior model forward to 2100 with +2 °C, +4 °C scenarios. Compare to CMIP6 land outputs at the same grid cells.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Project posterior model forward to 2100 with +2 °C, +4 °C scenarios."
+          },
+          {
+            "index": 2,
+            "text": "Compare to CMIP6 land outputs at the same grid cells."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Project posterior model forward to 2100 with +2 °C, +4 °C scenarios. Compare to CMIP6 land outputs at the same grid cells.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Project posterior model forward to 2100 with +2 °C, +4 °C scenarios. Compare to CMIP6 land outputs at the same grid cells.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4vm5sfy1",
+      "id": "15",
+      "name": "Text 13",
+      "bbox": [
+        758.4,
+        360,
+        460.8,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "directly motivates",
+      "textPreview": "directly motivates",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "directly motivates"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "directly motivates",
+          "runs": [
+            {
+              "index": 1,
+              "text": "directly motivates",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3ud4juhg",
+      "id": "16",
+      "name": "Shape 14",
+      "bbox": [
+        57.6,
+        422.4,
+        576,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#4A7C59",
+      "lineWidth": 1
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2t4nqpgb",
+      "id": "17",
+      "name": "Shape 15",
+      "bbox": [
+        57.6,
+        422.4,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hsvmhkzq",
+      "id": "18",
+      "name": "Text 16",
+      "bbox": [
+        57.6,
+        422.4,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "text": "03",
+      "textPreview": "03",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "03"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "03",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "03",
+              "fontSize": 48,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/grm5ofy5",
+      "id": "19",
+      "name": "Text 17",
+      "bbox": [
+        153.6,
+        436.8,
+        460.8,
+        48
+      ],
+      "geometry": "rect",
+      "text": "Process attribution of Rh source",
+      "textPreview": "Process attribution of Rh source",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Process attribution of Rh source"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Process attribution of Rh source",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Process attribution of Rh source",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8b654f61",
+      "id": "20",
+      "name": "Text 18",
+      "bbox": [
+        153.6,
+        484.8,
+        460.8,
+        134.4
+      ],
+      "geometry": "rect",
+      "text": "Decompose simulated Rh by pool over time at both sites. Quantifies how much of the modern flux comes from pre-bomb carbon — the deep-stock question of Q1.",
+      "textPreview": "Decompose simulated Rh by pool over time at both sites. Quantifies how much of the modern flux comes from pre-bomb carbon — the deep-stoc...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Decompose simulated Rh by pool over time at both sites. Quantifies"
+          },
+          {
+            "index": 2,
+            "text": "how much of the modern flux comes from pre-bomb carbon — the"
+          },
+          {
+            "index": 3,
+            "text": "deep-stock question of Q1."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Decompose simulated Rh by pool over time at both sites. Quantifies how much of the modern flux comes from pre-bomb carbon — the deep-stock question of Q1.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Decompose simulated Rh by pool over time at both sites. Quantifies how much of the modern flux comes from pre-bomb carbon — the deep-stock question of Q1.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/tcz6dk7m",
+      "id": "21",
+      "name": "Text 19",
+      "bbox": [
+        153.6,
+        614.4,
+        460.8,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "diagnoses mechanism",
+      "textPreview": "diagnoses mechanism",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "diagnoses mechanism"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "diagnoses mechanism",
+          "runs": [
+            {
+              "index": 1,
+              "text": "diagnoses mechanism",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/69on25ov",
+      "id": "22",
+      "name": "Shape 20",
+      "bbox": [
+        662.4,
+        422.4,
+        576,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#4A7C59",
+      "lineWidth": 1
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7ax4bapg",
+      "id": "23",
+      "name": "Shape 21",
+      "bbox": [
+        662.4,
+        422.4,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 23,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/k7650f6p",
+      "id": "24",
+      "name": "Text 22",
+      "bbox": [
+        662.4,
+        422.4,
+        81.6,
+        230.4
+      ],
+      "geometry": "rect",
+      "text": "04",
+      "textPreview": "04",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "04"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "04",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "04",
+              "fontSize": 48,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 24,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/l8fm907a",
+      "id": "25",
+      "name": "Text 23",
+      "bbox": [
+        758.4,
+        436.8,
+        460.8,
+        48
+      ],
+      "geometry": "rect",
+      "text": "Extend CESM comparison to SSP scenarios",
+      "textPreview": "Extend CESM comparison to SSP scenarios",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Extend CESM comparison to SSP scenarios"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Extend CESM comparison to SSP scenarios",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Extend CESM comparison to SSP scenarios",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/y5ony58z",
+      "id": "26",
+      "name": "Text 24",
+      "bbox": [
+        758.4,
+        484.8,
+        460.8,
+        134.4
+      ],
+      "geometry": "rect",
+      "text": "Pull CESM2 ssp585 (2015–2100) and ssp245 stocks/fluxes. Compare projected τ trajectories to OE posterior + spatial extension. Quantify CLM5 bias under warming.",
+      "textPreview": "Pull CESM2 ssp585 (2015–2100) and ssp245 stocks/fluxes. Compare projected τ trajectories to OE posterior + spatial extension. Quantify CL...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Pull CESM2 ssp585 (2015–2100) and ssp245 stocks/fluxes. Compare"
+          },
+          {
+            "index": 2,
+            "text": "projected τ trajectories to OE posterior + spatial extension. Quantify"
+          },
+          {
+            "index": 3,
+            "text": "CLM5 bias under warming."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Pull CESM2 ssp585 (2015–2100) and ssp245 stocks/fluxes. Compare projected τ trajectories to OE posterior + spatial extension. Quantify CLM5 bias under warming.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Pull CESM2 ssp585 (2015–2100) and ssp245 stocks/fluxes. Compare projected τ trajectories to OE posterior + spatial extension. Quantify CLM5 bias under warming.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 26,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/j6x47ap4",
+      "id": "27",
+      "name": "Text 25",
+      "bbox": [
+        758.4,
+        614.4,
+        460.8,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "completes Q3",
+      "textPreview": "completes Q3",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "completes Q3"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "completes Q3",
+          "runs": [
+            {
+              "index": 1,
+              "text": "completes Q3",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 27,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/43q5cz69",
+      "id": "28",
+      "name": "Text 26",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "20 / 24",
+      "textPreview": "20 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "20 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "20 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "20 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

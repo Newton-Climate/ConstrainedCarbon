@@ -1,0 +1,765 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/jyx0ra1s",
+    "id": "jyx0ra1s",
+    "slide": 4,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1cj2d8b6",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "WHY ¹⁴C  ·  01",
+      "textPreview": "WHY ¹⁴C  ·  01",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "WHY ¹⁴C  ·  01"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "WHY ¹⁴C  ·  01",
+          "runs": [
+            {
+              "index": 1,
+              "text": "WHY ¹⁴C  ·  01",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0ba143al",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Radiocarbon encodes the age of soil carbon",
+      "textPreview": "Radiocarbon encodes the age of soil carbon",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Radiocarbon encodes the age of soil carbon"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Radiocarbon encodes the age of soil carbon",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Radiocarbon encodes the age of soil carbon",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rm1k7yt4",
+      "id": "4",
+      "name": "Text 2",
+      "bbox": [
+        57.6,
+        168,
+        537.6,
+        124.8
+      ],
+      "geometry": "rect",
+      "text": "Atmospheric Δ¹⁴C has varied dramatically — pre-bomb depletion, bomb spike (1963), modern decline.",
+      "textPreview": "Atmospheric Δ¹⁴C has varied dramatically — pre-bomb depletion, bomb spike (1963), modern decline.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Atmospheric Δ¹⁴C has varied dramatically —"
+          },
+          {
+            "index": 2,
+            "text": "pre-bomb depletion, bomb spike (1963), modern"
+          },
+          {
+            "index": 3,
+            "text": "decline."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Atmospheric Δ¹⁴C has varied dramatically — pre-bomb depletion, bomb spike (1963), modern decline.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Atmospheric Δ¹⁴C has varied dramatically — pre-bomb depletion, bomb spike (1963), modern decline.",
+              "fontSize": 22.67,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ql8jytsj",
+      "id": "5",
+      "name": "Text 3",
+      "bbox": [
+        57.6,
+        316.8,
+        537.6,
+        345.6
+      ],
+      "geometry": "rect",
+      "text": "¹⁴C as a tracer\n \nCarbon entering soil each year carries the atmospheric Δ¹⁴C of that year.\nBulk soil Δ¹⁴C reflects a mixture of past inputs weighted by pool age structure.\nDensity-fractionated samples separate fast-cycling vs. mineral-protected C.\nRespired CO₂ Δ¹⁴C reveals the age of carbon actively being released.",
+      "textPreview": "¹⁴C as a tracer |   | Carbon entering soil each year carries the atmospheric Δ¹⁴C of that year. | Bulk soil Δ¹⁴C reflects a mixture of pa...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 10,
+        "lines": [
+          {
+            "index": 1,
+            "text": "¹⁴C as a tracer"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "• Carbon entering soil each year carries the atmospheric Δ¹⁴C of"
+          },
+          {
+            "index": 4,
+            "text": "that year."
+          },
+          {
+            "index": 5,
+            "text": "• Bulk soil Δ¹⁴C reflects a mixture of past inputs weighted by pool"
+          },
+          {
+            "index": 6,
+            "text": "age structure."
+          },
+          {
+            "index": 7,
+            "text": "• Density-fractionated samples separate fast-cycling vs."
+          },
+          {
+            "index": 8,
+            "text": "mineral-protected C."
+          },
+          {
+            "index": 9,
+            "text": "• Respired CO₂ Δ¹⁴C reveals the age of carbon actively being"
+          },
+          {
+            "index": 10,
+            "text": "released."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "¹⁴C as a tracer",
+          "runs": [
+            {
+              "index": 1,
+              "text": "¹⁴C as a tracer",
+              "fontSize": 18.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 6.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Carbon entering soil each year carries the atmospheric Δ¹⁴C of that year.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Carbon entering soil each year carries the atmospheric Δ¹⁴C of that year.",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "Bulk soil Δ¹⁴C reflects a mixture of past inputs weighted by pool age structure.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Bulk soil Δ¹⁴C reflects a mixture of past inputs weighted by pool age structure.",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Density-fractionated samples separate fast-cycling vs. mineral-protected C.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Density-fractionated samples separate fast-cycling vs. mineral-protected C.",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 6,
+          "text": "Respired CO₂ Δ¹⁴C reveals the age of carbon actively being released.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Respired CO₂ Δ¹⁴C reveals the age of carbon actively being released.",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/1gfm90ze",
+      "id": "12",
+      "name": "Image 0",
+      "bbox": [
+        614.4,
+        177.6,
+        614.4,
+        270.72
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-4-1.png",
+        "contentType": "image/png",
+        "byteLength": 196420
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-4-1.png",
+        "contentType": "image/png",
+        "byteLength": 196420
+      }
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sna103ap",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        614.4,
+        456,
+        614.4,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "Atmospheric Δ¹⁴C record (Hua 2021 NH/SH + Graven 2017)  ·  IntCal20 pre-1950 + Hua post-bomb",
+      "textPreview": "Atmospheric Δ¹⁴C record (Hua 2021 NH/SH + Graven 2017)  ·  IntCal20 pre-1950 + Hua post-bomb",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Atmospheric Δ¹⁴C record (Hua 2021 NH/SH + Graven 2017)  ·  IntCal20 pre-1950 + Hua post-bomb"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Atmospheric Δ¹⁴C record (Hua 2021 NH/SH + Graven 2017)  ·  IntCal20 pre-1950 + Hua post-bomb",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Atmospheric Δ¹⁴C record (Hua 2021 NH/SH + Graven 2017)  ·  IntCal20 pre-1950 + Hua post-bomb",
+              "fontSize": 12.67,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3ihk3et8",
+      "id": "8",
+      "name": "Shape 5",
+      "bbox": [
+        614.4,
+        504,
+        614.4,
+        177.6
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.07
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ih8ju9sn",
+      "id": "9",
+      "name": "Text 6",
+      "bbox": [
+        628.8,
+        513.6,
+        585.6,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "OUR ¹⁴C OBSERVATIONS",
+      "textPreview": "OUR ¹⁴C OBSERVATIONS",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "OUR ¹⁴C OBSERVATIONS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "OUR ¹⁴C OBSERVATIONS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "OUR ¹⁴C OBSERVATIONS",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kbm987y5",
+      "id": "10",
+      "name": "Text 7",
+      "bbox": [
+        628.8,
+        542.4,
+        585.6,
+        134.4
+      ],
+      "geometry": "rect",
+      "text": "Harvard Forest:  8 density-fractionated pool obs (hf212-03) · 41 NWN respired CO₂ obs (1996–2010) · 6 ISRaD H1–H5 fraction obs\n \nBarrow:  3 ISRaD bulk soil layers (Vaughn 2018 + Nave 2021, 73 layer measurements pooled) · 14 Vaughn surface emissions (2012–2014)",
+      "textPreview": "Harvard Forest:  8 density-fractionated pool obs (hf212-03) · 41 NWN respired CO₂ obs (1996–2010) · 6 ISRaD H1–H5 fraction obs |   | Barr...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Harvard Forest:  8 density-fractionated pool obs (hf212-03) · 41 NWN respired CO₂ obs"
+          },
+          {
+            "index": 2,
+            "text": "(1996–2010) · 6 ISRaD H1–H5 fraction obs"
+          },
+          {
+            "index": 3,
+            "text": " "
+          },
+          {
+            "index": 4,
+            "text": "Barrow:  3 ISRaD bulk soil layers (Vaughn 2018 + Nave 2021, 73 layer measurements"
+          },
+          {
+            "index": 5,
+            "text": "pooled) · 14 Vaughn surface emissions (2012–2014)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Harvard Forest:  8 density-fractionated pool obs (hf212-03) · 41 NWN respired CO₂ obs (1996–2010) · 6 ISRaD H1–H5 fraction obs",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Harvard Forest:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "8 density-fractionated pool obs (hf212-03) · 41 NWN respired CO₂ obs (1996–2010) · 6 ISRaD H1–H5 fraction obs",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Barrow:  3 ISRaD bulk soil layers (Vaughn 2018 + Nave 2021, 73 layer measurements pooled) · 14 Vaughn surface emissions (2012–2014)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Barrow:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "3 ISRaD bulk soil layers (Vaughn 2018 + Nave 2021, 73 layer measurements pooled) · 14 Vaughn surface emissions (2012–2014)",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/5cva1cfq",
+      "id": "11",
+      "name": "Text 8",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "4 / 24",
+      "textPreview": "4 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "4 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "4 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "4 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

@@ -22,6 +22,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 from ecosystem_complexity.inference._helpers import (
     ObsBlock,
     _analytical_c12_ss,
@@ -29,9 +30,6 @@ from ecosystem_complexity.inference._helpers import (
     _build_sa_diag,
     apply_ss_c12,
 )
-from ecosystem_complexity.model.api import run_model
-from ecosystem_complexity.data.schemas import ForcingData, ObservationData
-from ecosystem_complexity.model.simulator import EcosystemModel
 from ecosystem_complexity.inference.parameters import (
     get_oe_fields as _get_oe_fields,
 )
@@ -41,6 +39,9 @@ from ecosystem_complexity.inference.parameters import (
 from ecosystem_complexity.inference.parameters import (
     vector_to_params as _vector_to_params,
 )
+from ecosystem_complexity.inference.utilities import build_mean_ss_modifier
+from ecosystem_complexity.model.api import run_model
+from ecosystem_complexity.model.simulator import EcosystemModel
 from ecosystem_complexity.model.state import (
     EcosystemState,
     ModelParams,
@@ -72,6 +73,62 @@ class OEResult(NamedTuple):
     convergence_criterion: str = "unknown"
     convergence_value: float = float("nan")
     convergence_threshold: float = float("nan")
+
+
+def build_oe_forward_context(
+    model: EcosystemModel,
+    forcing: ForcingData,
+    state0: EcosystemState,
+    observations: ObservationData,
+    opt_fields: tuple[str, ...],
+    extra_obs_blocks: Optional[list[ObsBlock]] = None,
+) -> dict:
+    """Build the one OE forward operator used for fitting and diagnostics.
+
+    The returned ``forward`` retains ``state0``'s radiocarbon initialization
+    while replacing C12 with the analytical steady state at each trial
+    parameter vector.  Diagnostics must use this function rather than rebuild
+    an equivalent-looking operator from a separately constructed MAP state.
+    """
+    inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
+    params0 = make_default_params(model.config)
+    sa_diag = _build_sa_diag(model.config, params0, tuple(opt_fields))
+    obs_blocks = _build_obs_blocks(
+        observations,
+        model,
+        float(inv_cfg.get("sigma_pool_14C", 5.0)),
+        float(inv_cfg.get("sigma_resp_14C", 10.0)),
+        float(inv_cfg.get("sigma_carbon_gCm2", 1000.0)),
+        f_hetero=float(inv_cfg.get("f_hetero", 0.0)),
+        sigma_er_frac=float(inv_cfg.get("sigma_er_frac", 0.15)),
+    )
+    if extra_obs_blocks:
+        obs_blocks = obs_blocks + list(extra_obs_blocks)
+    if not obs_blocks:
+        raise ValueError("optimize_oe: no observations found in ObservationData")
+
+    mean_modifier, mean_gpp = build_mean_ss_modifier(forcing, params0)
+    mean_input = mean_gpp * float(getattr(model.config.external_inputs, "CUE", 0.47))
+    target_names = list(model.config.external_inputs.partition.keys())
+    target_idx = [model.pool_index[name] for name in target_names] or None
+    n_pools = len(model.pool_index)
+
+    def forward(x_vec: jnp.ndarray) -> jnp.ndarray:
+        p = _vector_to_params(x_vec, params0, tuple(opt_fields))
+        c12_ss = _analytical_c12_ss(
+            p, n_pools, mean_input, mean_modifier, target_indices=target_idx
+        )
+        out = run_model(model, forcing, state0=apply_ss_c12(state0, c12_ss), params=p)
+        return jnp.concatenate([block.predict(out, p) for block in obs_blocks])
+
+    return {
+        "params0": params0,
+        "sa_diag": sa_diag,
+        "obs_blocks": obs_blocks,
+        "forward": forward,
+        "mean_input": mean_input,
+        "mean_modifier": mean_modifier,
+    }
 
 
 def optimize_oe(  # noqa: C901
@@ -118,9 +175,6 @@ def optimize_oe(  # noqa: C901
     """
     inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
     n_iter = int(inv_cfg.get("oe_max_iterations", 20))
-    sigma_pool = float(inv_cfg.get("sigma_pool_14C", 5.0))
-    sigma_resp = float(inv_cfg.get("sigma_resp_14C", 10.0))
-    sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
     lam0 = float(inv_cfg.get("lm_lambda0", 1e-3))
     lam_factor = float(inv_cfg.get("lm_lambda_factor", 10.0))
     eps = float(inv_cfg.get("oe_convergence_eps", 1e-4))
@@ -144,41 +198,15 @@ def optimize_oe(  # noqa: C901
         tuple(fields) if fields is not None else _get_oe_fields(model.config, inv_cfg)
     )
 
-    # ── Steady-state mean input (for analytical C12 initialisation) ───────────
-    _ext_cfg = model.config.external_inputs
-    _cue = float(getattr(_ext_cfg, "CUE", 0.47))
-    _mean_gpp = float(jnp.nanmean(forcing.GPP_obs))
-    _mean_input = _mean_gpp * _cue  # gC m⁻² day⁻¹ entering soil
-    _n_pools = len(model.pool_index)
-
-    # Target pool indices for the external input partition (2-way softmax case).
-    _target_names = list(_ext_cfg.partition.keys()) if _ext_cfg is not None else []
-    _ext_target_idx = [model.pool_index[n] for n in _target_names] or None
-
-    # Pre-compute climatological mean decomposition modifier from forcing data.
-    _p0 = params0
-    _air_t_np = np.nan_to_num(np.array(forcing.air_temp), nan=5.0)
-    _soil_t_raw = np.array(forcing.soil_temp[:, 0])
-    _T_soil_np = np.where(np.isnan(_soil_t_raw), _air_t_np, _soil_t_raw)
-    _theta_raw = np.array(forcing.soil_moisture[:, 0])
-    _theta_np = np.where(np.isnan(_theta_raw), 0.3, _theta_raw)
-    from ecosystem_complexity.processes.climate import f_moisture as _f_moisture
-    from ecosystem_complexity.processes.climate import f_temp as _f_temp
-    from ecosystem_complexity.processes.climate import thawed_frac as _ff
-
-    _ft = _f_temp(jnp.array(_T_soil_np, dtype=jnp.float32), _p0.log_Q10[0], T_ref=15.0)
-    _fm = _f_moisture(
-        jnp.array(_theta_np, dtype=jnp.float32),
-        _p0.log_theta_opt[0],
-        _p0.log_gamma_moist[0],
+    ctx = build_oe_forward_context(
+        model, forcing, state0, observations, opt_fields, extra_obs_blocks
     )
-    _fff = _ff(jnp.array(_T_soil_np, dtype=jnp.float32))
-    _mod = float(jnp.nanmean(_ft * _fm * _fff))
-    _mean_modifier = _mod if np.isfinite(_mod) and _mod > 0.05 else 0.05
+    params0 = ctx["params0"]
     print(  # noqa: T201
-        f"  Spinup SS: mean_input={_mean_input:.4f} gC/m²/day, "
-        f"mean_modifier={_mean_modifier:.4f}, "
-        f"eff_tau_active={float(jnp.exp(_p0.log_tau[0]))/_mean_modifier/365:.1f} yr"
+        f"  Spinup SS: mean_input={ctx['mean_input']:.4f} gC/m²/day, "
+        f"mean_modifier={ctx['mean_modifier']:.4f}, "
+        "eff_tau_active="
+        f"{float(jnp.exp(params0.log_tau[0])) / ctx['mean_modifier'] / 365:.1f} yr"
     )
 
     # ── State vector ──────────────────────────────────────────────────────────
@@ -208,30 +236,12 @@ def optimize_oe(  # noqa: C901
             f"non-zero prior fractions in the partition dict."
         )
 
-    Sa_diag = _build_sa_diag(model.config, params0, opt_fields)
+    Sa_diag = ctx["sa_diag"]
     if sa_override_diag is not None:
         Sa_diag = jnp.array(sa_override_diag, dtype=jnp.float32)
     Sa_inv_diag = 1.0 / (Sa_diag + 1e-30)
 
-    f_hetero = float(inv_cfg.get("f_hetero", 0.0))
-    sigma_er_frac = float(inv_cfg.get("sigma_er_frac", 0.15))
-
-    # ── Observation blocks ────────────────────────────────────────────────────
-    obs_blocks = _build_obs_blocks(
-        observations,
-        model,
-        sigma_pool,
-        sigma_resp,
-        sigma_carbon,
-        f_hetero=f_hetero,
-        sigma_er_frac=sigma_er_frac,
-    )
-
-    if extra_obs_blocks:
-        obs_blocks = obs_blocks + list(extra_obs_blocks)
-
-    if not obs_blocks:
-        raise ValueError("optimize_oe: no observations found in ObservationData")
+    obs_blocks = ctx["obs_blocks"]
 
     y = jnp.concatenate([b.y for b in obs_blocks])
     Se_diag = jnp.concatenate([b.Se for b in obs_blocks])
@@ -249,18 +259,7 @@ def optimize_oe(  # noqa: C901
     Se_inv_diag = 1.0 / (Se_diag + 1e-30)
 
     # ── Forward function F(x) → (n_obs,) ─────────────────────────────────────
-    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
-        p = _vector_to_params(x_vec, params0, opt_fields)
-
-        # Replace C12 with analytical steady-state to eliminate spinup drift,
-        # rescaling C14 so the initial Δ¹⁴C stays fixed as τ (hence c12_ss) moves.
-        c12_ss = _analytical_c12_ss(
-            p, _n_pools, _mean_input, _mean_modifier, target_indices=_ext_target_idx
-        )
-        state_ss = apply_ss_c12(state0, c12_ss)
-        out = run_model(model, forcing, state0=state_ss, params=p)
-
-        return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
+    _forward = ctx["forward"]
 
     _jac_fn = jax.jacobian(_forward)
 

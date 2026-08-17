@@ -1,0 +1,7 @@
+config_stem,site_name,biome,lat,lon,mat_c,map_mm,elevation_m,eligibility_path,nearest_tower_id,nearest_tower_km,has_flux_tower_within_25km,forcing_strategy,notes
+luquillo_experimental_forest,Luquillo_Experimental_Forest,tropical wet montane forest,18.3157,-65.7487,24.0,3800.0,250.0,fraction,,,no,fluxcom,"No colocated tower in the local candidate table; strong density-fraction coverage."
+hi_andisol,HI_Andisol,tropical volcanic Andisol forest,19.945,-155.262,16.0,3180.0,1204.0,fraction,US-xPU,43.96,no,fluxcom,"Distinct volcanic/high-rain soil system; nearest tower is well outside the 25 km colocation rule."
+ca_mollisol,CA_Mollisol,Mediterranean coastal grassland,36.9679,-122.0862,11.0,500.0,24.0,fraction,US-EKP,32.48,no,fluxcom,"Adds grassland/annual-forb ecosystem not present in the current multisite set."
+az_mollisol,AZ_Mollisol,semi-arid montane grassland,35.15944,-111.6097,9.0,675.0,2195.0,fraction,US-CdM,311.38,no,fluxcom,"Adds dry montane grassland with density-fraction constraints."
+tennessee_valley,Tennessee Valley,Mediterranean grassland / shrubland,37.848,-122.5318,14.0,1200.0,,fraction,US-DBk,23.30,yes,download_tower,"A nearby flux tower exists, so tower forcing is preferable to FluxCom once downloaded."
+bci,BCI,tropical seasonal forest,9.16,-79.85,27.2,2650.0,60.0,pool+respiration,PA-Bar,0.39,yes,download_tower,"Actual flux towers are colocated; this is a strong future tower-backed expansion site rather than a FluxCom fallback."

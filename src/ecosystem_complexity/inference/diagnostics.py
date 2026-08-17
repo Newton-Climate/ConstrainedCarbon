@@ -11,20 +11,18 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ecosystem_complexity.inference._helpers import (
-    ObsBlock,
-    _analytical_c12_ss,
-    _build_obs_blocks,
-    _build_sa_diag,
-    apply_ss_c12,
-)
-from ecosystem_complexity.model.api import run_model
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
+from ecosystem_complexity.inference._helpers import ObsBlock
+from ecosystem_complexity.inference.optimal_estimation import build_oe_forward_context
+from ecosystem_complexity.inference.parameters import params_to_vector
+from ecosystem_complexity.inference.sensitivity import (
+    OBS_C_STOCKS,
+    OBS_POOL_D14C,
+    OBS_RESP_D14C,
+    get_param_names,
+)
 from ecosystem_complexity.model.simulator import EcosystemModel
-from ecosystem_complexity.inference.utilities import build_mean_ss_modifier
-from ecosystem_complexity.inference.parameters import params_to_vector, vector_to_params
-from ecosystem_complexity.inference.sensitivity import OBS_C_STOCKS, OBS_POOL_D14C, OBS_RESP_D14C, get_param_names
-from ecosystem_complexity.model.state import EcosystemState, ModelParams, make_default_params
+from ecosystem_complexity.model.state import EcosystemState, ModelParams
 
 _BLOCK_TO_OBSTYPE = {
     "pool_14C": OBS_POOL_D14C,
@@ -61,54 +59,10 @@ def _build_forward_oe_context(
     opt_fields: tuple[str, ...],
     extra_obs_blocks: Optional[list[ObsBlock]] = None,
 ) -> dict[str, Any]:
-    """Rebuild the OE forward-model context used by the canonical diagnostics."""
-    inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
-    sigma_pool = float(inv_cfg.get("sigma_pool_14C", 5.0))
-    sigma_resp = float(inv_cfg.get("sigma_resp_14C", 10.0))
-    sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
-    f_hetero = float(inv_cfg.get("f_hetero", 0.0))
-    sigma_er_frac = float(inv_cfg.get("sigma_er_frac", 0.15))
-
-    obs_blocks = _build_obs_blocks(
-        observations,
-        model,
-        sigma_pool,
-        sigma_resp,
-        sigma_carbon,
-        f_hetero=f_hetero,
-        sigma_er_frac=sigma_er_frac,
+    """Return the inversion's shared OE forward-model context."""
+    return build_oe_forward_context(
+        model, forcing, state0, observations, tuple(opt_fields), extra_obs_blocks
     )
-    if extra_obs_blocks:
-        obs_blocks = obs_blocks + list(extra_obs_blocks)
-    if not obs_blocks:
-        raise ValueError("oe_diagnostics: no obs blocks built")
-
-    params0 = make_default_params(model.config)
-    sa_diag = np.array(_build_sa_diag(model.config, params0, tuple(opt_fields)))
-    n_pools = len(model.pool_index)
-    cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
-    mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
-    mean_input = mean_gpp * cue
-    ext_cfg = model.config.external_inputs
-    assert ext_cfg is not None
-    target_names = list(ext_cfg.partition.keys())
-    target_idx = [model.pool_index[n] for n in target_names] or None
-
-    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
-        p = vector_to_params(x_vec, params0, tuple(opt_fields))
-        c12_ss = _analytical_c12_ss(
-            p, n_pools, mean_input, mean_mod, target_indices=target_idx
-        )
-        state_ss = apply_ss_c12(state0, c12_ss)
-        out = run_model(model, forcing, state0=state_ss, params=p)
-        return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
-
-    return {
-        "obs_blocks": obs_blocks,
-        "params0": params0,
-        "sa_diag": sa_diag,
-        "forward": _forward,
-    }
 
 
 def _expand_constraint_labels(obs_blocks: list[ObsBlock]) -> list[str]:
@@ -194,7 +148,9 @@ def oe_gain_matrix_diagnostics(
 
     x_opt = params_to_vector(params_opt, tuple(opt_fields))
     K = np.array(jax.jacobian(forward)(x_opt), dtype=float)
-    y_prior = np.array(forward(params_to_vector(params0, tuple(opt_fields))), dtype=float)
+    y_prior = np.array(
+        forward(params_to_vector(params0, tuple(opt_fields))), dtype=float
+    )
     y_opt = np.array(forward(x_opt), dtype=float)
     se_diag = np.array(jnp.concatenate([b.Se for b in obs_blocks]), dtype=float)
     se_inv = 1.0 / (se_diag + 1e-30)
@@ -243,50 +199,15 @@ def oe_style_ablation(
     extra_obs_blocks: Optional[list[ObsBlock]] = None,
 ) -> dict[str, Any]:
     """OE-style DFS-by-observation-type ablation at the MAP estimate."""
-    inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
-    sigma_pool = float(inv_cfg.get("sigma_pool_14C", 5.0))
-    sigma_resp = float(inv_cfg.get("sigma_resp_14C", 10.0))
-    sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
-
-    obs_blocks = _build_obs_blocks(
-        observations,
-        model,
-        sigma_pool,
-        sigma_resp,
-        sigma_carbon,
-        f_hetero=0.0,
-        sigma_er_frac=0.15,
+    ctx = _build_forward_oe_context(
+        model, forcing, state0, observations, opt_fields, extra_obs_blocks
     )
-    if extra_obs_blocks:
-        obs_blocks = obs_blocks + list(extra_obs_blocks)
-    if not obs_blocks:
-        raise ValueError("oe_style_ablation: no obs blocks built")
-
+    obs_blocks = ctx["obs_blocks"]
     obs_type_per_block = [classify_block(b.name) for b in obs_blocks]
-    params0 = make_default_params(model.config)
-    sa_diag = np.array(_build_sa_diag(model.config, params0, tuple(opt_fields)))
+    sa_diag = np.array(ctx["sa_diag"])
     sa_inv = 1.0 / (sa_diag + 1e-30)
-
-    n_pools = len(model.pool_index)
-    cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
-    mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
-    mean_input = mean_gpp * cue
-    ext_cfg = model.config.external_inputs
-    assert ext_cfg is not None
-    target_names = list(ext_cfg.partition.keys())
-    target_idx = [model.pool_index[n] for n in target_names] or None
-
-    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
-        p = vector_to_params(x_vec, params0, tuple(opt_fields))
-        c12_ss = _analytical_c12_ss(
-            p, n_pools, mean_input, mean_mod, target_indices=target_idx
-        )
-        state_ss = apply_ss_c12(state0, c12_ss)
-        out = run_model(model, forcing, state0=state_ss, params=p)
-        return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
-
     x_opt = params_to_vector(params_opt, tuple(opt_fields))
-    k = np.array(jax.jacobian(_forward)(x_opt))
+    k = np.array(jax.jacobian(ctx["forward"])(x_opt))
     se = np.array(jnp.concatenate([b.Se for b in obs_blocks]))
 
     block_lens = [int(b.y.shape[0]) for b in obs_blocks]
@@ -365,15 +286,24 @@ LADDER_STEPS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C+ER_annual",
         (
-            "C_stocks", "bulk_14C", "fraction_14C", "resp_14C",
-            "fraction_12C", "ER_annual",
+            "C_stocks",
+            "bulk_14C",
+            "fraction_14C",
+            "resp_14C",
+            "fraction_12C",
+            "ER_annual",
         ),
     ),
     (
         "C_stocks+bulk_14C+fraction_14C+resp_14C+fraction_12C+ER_annual+inc_rate",
         (
-            "C_stocks", "bulk_14C", "fraction_14C", "resp_14C",
-            "fraction_12C", "ER_annual", "inc_rate",
+            "C_stocks",
+            "bulk_14C",
+            "fraction_14C",
+            "resp_14C",
+            "fraction_12C",
+            "ER_annual",
+            "inc_rate",
         ),
     ),
 )
@@ -460,9 +390,7 @@ def _rows_for_families(ctx: dict[str, Any], families: tuple[str, ...]) -> list[i
     return sorted(rows)
 
 
-def _dfs_from_rows(
-    k_tilde: np.ndarray, rows: list[int]
-) -> tuple[float, np.ndarray]:
+def _dfs_from_rows(k_tilde: np.ndarray, rows: list[int]) -> tuple[float, np.ndarray]:
     """DFS and per-parameter DFS for an observation subset (prewhitened space)."""
     n_state = k_tilde.shape[1]
     if not rows:
@@ -741,51 +669,16 @@ def oe_constraint_ladder(
     extra_obs_blocks: Optional[list[ObsBlock]] = None,
 ) -> list[dict[str, Any]]:
     """One-constraint-at-a-time OE ladder at the MAP estimate."""
-    inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
-    sigma_pool = float(inv_cfg.get("sigma_pool_14C", 5.0))
-    sigma_resp = float(inv_cfg.get("sigma_resp_14C", 10.0))
-    sigma_carbon = float(inv_cfg.get("sigma_carbon_gCm2", 1000.0))
-
-    obs_blocks = _build_obs_blocks(
-        observations,
-        model,
-        sigma_pool,
-        sigma_resp,
-        sigma_carbon,
-        f_hetero=0.0,
-        sigma_er_frac=0.15,
+    ctx = _build_forward_oe_context(
+        model, forcing, state0, observations, opt_fields, extra_obs_blocks
     )
-    if extra_obs_blocks:
-        obs_blocks = obs_blocks + list(extra_obs_blocks)
-    if not obs_blocks:
-        raise ValueError("oe_constraint_ladder: no obs blocks built")
-
+    obs_blocks = ctx["obs_blocks"]
     obs_type_per_block = [classify_block(b.name) for b in obs_blocks]
-    params0 = make_default_params(model.config)
-    sa_diag = np.array(_build_sa_diag(model.config, params0, tuple(opt_fields)))
+    sa_diag = np.array(ctx["sa_diag"])
     sa_inv = 1.0 / (sa_diag + 1e-30)
-
-    n_pools = len(model.pool_index)
-    cue = float(getattr(model.config.external_inputs, "CUE", 0.47))
-    mean_mod, mean_gpp = build_mean_ss_modifier(forcing, params0)
-    mean_input = mean_gpp * cue
-    ext_cfg = model.config.external_inputs
-    assert ext_cfg is not None
-    target_names = list(ext_cfg.partition.keys())
-    target_idx = [model.pool_index[n] for n in target_names] or None
-
-    def _forward(x_vec: jnp.ndarray) -> jnp.ndarray:
-        p = vector_to_params(x_vec, params0, tuple(opt_fields))
-        c12_ss = _analytical_c12_ss(
-            p, n_pools, mean_input, mean_mod, target_indices=target_idx
-        )
-        state_ss = apply_ss_c12(state0, c12_ss)
-        out = run_model(model, forcing, state0=state_ss, params=p)
-        return jnp.concatenate([b.predict(out, p) for b in obs_blocks])
-
     x_opt = params_to_vector(params_opt, tuple(opt_fields))
     t0 = time.perf_counter()
-    k = np.array(jax.jacobian(_forward)(x_opt))
+    k = np.array(jax.jacobian(ctx["forward"])(x_opt))
     se = np.array(jnp.concatenate([b.Se for b in obs_blocks]))
     _ = t0  # preserve timing hook without printing in library code
 

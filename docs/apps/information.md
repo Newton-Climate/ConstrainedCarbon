@@ -32,3 +32,17 @@ around the fitted solution. They do not show that an observation family causes
 an ecological response, nor do they rank measurement quality without regard to
 the number and uncertainty of observations. Report `n_obs_family`, uncertainty
 rules, and the fitted state alongside any attribution.
+
+## Harvard Forest example
+
+```bash
+ecosys information shapley configs/multisite/harvard_forest.yaml \
+  --outdir outputs/harvard_example
+```
+
+In this run, respired Δ¹⁴C and fraction-carbon observations contribute the most
+local information. That does not mean they are the “best” measurements in all
+studies; it means they reduce uncertainty for this configuration, data mix, and
+linearization point.
+
+![Harvard Forest Shapley attribution](artifacts/harvard_forest_information_shapley.png)

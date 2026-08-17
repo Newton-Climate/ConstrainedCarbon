@@ -1,0 +1,862 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/7qto7e10",
+    "id": "7qto7e10",
+    "slide": 24,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#1F3A2E",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1sfqxsv6",
+      "id": "2",
+      "name": "Shape 0",
+      "bbox": [
+        0,
+        0,
+        24,
+        720
+      ],
+      "geometry": "rect",
+      "fillColor": "#D4A574",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0r6p4nul",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        86.4,
+        57.6,
+        1152,
+        38.4
+      ],
+      "geometry": "rect",
+      "text": "EXTENDED CONCLUSIONS",
+      "textPreview": "EXTENDED CONCLUSIONS",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "EXTENDED CONCLUSIONS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "EXTENDED CONCLUSIONS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "EXTENDED CONCLUSIONS",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/nux8zidc",
+      "id": "4",
+      "name": "Text 2",
+      "bbox": [
+        86.4,
+        96,
+        1152,
+        67.2
+      ],
+      "geometry": "rect",
+      "text": "What the multi-site + combined-observation analysis adds",
+      "textPreview": "What the multi-site + combined-observation analysis adds",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "What the multi-site + combined-observation analysis adds"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "What the multi-site + combined-observation analysis adds",
+          "runs": [
+            {
+              "index": 1,
+              "text": "What the multi-site + combined-observation analysis adds",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2to76dcr",
+      "id": "5",
+      "name": "Shape 3",
+      "bbox": [
+        86.4,
+        192,
+        1185.6,
+        144
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9wzq1svi",
+      "id": "6",
+      "name": "Text 4",
+      "bbox": [
+        105.6,
+        211.2,
+        124.8,
+        105.6
+      ],
+      "geometry": "rect",
+      "text": "05",
+      "textPreview": "05",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "05"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "05",
+          "runs": [
+            {
+              "index": 1,
+              "text": "05",
+              "fontSize": 53.33,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ov6p8nux",
+      "id": "7",
+      "name": "Text 5",
+      "bbox": [
+        240,
+        209.28,
+        1012.8,
+        38.4
+      ],
+      "geometry": "rect",
+      "text": "Passive turnover is prior-dominated in every biome.",
+      "textPreview": "Passive turnover is prior-dominated in every biome.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Passive turnover is prior-dominated in every biome."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Passive turnover is prior-dominated in every biome.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Passive turnover is prior-dominated in every biome.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3ydonyd8",
+      "id": "8",
+      "name": "Text 6",
+      "bbox": [
+        240,
+        251.52,
+        1012.8,
+        78.72
+      ],
+      "geometry": "rect",
+      "text": "Across 14 ecosystems the passive-pool uncertainty reduction sits at ≈ 0.25–0.30. Adding deep depleted bulk-layer Δ¹⁴C (−272 ‰) and tight measured SOC stocks moves it < 0.01 — τ_passive trades off with the slow→passive transfer flux, an identifiability limit, not a data-volume one.",
+      "textPreview": "Across 14 ecosystems the passive-pool uncertainty reduction sits at ≈ 0.25–0.30. Adding deep depleted bulk-layer Δ¹⁴C (−272 ‰) and tight ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Across 14 ecosystems the passive-pool uncertainty reduction sits at ≈ 0.25–0.30. Adding deep depleted bulk-layer Δ¹⁴C (−272 ‰) and tight measured SOC"
+          },
+          {
+            "index": 2,
+            "text": "stocks moves it < 0.01 — τ_passive trades off with the slow→passive transfer flux, an identifiability limit, not a data-volume one."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Across 14 ecosystems the passive-pool uncertainty reduction sits at ≈ 0.25–0.30. Adding deep depleted bulk-layer Δ¹⁴C (−272 ‰) and tight measured SOC stocks moves it < 0.01 — τ_passive trades off with the slow→passive transfer flux, an identifiability limit, not a data-volume one.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Across 14 ecosystems the passive-pool uncertainty reduction sits at ≈ 0.25–0.30. Adding deep depleted bulk-layer Δ¹⁴C (−272 ‰) and tight measured SOC stocks moves it < 0.01 — τ_passive trades off with the slow→passive transfer flux, an identifiability limit, not a data-volume one.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ix47utcn",
+      "id": "9",
+      "name": "Shape 7",
+      "bbox": [
+        86.4,
+        359.04,
+        1185.6,
+        144
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8veh8ril",
+      "id": "10",
+      "name": "Text 8",
+      "bbox": [
+        105.6,
+        378.24,
+        124.8,
+        105.6
+      ],
+      "geometry": "rect",
+      "text": "06",
+      "textPreview": "06",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "06"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "06",
+          "runs": [
+            {
+              "index": 1,
+              "text": "06",
+              "fontSize": 53.33,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9wni1wjq",
+      "id": "11",
+      "name": "Text 9",
+      "bbox": [
+        240,
+        376.32,
+        1012.8,
+        38.4
+      ],
+      "geometry": "rect",
+      "text": "Observation value is complementarity-driven — and capped.",
+      "textPreview": "Observation value is complementarity-driven — and capped.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Observation value is complementarity-driven — and capped."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Observation value is complementarity-driven — and capped.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Observation value is complementarity-driven — and capped.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mtwz6h0f",
+      "id": "12",
+      "name": "Text 10",
+      "bbox": [
+        240,
+        418.56,
+        1012.8,
+        78.72
+      ],
+      "geometry": "rect",
+      "text": "Combining soil and respired Δ¹⁴C helps only where they constrain different modes (Harvard +0.20) and is redundant elsewhere (Howland −0.04). Combined value tops out near 0.8–0.9 and never reaches 1, because the deep pool that governs century-scale loss stays unconstrained.",
+      "textPreview": "Combining soil and respired Δ¹⁴C helps only where they constrain different modes (Harvard +0.20) and is redundant elsewhere (Howland −0.0...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Combining soil and respired Δ¹⁴C helps only where they constrain different modes (Harvard +0.20) and is redundant elsewhere (Howland −0.04). Combined"
+          },
+          {
+            "index": 2,
+            "text": "value tops out near 0.8–0.9 and never reaches 1, because the deep pool that governs century-scale loss stays unconstrained."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Combining soil and respired Δ¹⁴C helps only where they constrain different modes (Harvard +0.20) and is redundant elsewhere (Howland −0.04). Combined value tops out near 0.8–0.9 and never reaches 1, because the deep pool that governs century-scale loss stays unconstrained.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Combining soil and respired Δ¹⁴C helps only where they constrain different modes (Harvard +0.20) and is redundant elsewhere (Howland −0.04). Combined value tops out near 0.8–0.9 and never reaches 1, because the deep pool that governs century-scale loss stays unconstrained.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/nu50zm10",
+      "id": "13",
+      "name": "Shape 11",
+      "bbox": [
+        86.4,
+        526.08,
+        1185.6,
+        144
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wzyhcrih",
+      "id": "14",
+      "name": "Text 12",
+      "bbox": [
+        105.6,
+        545.28,
+        124.8,
+        105.6
+      ],
+      "geometry": "rect",
+      "text": "07",
+      "textPreview": "07",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "07"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "07",
+          "runs": [
+            {
+              "index": 1,
+              "text": "07",
+              "fontSize": 53.33,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x07i5wj2",
+      "id": "15",
+      "name": "Text 13",
+      "bbox": [
+        240,
+        543.36,
+        1012.8,
+        38.4
+      ],
+      "geometry": "rect",
+      "text": "GPP time-structure is information-free; ≈ 3 DFS is the ceiling.",
+      "textPreview": "GPP time-structure is information-free; ≈ 3 DFS is the ceiling.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "GPP time-structure is information-free; ≈ 3 DFS is the ceiling."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "GPP time-structure is information-free; ≈ 3 DFS is the ceiling.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "GPP time-structure is information-free; ≈ 3 DFS is the ceiling.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/axgza10b",
+      "id": "16",
+      "name": "Text 14",
+      "bbox": [
+        240,
+        585.6,
+        1012.8,
+        78.72
+      ],
+      "geometry": "rect",
+      "text": "Time-varying vs record-mean GPP give identical information (ΔDFS +0.003). Turnover information lives in the mean operating point and the ¹⁴C/stock data. Breaking the passive degeneracy needs multi-decadal or pre-bomb Δ¹⁴C — not more observation types at one epoch.",
+      "textPreview": "Time-varying vs record-mean GPP give identical information (ΔDFS +0.003). Turnover information lives in the mean operating point and the ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Time-varying vs record-mean GPP give identical information (ΔDFS +0.003). Turnover information lives in the mean operating point and the ¹⁴C/stock data."
+          },
+          {
+            "index": 2,
+            "text": "Breaking the passive degeneracy needs multi-decadal or pre-bomb Δ¹⁴C — not more observation types at one epoch."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Time-varying vs record-mean GPP give identical information (ΔDFS +0.003). Turnover information lives in the mean operating point and the ¹⁴C/stock data. Breaking the passive degeneracy needs multi-decadal or pre-bomb Δ¹⁴C — not more observation types at one epoch.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Time-varying vs record-mean GPP give identical information (ΔDFS +0.003). Turnover information lives in the mean operating point and the ¹⁴C/stock data. Breaking the passive degeneracy needs multi-decadal or pre-bomb Δ¹⁴C — not more observation types at one epoch.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/vyp03m1w",
+      "id": "17",
+      "name": "Text 15",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "24 / 24",
+      "textPreview": "24 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "24 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "24 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "24 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

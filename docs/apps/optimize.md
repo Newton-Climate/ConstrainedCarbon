@@ -41,6 +41,20 @@ the intended evidence. Compare sites only when pool structure, priors,
 observation mix, forcing, and options agree. A model-derived SOC value is not
 an independent stock constraint.
 
+## Harvard Forest example
+
+```bash
+ecosys optimize configs/multisite/harvard_forest.yaml --outdir outputs/harvard_example
+```
+
+The configured combined fit uses bulk, density-fraction, respired-CO₂ Δ¹⁴C,
+and total-carbon evidence. Read `diagnostics.json` before `posterior.csv`:
+convergence tells you whether the reported turnover times are usable at all.
+The diagnostic below is the corresponding Harvard fit. The solid lines are the
+fitted simulation; they are not independent validation data.
+
+![Harvard Forest fitted diagnostic](artifacts/harvard_forest_site_diagnostics.png)
+
 ## Custom laboratory ¹⁴C data
 
 Set `datasource.radiocarbon_manifest` in a site config to a custom YAML

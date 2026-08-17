@@ -1,0 +1,927 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/nid43ytk",
+    "id": "nid43ytk",
+    "slide": 19,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9gb6xgbi",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "RESULTS  ·  CLM5 vs. ¹⁴C OBSERVATIONS",
+      "textPreview": "RESULTS  ·  CLM5 vs. ¹⁴C OBSERVATIONS",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "RESULTS  ·  CLM5 vs. ¹⁴C OBSERVATIONS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "RESULTS  ·  CLM5 vs. ¹⁴C OBSERVATIONS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "RESULTS  ·  CLM5 vs. ¹⁴C OBSERVATIONS",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8v2pobax",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Does CLM5 actually reproduce observed respired Δ¹⁴C?",
+      "textPreview": "Does CLM5 actually reproduce observed respired Δ¹⁴C?",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Does CLM5 actually reproduce observed respired Δ¹⁴C?"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Does CLM5 actually reproduce observed respired Δ¹⁴C?",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Does CLM5 actually reproduce observed respired Δ¹⁴C?",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/pkzm18ja",
+      "id": "16",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        158.4,
+        912,
+        470.4
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-19-1.png",
+        "contentType": "image/png",
+        "byteLength": 198039
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-19-1.png",
+        "contentType": "image/png",
+        "byteLength": 198039
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ahk7qls3",
+      "id": "5",
+      "name": "Text 2",
+      "bbox": [
+        988.8,
+        177.6,
+        249.6,
+        33.6
+      ],
+      "geometry": "rect",
+      "text": "TEST  (held-out validation)",
+      "textPreview": "TEST  (held-out validation)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "TEST  (held-out validation)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "TEST  (held-out validation)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "TEST  (held-out validation)",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xkbq10be",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        988.8,
+        211.2,
+        249.6,
+        163.2
+      ],
+      "geometry": "rect",
+      "text": "Fit τ to CLM5 stocks + Rh only (no ¹⁴C).  Forward-run with that τ.  Predict respired Δ¹⁴C and compare to held-out observations.",
+      "textPreview": "Fit τ to CLM5 stocks + Rh only (no ¹⁴C).  Forward-run with that τ.  Predict respired Δ¹⁴C and compare to held-out observations.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Fit τ to CLM5 stocks + Rh only (no"
+          },
+          {
+            "index": 2,
+            "text": "¹⁴C).  Forward-run with that τ.  Predict"
+          },
+          {
+            "index": 3,
+            "text": "respired Δ¹⁴C and compare to"
+          },
+          {
+            "index": 4,
+            "text": "held-out observations."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Fit τ to CLM5 stocks + Rh only (no ¹⁴C).  Forward-run with that τ.  Predict respired Δ¹⁴C and compare to held-out observations.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Fit τ to CLM5 stocks + Rh only (no ¹⁴C).  Forward-run with that τ.  Predict respired Δ¹⁴C and compare to held-out observations.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wj2psvat",
+      "id": "7",
+      "name": "Shape 4",
+      "bbox": [
+        988.8,
+        384,
+        249.6,
+        120
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#4A7C59",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jmd83atk",
+      "id": "8",
+      "name": "Text 5",
+      "bbox": [
+        1003.2,
+        391.68,
+        230.4,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "HARVARD FOREST",
+      "textPreview": "HARVARD FOREST",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "HARVARD FOREST"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "HARVARD FOREST",
+          "runs": [
+            {
+              "index": 1,
+              "text": "HARVARD FOREST",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/il47u5sz",
+      "id": "9",
+      "name": "Text 6",
+      "bbox": [
+        1003.2,
+        422.4,
+        230.4,
+        86.4
+      ],
+      "geometry": "rect",
+      "text": "OE (¹⁴C-fit):  RMSE 12.6 ‰\nCLM-emulator:  RMSE 21.0 ‰\n \nCLM5 is too modern even at HF.",
+      "textPreview": "OE (¹⁴C-fit):  RMSE 12.6 ‰ | CLM-emulator:  RMSE 21.0 ‰ |   | CLM5 is too modern even at HF.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "OE (¹⁴C-fit):  RMSE 12.6 ‰"
+          },
+          {
+            "index": 2,
+            "text": "CLM-emulator:  RMSE 21.0 ‰"
+          },
+          {
+            "index": 3,
+            "text": " "
+          },
+          {
+            "index": 4,
+            "text": "CLM5 is too modern even at HF."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "OE (¹⁴C-fit):  RMSE 12.6 ‰",
+          "runs": [
+            {
+              "index": 1,
+              "text": "OE (¹⁴C-fit):  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "RMSE 12.6 ‰",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "CLM-emulator:  RMSE 21.0 ‰",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM-emulator:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "RMSE 21.0 ‰",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "CLM5 is too modern even at HF.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM5 is too modern even at HF.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cri1gnql",
+      "id": "10",
+      "name": "Shape 7",
+      "bbox": [
+        988.8,
+        518.4,
+        249.6,
+        139.2
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dsri9sr6",
+      "id": "11",
+      "name": "Text 8",
+      "bbox": [
+        1003.2,
+        526.08,
+        230.4,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "BARROW TUNDRA",
+      "textPreview": "BARROW TUNDRA",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "BARROW TUNDRA"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "BARROW TUNDRA",
+          "runs": [
+            {
+              "index": 1,
+              "text": "BARROW TUNDRA",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qpgjex8f",
+      "id": "12",
+      "name": "Text 9",
+      "bbox": [
+        1003.2,
+        556.8,
+        230.4,
+        96
+      ],
+      "geometry": "rect",
+      "text": "OE (¹⁴C-fit):  RMSE 20.2 ‰  bias −0.2 ‰\nCLM-emulator:  RMSE 56.9 ‰  bias +53.3 ‰\n \nCLM5 fails badly — respired CO₂ is 53 ‰ too modern.",
+      "textPreview": "OE (¹⁴C-fit):  RMSE 20.2 ‰  bias −0.2 ‰ | CLM-emulator:  RMSE 56.9 ‰  bias +53.3 ‰ |   | CLM5 fails badly — respired CO₂ is 53 ‰ too modern.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "OE (¹⁴C-fit):  RMSE 20.2 ‰  bias"
+          },
+          {
+            "index": 2,
+            "text": "−0.2 ‰"
+          },
+          {
+            "index": 3,
+            "text": "CLM-emulator:  RMSE 56.9 ‰"
+          },
+          {
+            "index": 4,
+            "text": "bias +53.3 ‰"
+          },
+          {
+            "index": 5,
+            "text": " "
+          },
+          {
+            "index": 6,
+            "text": "CLM5 fails badly — respired CO₂ is"
+          },
+          {
+            "index": 7,
+            "text": "53 ‰ too modern."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "OE (¹⁴C-fit):  RMSE 20.2 ‰  bias −0.2 ‰",
+          "runs": [
+            {
+              "index": 1,
+              "text": "OE (¹⁴C-fit):  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "RMSE 20.2 ‰  bias −0.2 ‰",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "CLM-emulator:  RMSE 56.9 ‰  bias +53.3 ‰",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM-emulator:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "RMSE 56.9 ‰  bias ",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 3,
+              "text": "+53.3 ‰",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "CLM5 fails badly — respired CO₂ is 53 ‰ too modern.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM5 fails badly — respired CO₂ is 53 ‰ too modern.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rqp07290",
+      "id": "13",
+      "name": "Shape 10",
+      "bbox": [
+        57.6,
+        648,
+        1180.8,
+        57.6
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0vi1k7qx",
+      "id": "14",
+      "name": "Text 11",
+      "bbox": [
+        72,
+        648,
+        1152,
+        57.6
+      ],
+      "geometry": "rect",
+      "text": "Why the asymmetry?  At HF, stocks + Rh + ¹⁴C are mutually consistent — any subset finds the same τ. At Barrow, stocks + Rh leave τ ambiguous in directions ¹⁴C cares about; CLM5's tuning lands in the wrong corner of τ-space.",
+      "textPreview": "Why the asymmetry?  At HF, stocks + Rh + ¹⁴C are mutually consistent — any subset finds the same τ. At Barrow, stocks + Rh leave τ ambigu...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Why the asymmetry?  At HF, stocks + Rh + ¹⁴C are mutually consistent — any subset finds the same τ. At Barrow, stocks + Rh leave τ ambiguous in directions"
+          },
+          {
+            "index": 2,
+            "text": "¹⁴C cares about; CLM5's tuning lands in the wrong corner of τ-space."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Why the asymmetry?  At HF, stocks + Rh + ¹⁴C are mutually consistent — any subset finds the same τ. At Barrow, stocks + Rh leave τ ambiguous in directions ¹⁴C cares about; CLM5's tuning lands in the wrong corner of τ-space.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Why the asymmetry?  ",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "At HF, stocks + Rh + ¹⁴C are mutually consistent — any subset finds the same τ. At Barrow, stocks + Rh leave τ ambiguous in directions ¹⁴C cares about; CLM5's tuning lands in the wrong corner of τ-space.",
+              "fontSize": 16,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1gridcr2",
+      "id": "15",
+      "name": "Text 12",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "19 / 24",
+      "textPreview": "19 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "19 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "19 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "19 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

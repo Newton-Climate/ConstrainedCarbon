@@ -1,0 +1,733 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/hgzapcr6",
+    "id": "hgzapcr6",
+    "slide": 13,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Consolas",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/q50nydsj",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "INFORMATION CONTENT  ·  01",
+      "textPreview": "INFORMATION CONTENT  ·  01",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "INFORMATION CONTENT  ·  01"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "INFORMATION CONTENT  ·  01",
+          "runs": [
+            {
+              "index": 1,
+              "text": "INFORMATION CONTENT  ·  01",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/bq9orito",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "What does each constraint actually constrain?",
+      "textPreview": "What does each constraint actually constrain?",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "What does each constraint actually constrain?"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "What does each constraint actually constrain?",
+          "runs": [
+            {
+              "index": 1,
+              "text": "What does each constraint actually constrain?",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/vy10zqtc",
+      "id": "11",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        158.4,
+        825.6,
+        528
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-13-1.png",
+        "contentType": "image/png",
+        "byteLength": 335452
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-13-1.png",
+        "contentType": "image/png",
+        "byteLength": 335452
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p4r6p8by",
+      "id": "5",
+      "name": "Text 2",
+      "bbox": [
+        902.4,
+        177.6,
+        336,
+        43.2
+      ],
+      "geometry": "rect",
+      "text": "Averaging kernel (Rodgers 2000)",
+      "textPreview": "Averaging kernel (Rodgers 2000)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Averaging kernel (Rodgers 2000)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Averaging kernel (Rodgers 2000)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Averaging kernel (Rodgers 2000)",
+              "fontSize": 17.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/21gnuts7",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        902.4,
+        225.6,
+        336,
+        192
+      ],
+      "geometry": "rect",
+      "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K\n \ntrace(A) = Degrees of Freedom for Signal — total information from data.\n \ndiag(A) per parameter shows which τ is data-informed and which stays at the prior.",
+      "textPreview": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K |   | trace(A) = Degrees of Freedom for Signal — total information from data. |   | diag(A) per parameter ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "trace(A) = Degrees of Freedom for Signal — total"
+          },
+          {
+            "index": 4,
+            "text": "information from data."
+          },
+          {
+            "index": 5,
+            "text": " "
+          },
+          {
+            "index": 6,
+            "text": "diag(A) per parameter shows which τ is"
+          },
+          {
+            "index": 7,
+            "text": "data-informed and which stays at the prior."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K",
+          "runs": [
+            {
+              "index": 1,
+              "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K",
+              "fontSize": 14.67,
+              "typeface": "Consolas",
+              "color": "#4A7C59",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "trace(A) = Degrees of Freedom for Signal — total information from data.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "trace(A) = Degrees of Freedom for Signal — total information from data.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "diag(A) per parameter shows which τ is data-informed and which stays at the prior.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "diag(A) per parameter shows ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            },
+            {
+              "index": 2,
+              "text": "which τ is data-informed and which stays at the prior.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/32ponyts",
+      "id": "7",
+      "name": "Shape 4",
+      "bbox": [
+        902.4,
+        436.8,
+        336,
+        240
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gzy5s3a1",
+      "id": "8",
+      "name": "Text 5",
+      "bbox": [
+        916.8,
+        446.4,
+        307.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "WHICH OBS CONSTRAIN WHICH PARAMS?",
+      "textPreview": "WHICH OBS CONSTRAIN WHICH PARAMS?",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "WHICH OBS CONSTRAIN WHICH PARAMS?"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "WHICH OBS CONSTRAIN WHICH PARAMS?",
+          "runs": [
+            {
+              "index": 1,
+              "text": "WHICH OBS CONSTRAIN WHICH PARAMS?",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1076lobm",
+      "id": "9",
+      "name": "Text 6",
+      "bbox": [
+        916.8,
+        475.2,
+        307.2,
+        192
+      ],
+      "geometry": "rect",
+      "text": "HF:  respired + fraction Δ¹⁴C constrain all three log τ; log f_transfer stays near the prior.\n \nBarrow:  pool Δ¹⁴C carries the slow/passive-age signal; respired Δ¹⁴C mainly informs active-to-slow turnover.\n \nC stocks:  anchor active and passive pool sizes at Barrow, partly compensating for the respiration-blind frozen passive pool.",
+      "textPreview": "HF:  respired + fraction Δ¹⁴C constrain all three log τ; log f_transfer stays near the prior. |   | Barrow:  pool Δ¹⁴C carries the slow/p...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 10,
+        "lines": [
+          {
+            "index": 1,
+            "text": "HF:  respired + fraction Δ¹⁴C constrain all three"
+          },
+          {
+            "index": 2,
+            "text": "log τ; log f_transfer stays near the prior."
+          },
+          {
+            "index": 3,
+            "text": " "
+          },
+          {
+            "index": 4,
+            "text": "Barrow:  pool Δ¹⁴C carries the slow/passive-age"
+          },
+          {
+            "index": 5,
+            "text": "signal; respired Δ¹⁴C mainly informs"
+          },
+          {
+            "index": 6,
+            "text": "active-to-slow turnover."
+          },
+          {
+            "index": 7,
+            "text": " "
+          },
+          {
+            "index": 8,
+            "text": "C stocks:  anchor active and passive pool sizes"
+          },
+          {
+            "index": 9,
+            "text": "at Barrow, partly compensating for the"
+          },
+          {
+            "index": 10,
+            "text": "respiration-blind frozen passive pool."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "HF:  respired + fraction Δ¹⁴C constrain all three log τ; log f_transfer stays near the prior.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "HF:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "respired + fraction Δ¹⁴C constrain all three log τ; log f_transfer stays near the prior.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Barrow:  pool Δ¹⁴C carries the slow/passive-age signal; respired Δ¹⁴C mainly informs active-to-slow turnover.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Barrow:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "pool Δ¹⁴C carries the slow/passive-age signal; respired Δ¹⁴C mainly informs active-to-slow turnover.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "C stocks:  anchor active and passive pool sizes at Barrow, partly compensating for the respiration-blind frozen passive pool.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "C stocks:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "anchor active and passive pool sizes at Barrow, partly compensating for the respiration-blind frozen passive pool.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hcfy9k3u",
+      "id": "10",
+      "name": "Text 7",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "13 / 24",
+      "textPreview": "13 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "13 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "13 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "13 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

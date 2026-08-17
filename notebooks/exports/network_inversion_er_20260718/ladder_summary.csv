@@ -1,0 +1,96 @@
+site,label,biome_group,forcing_kind,rung,added_family,active_families,n_obs_cumulative,n_obs_added_family,dfs_cumulative,dfs_increment
+Baram Basin,C_stocks,tropical,daily,1,C_stocks,['C_stocks'],1,1,0.504692463640567,0.504692463640567
+Baram Basin,C_stocks+bulk_14C,tropical,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,1.1040848001337524,0.5993923364931855
+Baram Basin,C_stocks+bulk_14C+fraction_14C,tropical,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,1.1040848001337524,0.0
+Baram Basin,C_stocks+bulk_14C+fraction_14C+resp_14C,tropical,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",4,2,1.1439644147107941,0.0398796145770417
+Baram Basin,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,tropical,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",4,0,1.1439644147107941,0.0
+Auchencorth Moss,C_stocks,peatland,daily,1,C_stocks,['C_stocks'],1,1,0.33325236155899013,0.33325236155899013
+Auchencorth Moss,C_stocks+bulk_14C,peatland,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.8412753310835024,0.5080229695245122
+Auchencorth Moss,C_stocks+bulk_14C+fraction_14C,peatland,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,0.8412753310835024,0.0
+Auchencorth Moss,C_stocks+bulk_14C+fraction_14C+resp_14C,peatland,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",4,2,1.090500398346755,0.24922506726325255
+Auchencorth Moss,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,peatland,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",7,3,1.1405667176750565,0.05006631932830152
+CZ_1964burn_NSA,C_stocks,boreal,daily,1,C_stocks,['C_stocks'],1,1,0.6405759694264163,0.6405759694264163
+CZ_1964burn_NSA,C_stocks+bulk_14C,boreal,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,1.1535600512130926,0.5129840817866763
+CZ_1964burn_NSA,C_stocks+bulk_14C+fraction_14C,boreal,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,1.1535600512130926,0.0
+CZ_1964burn_NSA,C_stocks+bulk_14C+fraction_14C+resp_14C,boreal,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",3,1,1.2522970783689182,0.09873702715582566
+CZ_1964burn_NSA,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,boreal,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",6,3,1.2523322909113992,3.521254248095573e-05
+Appi forest,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.34654855097531817,0.34654855097531817
+Appi forest,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.9208549158710805,0.5743063648957623
+Appi forest,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,0.9208549158710805,0.0
+Appi forest,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",12,10,1.3805891980936456,0.45973428222256507
+Appi forest,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",15,3,1.4281983293815035,0.04760913128785793
+CZ_Old_Black_Spruce,C_stocks,boreal,daily,1,C_stocks,['C_stocks'],1,1,0.3484517909227589,0.3484517909227589
+CZ_Old_Black_Spruce,C_stocks+bulk_14C,boreal,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.6437647139885467,0.2953129230657878
+CZ_Old_Black_Spruce,C_stocks+bulk_14C+fraction_14C,boreal,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,0.6437647139885467,0.0
+CZ_Old_Black_Spruce,C_stocks+bulk_14C+fraction_14C+resp_14C,boreal,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",3,1,0.727789192247547,0.08402447825900028
+CZ_Old_Black_Spruce,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,boreal,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",5,2,0.7453973178872502,0.017608125639703154
+FLONA,C_stocks,tropical,daily,1,C_stocks,['C_stocks'],1,1,0.3698948330339248,0.3698948330339248
+FLONA,C_stocks+bulk_14C,tropical,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,1.2709244058127855,0.9010295727788608
+FLONA,C_stocks+bulk_14C+fraction_14C,tropical,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,1.2709244058127855,0.0
+FLONA,C_stocks+bulk_14C+fraction_14C+resp_14C,tropical,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",5,3,1.591867874360064,0.3209434685472785
+FLONA,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,tropical,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",5,0,1.591867874360064,0.0
+EML,C_stocks,arctic_permafrost,daily,1,C_stocks,['C_stocks'],1,1,0.7669872236216992,0.7669872236216992
+EML,C_stocks+bulk_14C,arctic_permafrost,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,1.3776954549884939,0.6107082313667946
+EML,C_stocks+bulk_14C+fraction_14C,arctic_permafrost,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,1.3776954549884939,0.0
+EML,C_stocks+bulk_14C+fraction_14C+resp_14C,arctic_permafrost,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",14,12,2.4115971768543774,1.0339017218658835
+EML,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,arctic_permafrost,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",27,13,2.459633336391614,0.0480361595372365
+MI-Coarse UMBS,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.46280091010776686,0.46280091010776686
+MI-Coarse UMBS,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.7194788432978247,0.2566779331900579
+MI-Coarse UMBS,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",5,3,0.7215638680788449,0.0020850247810201283
+MI-Coarse UMBS,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",5,0,0.7215638680788449,0.0
+MI-Coarse UMBS,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",5,0,0.7215638680788449,0.0
+Harvard Forest,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.16838079996015093,0.16838079996015093
+Harvard Forest,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.7021710322350195,0.5337902322748687
+Harvard Forest,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,0.7021710322350195,0.0
+Harvard Forest,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",35,33,1.4566012238305384,0.7544301915955188
+Harvard Forest,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",52,17,1.492631794054991,0.03603057022445255
+MO Ozark BREA,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.4542232403516002,0.4542232403516002
+MO Ozark BREA,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.47954618953031264,0.025322949178712417
+MO Ozark BREA,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",5,3,0.6488791043218423,0.16933291479152962
+MO Ozark BREA,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",5,0,0.6488791043218423,0.0
+MO Ozark BREA,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",8,3,1.001860104601875,0.35298100028003265
+NH Bartlett Forest,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.5273783442466006,0.5273783442466006
+NH Bartlett Forest,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.5963600694230254,0.06898172517642487
+NH Bartlett Forest,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",5,3,0.7273362178894928,0.13097614846646732
+NH Bartlett Forest,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",5,0,0.7273362178894928,0.0
+NH Bartlett Forest,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",19,14,0.7736489390088397,0.04631272111934692
+Howland Forest,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.3854416846383452,0.3854416846383452
+Howland Forest,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",6,5,1.6150799748394806,1.2296382902011354
+Howland Forest,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",6,0,1.6150799748394806,0.0
+Howland Forest,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",23,17,2.529484262967066,0.9144042881275853
+Howland Forest,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",43,20,3.595660947344557,1.0661766843774911
+AZ_Mollisol,C_stocks,grassland_mediterranean,fluxcom,1,C_stocks,['C_stocks'],1,1,0.455820075540289,0.455820075540289
+AZ_Mollisol,C_stocks+bulk_14C,grassland_mediterranean,fluxcom,2,bulk_14C,"['C_stocks', 'bulk_14C']",1,0,0.455820075540289,0.0
+AZ_Mollisol,C_stocks+bulk_14C+fraction_14C,grassland_mediterranean,fluxcom,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",4,3,0.4558206208761534,5.453358643547901e-07
+AZ_Mollisol,C_stocks+bulk_14C+fraction_14C+resp_14C,grassland_mediterranean,fluxcom,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",4,0,0.4558206208761534,0.0
+AZ_Mollisol,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,grassland_mediterranean,fluxcom,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",4,0,0.4558206208761534,0.0
+ZF2,C_stocks,tropical,daily,1,C_stocks,['C_stocks'],1,1,0.38583210160176123,0.38583210160176123
+ZF2,C_stocks+bulk_14C,tropical,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,1.100510803414658,0.7146787018128968
+ZF2,C_stocks+bulk_14C+fraction_14C,tropical,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,1.100510803414658,0.0
+ZF2,C_stocks+bulk_14C+fraction_14C+resp_14C,tropical,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",3,1,1.2167219597695262,0.11621115635486823
+ZF2,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,tropical,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",3,0,1.2167219597695262,0.0
+Solling,C_stocks,temperate_forest,daily,1,C_stocks,['C_stocks'],1,1,0.6367331055676752,0.6367331055676752
+Solling,C_stocks+bulk_14C,temperate_forest,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,1.1806831916866576,0.5439500861189824
+Solling,C_stocks+bulk_14C+fraction_14C,temperate_forest,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,1.1806831916866576,0.0
+Solling,C_stocks+bulk_14C+fraction_14C+resp_14C,temperate_forest,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",3,1,1.279047098855396,0.09836390716873833
+Solling,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,temperate_forest,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",5,2,1.2957733612779727,0.0167262624225768
+CA_Mollisol,C_stocks,grassland_mediterranean,fluxcom,1,C_stocks,['C_stocks'],1,1,0.45473082108724394,0.45473082108724394
+CA_Mollisol,C_stocks+bulk_14C,grassland_mediterranean,fluxcom,2,bulk_14C,"['C_stocks', 'bulk_14C']",1,0,0.45473082108724394,0.0
+CA_Mollisol,C_stocks+bulk_14C+fraction_14C,grassland_mediterranean,fluxcom,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",4,3,0.45473099569623565,1.746089917098459e-07
+CA_Mollisol,C_stocks+bulk_14C+fraction_14C+resp_14C,grassland_mediterranean,fluxcom,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",4,0,0.45473099569623565,0.0
+CA_Mollisol,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,grassland_mediterranean,fluxcom,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",4,0,0.45473099569623565,0.0
+HI_Andisol,C_stocks,tropical,fluxcom,1,C_stocks,['C_stocks'],1,1,0.46390507025888345,0.46390507025888345
+HI_Andisol,C_stocks+bulk_14C,tropical,fluxcom,2,bulk_14C,"['C_stocks', 'bulk_14C']",1,0,0.46390507025888345,0.0
+HI_Andisol,C_stocks+bulk_14C+fraction_14C,tropical,fluxcom,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",4,3,0.46390535215715983,2.8189827638858134e-07
+HI_Andisol,C_stocks+bulk_14C+fraction_14C+resp_14C,tropical,fluxcom,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",4,0,0.46390535215715983,0.0
+HI_Andisol,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,tropical,fluxcom,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",4,0,0.46390535215715983,0.0
+Luquillo_Experimental_Forest,C_stocks,tropical,fluxcom,1,C_stocks,['C_stocks'],1,1,0.4653572466239118,0.4653572466239118
+Luquillo_Experimental_Forest,C_stocks+bulk_14C,tropical,fluxcom,2,bulk_14C,"['C_stocks', 'bulk_14C']",1,0,0.4653572466239118,0.0
+Luquillo_Experimental_Forest,C_stocks+bulk_14C+fraction_14C,tropical,fluxcom,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,1,0.4653572466488717,2.4959867506169076e-11
+Luquillo_Experimental_Forest,C_stocks+bulk_14C+fraction_14C+resp_14C,tropical,fluxcom,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",2,0,0.4653572466488717,0.0
+Luquillo_Experimental_Forest,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,tropical,fluxcom,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",2,0,0.4653572466488717,0.0
+Adventdalen Valley,C_stocks,arctic_permafrost,daily,1,C_stocks,['C_stocks'],1,1,0.03359239526314,0.03359239526314
+Adventdalen Valley,C_stocks+bulk_14C,arctic_permafrost,daily,2,bulk_14C,"['C_stocks', 'bulk_14C']",2,1,0.5737117818854157,0.5401193866222758
+Adventdalen Valley,C_stocks+bulk_14C+fraction_14C,arctic_permafrost,daily,3,fraction_14C,"['C_stocks', 'bulk_14C', 'fraction_14C']",2,0,0.5737117818854157,0.0
+Adventdalen Valley,C_stocks+bulk_14C+fraction_14C+resp_14C,arctic_permafrost,daily,4,resp_14C,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C']",6,4,1.4928980345333107,0.919186252647895
+Adventdalen Valley,C_stocks+bulk_14C+fraction_14C+resp_14C+ER_annual,arctic_permafrost,daily,5,ER_annual,"['C_stocks', 'bulk_14C', 'fraction_14C', 'resp_14C', 'ER_annual']",8,2,1.4937256531309058,0.000827618597595059

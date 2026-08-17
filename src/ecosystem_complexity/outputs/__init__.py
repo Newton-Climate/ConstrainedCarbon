@@ -40,7 +40,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUTS_ROOT = _REPO_ROOT / "outputs"
 
 # Bump when the output-contract shape changes in a way consumers must handle.
-OUTPUT_CONTRACT_VERSION = "1.0"
+OUTPUT_CONTRACT_VERSION = "1.1"
 
 
 # ---------------------------------------------------------------------------
@@ -98,22 +98,44 @@ class RunDir:
         snap.write_text(yaml.safe_dump(_config_to_dict(config), sort_keys=False))
         self.record_output("config.snapshot.yaml")
 
-    def finalize(self) -> None:
-        """Write manifest.json. Idempotent; safe to call more than once."""
+    def finalize(self) -> dict[str, Any]:
+        """Write the manifest and return all artifact paths for integration.
+
+        The return value is the machine-facing completion contract.  Its
+        ``files`` mapping has the manifest's relative artifact names as keys
+        and absolute paths as values, so callers do not need to reconstruct
+        paths or know a verb-specific filename.  A declared-but-missing file
+        is a writer error and prevents a completed manifest from being made.
+        """
+        outputs = sorted(self._outputs)
+        missing = [relpath for relpath in outputs if not self.root.joinpath(relpath).is_file()]
+        if missing:
+            raise RuntimeError(
+                "cannot finalize output contract; declared artifacts are missing: "
+                + ", ".join(missing)
+            )
+        manifest_path = self.path("manifest.json")
         manifest = {
             "verb": self.verb,
             "subverb": self.subverb,
             "name": self.name,
             "contract_version": OUTPUT_CONTRACT_VERSION,
+            "status": "complete",
+            "output_dir": str(self.root),
             "ecosys_version": _ecosys_version(),
             "git_sha": _git_sha(),
             "started_at": _fmt_time(self.started_at),
             "finished_at": _fmt_time(time.time()),
             "inputs": self.inputs,
-            "outputs": sorted(self._outputs),
+            "outputs": outputs,
             **self._extra,
         }
-        self.path("manifest.json").write_text(json.dumps(manifest, indent=2, default=_json_default))
+        manifest_path.write_text(json.dumps(manifest, indent=2, default=_json_default))
+        return {
+            "output_dir": str(self.root),
+            "manifest": str(manifest_path),
+            "files": {relpath: str(self.root / relpath) for relpath in outputs},
+        }
 
 
 # ---------------------------------------------------------------------------

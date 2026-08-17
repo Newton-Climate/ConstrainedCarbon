@@ -1,0 +1,7 @@
+site,label,tower_id,biome,mean_GPP_gCm2yr,SOC_gCm2,n_cstock,n_pool_blocks,n_resp,n_incubation,tau_active_yr,tau_slow_yr,tau_passive_yr,J0,J_final,converged,n_iter
+Fichtelgeberge,Fichtelgeberge (FluxCom),,cool temperate Spodosol forest,1228,14757,1,8,1,0,2.23,20.75,208.4,26.3,24.3,True,6
+Sedgwick Reserve,Sedgwick Reserve (FluxCom),,warm mediterranean rangeland grassland,727,2539,1,4,1,0,2.16,24.77,163.2,86.0,85.1,True,5
+Fazenda Victoria,Fazenda Victoria (FluxCom),,tropical Oxisol forest-pasture mosaic,2600,7543,1,4,0,0,2.31,15.12,232.9,39.1,38.1,True,12
+GA-450-C,GA-450-C (FluxCom),,warm semi-arid shrubland Mollisol,980,3210,1,4,0,0,1.42,25.72,192.0,5.6,3.9,True,20
+GA-740-C,GA-740-C (FluxCom),,warm semi-arid shrubland Vertisol,1077,3499,1,4,0,0,2.54,15.59,217.8,3.1,2.3,True,7
+Polar Desert,Polar Desert (FluxCom),,polar desert tundra Gelisol,20,20933,1,1,0,0,2.04,21.05,206.4,3.2,3.1,True,4

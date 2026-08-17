@@ -13,6 +13,40 @@ scientific assumptions behind a run.
 This is research code. Begin with one of the included site configurations
 before adapting the model to a new site.
 
+## The idea in one picture
+
+Plant carbon enters soil, gets partitioned into a few kinetic pools, and leaves
+as respiration. The same pipes carry ¹²C and ¹⁴C; the ¹⁴C label decays and
+inherits its atmospheric history, so radiocarbon dates the carbon that fluxes
+alone cannot separate.
+
+```mermaid
+flowchart LR
+  GPP["GPP / NPP<br/>(daily forcing)"] --> ACT[active pool<br/>fast]
+  ACT -->|transfer| SLO[slow pool<br/>intermediate]
+  SLO -->|transfer| PAS[passive pool<br/>slow]
+  ACT --> Rh((respiration))
+  SLO --> Rh
+  PAS --> Rh
+  ATM["atmospheric Δ¹⁴C<br/>history"] -. labels input .-> ACT
+```
+
+Each pool has a turnover time (τ). Fitting a site means choosing the τ's — and a
+few transfer fractions — so the modeled pool stocks, respiration, and Δ¹⁴C are
+consistent with the measurements you have.
+
+## Who this is for
+
+- **Ecosystem modellers.** Start with [the model guide](docs/TECHSPEC.md) for
+  the state variables, forcing, and diagnostics. Then follow the
+  [Harvard Forest walkthrough](docs/apps/harvard-forest-example.md) end-to-end.
+- **Lab and field scientists.** Read
+  [Mapping soil fractions to model pools](docs/apps/soil-fraction-mapping.md)
+  and [Custom data and constraints](docs/custom-data-and-constraints.md) —
+  they explain what a density fraction, a bulk Δ¹⁴C profile, or a respired-CO₂
+  Δ¹⁴C series actually constrains, and how to bring your own measurements in.
+- **Anyone just running commands.** Use the [app guide](docs/apps/README.md).
+
 ## What you can do here
 
 - Fit a site while accounting for measurements and prior knowledge.
@@ -20,10 +54,6 @@ before adapting the model to a new site.
   radiocarbon measurements.
 - Explore standardized warming and transit-time experiments.
 - Work with individual sites or the included multi-site collections.
-
-For a scientific overview and explanation of the configuration choices, see
-[the model guide](docs/TECHSPEC.md). For step-by-step command help, see the
-[app guide](docs/apps/README.md).
 
 ## Install
 
@@ -55,6 +85,23 @@ make test
 If you need GPU support, install the appropriate JAX build for your platform
 after creating the environment. The [JAX installation guide](https://docs.jax.dev/en/latest/installation.html)
 has the current instructions.
+
+## How a run is organized
+
+Every workflow follows the same shape: a YAML config points at forcing and
+observations, an `ecosys` command runs, and results land in one folder with a
+`manifest.json` describing what was produced.
+
+```mermaid
+flowchart LR
+  CFG["site YAML<br/>(configs/…)"] --> CMD["ecosys optimize<br/>ecosys warming<br/>ecosys information …"]
+  FORCE["daily forcing<br/>(FLUXNET / MERRA)"] --> CMD
+  OBS["observations<br/>ISRaD / lab CSV<br/>SoilGrids / ER"] --> CMD
+  CMD --> OUT["outputs/&lt;site&gt;/&lt;command&gt;/<br/>manifest.json + tables + figures"]
+```
+
+The [outputs guide](docs/apps/outputs.md) explains how to read what a run
+writes.
 
 ## First run
 

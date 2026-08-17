@@ -1,0 +1,793 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/hwbqtkby",
+    "id": "hwbqtkby",
+    "slide": 2,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9072xkry",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "MOTIVATION  ·  01",
+      "textPreview": "MOTIVATION  ·  01",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "MOTIVATION  ·  01"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "MOTIVATION  ·  01",
+          "runs": [
+            {
+              "index": 1,
+              "text": "MOTIVATION  ·  01",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ozy1ofad",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Carbon may be coming from deeper stocks",
+      "textPreview": "Carbon may be coming from deeper stocks",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Carbon may be coming from deeper stocks"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Carbon may be coming from deeper stocks",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Carbon may be coming from deeper stocks",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/b29kza94",
+      "id": "4",
+      "name": "Text 2",
+      "bbox": [
+        57.6,
+        168,
+        480,
+        153.6
+      ],
+      "geometry": "rect",
+      "text": "Deep soils hold a vast reservoir of millennia-old carbon — and warming experiments show it's mobilizable.",
+      "textPreview": "Deep soils hold a vast reservoir of millennia-old carbon — and warming experiments show it's mobilizable.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Deep soils hold a vast reservoir of millennia-old"
+          },
+          {
+            "index": 2,
+            "text": "carbon — and warming experiments show it's"
+          },
+          {
+            "index": 3,
+            "text": "mobilizable."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Deep soils hold a vast reservoir of millennia-old carbon — and warming experiments show it's mobilizable.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Deep soils hold a vast reservoir of millennia-old carbon — and warming experiments show it's mobilizable.",
+              "fontSize": 21.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/a10jqpsj",
+      "id": "5",
+      "name": "Text 3",
+      "bbox": [
+        57.6,
+        340.8,
+        480,
+        336
+      ],
+      "geometry": "rect",
+      "text": "What this means\n \nDeep-soil C (30–100 cm) spans ages from ~10² to >10⁴ yr.\nWhole-soil warming releases this previously inert carbon as CO₂.\nSurface-only assumptions in ESMs systematically underestimate vulnerability.\nRadiocarbon (¹⁴C) provides a direct age fingerprint of what's being respired.",
+      "textPreview": "What this means |   | Deep-soil C (30–100 cm) spans ages from ~10² to >10⁴ yr. | Whole-soil warming releases this previously inert carbon...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 9,
+        "lines": [
+          {
+            "index": 1,
+            "text": "What this means"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "• Deep-soil C (30–100 cm) spans ages from ~10² to >10⁴ yr."
+          },
+          {
+            "index": 4,
+            "text": "• Whole-soil warming releases this previously inert carbon as"
+          },
+          {
+            "index": 5,
+            "text": "CO₂."
+          },
+          {
+            "index": 6,
+            "text": "• Surface-only assumptions in ESMs systematically"
+          },
+          {
+            "index": 7,
+            "text": "underestimate vulnerability."
+          },
+          {
+            "index": 8,
+            "text": "• Radiocarbon (¹⁴C) provides a direct age fingerprint of"
+          },
+          {
+            "index": 9,
+            "text": "what's being respired."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "What this means",
+          "runs": [
+            {
+              "index": 1,
+              "text": "What this means",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 6.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Deep-soil C (30–100 cm) spans ages from ~10² to >10⁴ yr.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Deep-soil C (30–100 cm) spans ages from ~10² to >10⁴ yr.",
+              "fontSize": 16.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "Whole-soil warming releases this previously inert carbon as CO₂.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Whole-soil warming releases this previously inert carbon as CO₂.",
+              "fontSize": 16.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Surface-only assumptions in ESMs systematically underestimate vulnerability.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Surface-only assumptions in ESMs systematically underestimate vulnerability.",
+              "fontSize": 16.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 6,
+          "text": "Radiocarbon (¹⁴C) provides a direct age fingerprint of what's being respired.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Radiocarbon (¹⁴C) provides a direct age fingerprint of what's being respired.",
+              "fontSize": 16.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/kzexcfip",
+      "id": "13",
+      "name": "Image 0",
+      "bbox": [
+        561.6,
+        177.6,
+        331.2,
+        233.28
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-2-1.png",
+        "contentType": "image/png",
+        "byteLength": 12221
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-2-1.png",
+        "contentType": "image/png",
+        "byteLength": 12221
+      }
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/w3i1sfa9",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        552,
+        417.6,
+        350.4,
+        57.6
+      ],
+      "geometry": "rect",
+      "text": "Global soil-C age distribution by depth\n(Shi et al. 2020, Fig. 2)",
+      "textPreview": "Global soil-C age distribution by depth | (Shi et al. 2020, Fig. 2)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Global soil-C age distribution by depth"
+          },
+          {
+            "index": 2,
+            "text": "(Shi et al. 2020, Fig. 2)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Global soil-C age distribution by depth",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Global soil-C age distribution by depth",
+              "fontSize": 12.67,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "(Shi et al. 2020, Fig. 2)",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "(Shi et al. 2020, Fig. 2)",
+              "fontSize": 12.67,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/vu5wza18",
+      "id": "14",
+      "name": "Image 1",
+      "bbox": [
+        916.8,
+        177.6,
+        307.2,
+        345.6
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-2-2.png",
+        "contentType": "image/png",
+        "byteLength": 29900
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-2-2.png",
+        "contentType": "image/png",
+        "byteLength": 29900
+      }
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/q5wjelsz",
+      "id": "9",
+      "name": "Text 5",
+      "bbox": [
+        907.2,
+        528,
+        326.4,
+        57.6
+      ],
+      "geometry": "rect",
+      "text": "Tropical-forest whole-soil warming\n(Nottingham et al. 2020, Fig. 2)",
+      "textPreview": "Tropical-forest whole-soil warming | (Nottingham et al. 2020, Fig. 2)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Tropical-forest whole-soil warming"
+          },
+          {
+            "index": 2,
+            "text": "(Nottingham et al. 2020, Fig. 2)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Tropical-forest whole-soil warming",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Tropical-forest whole-soil warming",
+              "fontSize": 12.67,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "(Nottingham et al. 2020, Fig. 2)",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "(Nottingham et al. 2020, Fig. 2)",
+              "fontSize": 12.67,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ove9o7yd",
+      "id": "10",
+      "name": "Shape 6",
+      "bbox": [
+        561.6,
+        595.2,
+        667.2,
+        81.6
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.07
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9wnqhczy",
+      "id": "11",
+      "name": "Text 7",
+      "bbox": [
+        576,
+        595.2,
+        643.2,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "One-two punch:  deep soils are old (Shi);  warming mobilizes that old C as respired CO₂ (Nottingham, Hicks Pries).",
+      "textPreview": "One-two punch:  deep soils are old (Shi);  warming mobilizes that old C as respired CO₂ (Nottingham, Hicks Pries).",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "One-two punch:  deep soils are old (Shi);  warming mobilizes that old C as respired CO₂"
+          },
+          {
+            "index": 2,
+            "text": "(Nottingham, Hicks Pries)."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "One-two punch:  deep soils are old (Shi);  warming mobilizes that old C as respired CO₂ (Nottingham, Hicks Pries).",
+          "runs": [
+            {
+              "index": 1,
+              "text": "One-two punch:  ",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "deep soils are old (Shi);  warming mobilizes that old C as respired CO₂ (Nottingham, Hicks Pries).",
+              "fontSize": 16,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mtwrmxg7",
+      "id": "12",
+      "name": "Text 8",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "2 / 24",
+      "textPreview": "2 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "2 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "2 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "2 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}
