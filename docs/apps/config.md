@@ -15,3 +15,11 @@ ecosys config build \
 ```
 
 Open the new YAML file before fitting it. It records the pool structure, priors, observations, and forcing source for the analysis. `config incubation` creates configs from a prepared incubation manifest.
+
+## Outputs and use
+
+`locate` writes the requested candidate-match CSV; it is a geographic/data
+discovery aid, not confirmation that a tower and soil profile represent the
+same ecosystem. `build` and `incubation` write YAML configuration candidates.
+Review pool definitions, depth mapping, priors, observation dates, forcing, and
+site metadata before treating the configuration as an analysis protocol.

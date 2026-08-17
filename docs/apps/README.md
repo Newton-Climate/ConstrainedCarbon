@@ -2,6 +2,10 @@
 
 `ecosys` is the command-line entry point for the repository's repeatable workflows. Give it a site config, a site-set manifest, or a group of configs where supported.
 
+Start with [Outputs and scientific interpretation](outputs.md) when reading or
+reporting a result. It defines the run-directory contract, the meaning of the
+main fields, and the limits of scientific interpretation.
+
 ```bash
 ecosys --help
 ecosys <command> --help
@@ -15,7 +19,7 @@ The built-in help is the authoritative list of flags. A few commands still wrap 
 | [`optimize`](optimize.md) | Fit a site or a group of sites to observations. |
 | [`warming`](warming.md) | Run a warming experiment from a fitted model. |
 | [`information`](information.md) | Ask which observations constrain the parameters. |
-| [`mcmc`](mcmc.md) | Sample uncertainty for cross-site comparisons. |
+| [`mcmc`](mcmc.md) | Propagate uncertainty for cross-site comparisons. |
 | [`fetch`](fetch.md) | Download or extract forcing data. |
 | [`config`](config.md) | Locate sites and write configs. |
 | [`analyze`](analyze.md) | Run network, transit-time, and summary analysis. |

@@ -18,6 +18,29 @@ Useful options include `--observation-path` to choose the observation mix, `--in
 
 Configs are accepted as paths, config stems, or recognized site selectors. Use `ecosys optimize --list` to see the discovered site configs. Run `ecosys optimize --help` for the complete flag reference.
 
+## Outputs
+
+One site writes to `outputs/<site-id>/optimize/`; a site set additionally
+writes `outputs/<site-set>/optimize/network_summary.parquet` (and CSV mirror).
+Each site directory contains `manifest.json`, `config.snapshot.yaml`,
+`posterior.parquet`, `posterior.npz`, `summary.parquet`, and `diagnostics.json`.
+
+| File / field | Meaning and use |
+|---|---|
+| `posterior.parquet` | One row per fitted pool. `value_tau_days` and `value_tau_years` are fitted e-folding turnover times—not direct radiocarbon ages or whole-system mean transit times. |
+| `posterior.npz` | Raw fitted `log_tau` and transfer logits. Use this for downstream reconstruction, not as a human-readable results table. |
+| `summary.parquet` | One site-level row: fitted `tau_<pool>_yr`, modeled SOC and GPP context, constraint counts (`n_*`), final fit status, and objective values. `network_summary` has the corresponding rows for a site set. |
+| `diagnostics.json` | `converged`, iterations, objective values, actually used constraint counts, and SOC source. This is the first file to check. |
+| `config.snapshot.yaml` and `manifest.json` | Exact resolved configuration and provenance—including Git revision and command inputs. Keep them with every result or figure. |
+
+`J0` and `J_final` are initial and final weighted least-squares objectives; a
+smaller final value shows that optimization improved the fit from its starting
+point, not that the model is adequate. Interpret turnover estimates only if
+`converged` is true and the diagnostic constraint counts and `soc_source` match
+the intended evidence. Compare sites only when pool structure, priors,
+observation mix, forcing, and options agree. A model-derived SOC value is not
+an independent stock constraint.
+
 ## Custom laboratory ¹⁴C data
 
 Set `datasource.radiocarbon_manifest` in a site config to a custom YAML

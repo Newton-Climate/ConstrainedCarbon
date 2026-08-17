@@ -45,3 +45,14 @@ print(result["C12"].shape)       # days × pools
 print(result["delta14C"].shape)  # days × pools
 print(result["Rh"][-1])          # final-day heterotrophic respiration
 ```
+
+The run directory also contains `diagnostics.json`, `config.snapshot.yaml`, and
+`manifest.json`. `forward_output.npz` uses daily rows: `C12` and `delta14C`
+have shape `(day, pool)` in the `pool_names` order recorded by
+`diagnostics.json`; `NEE`, `GPP`, `ER`, and `Rh` are daily modeled fluxes.
+
+This is a prescribed forward simulation from the configured default initial
+state, or from the requested spinup. It is not a fitted posterior result unless
+you have separately supplied fitted parameters through the model workflow.
+Before using it for a mechanism claim, check the forcing provenance,
+`spinup_years`, pool order, and final total C in the manifest and diagnostics.

@@ -85,3 +85,14 @@ pip install -e '.[climate-data]'
 ```
 
 Commands exit 2 with an `error:` message for missing credentials or acknowledgements, failed transfers, invalid archives, unavailable CLM variables/coordinates, or unresolved configs. Existing files are retained unless `--overwrite` is supplied; failed transfers stay in temporary `.part` files and never replace a completed input.
+
+## Outputs and use
+
+For `flux`, `fluxcom`, and `clm`, the contract manifest records the requested
+source, command inputs, and downloaded paths; use it to establish forcing
+provenance. The data files themselves are inputs, not model results. Inspect
+their date range, units, site/grid-cell selection, and gaps before fitting.
+ISRaD and atmospheric-¹⁴C fetches stage shared reference data under `data/` and
+print their paths; they do not create a fit or a scientific inference. A
+successful download only establishes that the file was retrieved and validated
+structurally, not that it is appropriate for a particular site or question.
