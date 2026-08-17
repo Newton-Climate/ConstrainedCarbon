@@ -1,0 +1,8 @@
+site: Example laboratory site
+units:
+  delta14c: per_mil
+  depth: cm
+measurements: example_lab_14c.csv
+fraction_rules:
+  free_light_fraction: soil_active
+  mineral_associated_organic_matter: soil_passive

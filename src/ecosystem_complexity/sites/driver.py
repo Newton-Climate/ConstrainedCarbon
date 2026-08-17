@@ -17,6 +17,7 @@ import os
 import time
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
 from typing import Any
 
 import jax
@@ -24,6 +25,10 @@ import jax.numpy as jnp
 import numpy as np
 
 from ecosystem_complexity.api import build_model, optimize_oe, run_model
+from ecosystem_complexity.data.custom_14c import (
+    build_custom_14c_observations,
+    load_custom_14c_manifest,
+)
 from ecosystem_complexity.data.israd_14c import (
     _bulk_pool_ic_seeds,
     build_bulk_14C_blocks,
@@ -201,7 +206,19 @@ def run_site_canonical(
     # Co-located kinetic pools ⇒ per-pool stock is unobservable; the stock
     # constraint is the column total Σ_i C12_i only (ObservationData.C_total_obs).
     soc_source = "model steady state (self-referential)"
-    if observation_path == "fraction":
+    manifest_path = (
+        Path(config_path).parent / spec.radiocarbon_manifest
+        if spec.radiocarbon_manifest
+        else None
+    )
+    if manifest_path is not None:
+        custom_data = load_custom_14c_manifest(manifest_path)
+        pool_blocks, resp = build_custom_14c_observations(
+            custom_data, forcing.time, idx
+        )
+        block_label = "custom"
+        logger.info("  Custom ¹⁴C manifest: %s", custom_data.manifest_path)
+    elif observation_path == "fraction":
         pool_blocks = build_fraction_14C_blocks(
             spec.israd_name, forcing.time, model, spec.fraction_rules
         )
@@ -286,7 +303,9 @@ def run_site_canonical(
     # loaded for ¹⁴C; off for `bulk_resp`, which deliberately avoids the
     # fraction table. Explicit True/False from the caller overrides.
     if include_fraction_12c_constraint is None:
-        include_fraction_12c_constraint = observation_path in {"fraction", "combined"}
+        include_fraction_12c_constraint = (
+            manifest_path is None and observation_path in {"fraction", "combined"}
+        )
     fraction_12c_blocks = (
         build_fraction_12C_blocks(spec.israd_name, model, spec.fraction_rules)
         if include_fraction_12c_constraint
@@ -324,7 +343,7 @@ def run_site_canonical(
     # Whole-sample bulk sites carry no per-pool ¹⁴C split in their block names,
     # so seed the pool ICs from the observed layer profile (aged carbon → passive)
     # instead of the modern _FALLBACK_D14C. Fraction blocks still win by name.
-    ic_seeds = _bulk_pool_ic_seeds(spec.israd_name)
+    ic_seeds = {} if manifest_path is not None else _bulk_pool_ic_seeds(spec.israd_name)
     state0 = build_state0(model, soc_prior_state, pool_blocks, ic_seeds=ic_seeds)
 
     t0 = time.perf_counter()

@@ -20,3 +20,4 @@ The built-in help is the authoritative list of flags. A few commands still wrap 
 | [`config`](config.md) | Locate sites and write configs. |
 | [`analyze`](analyze.md) | Run network, transit-time, and summary analysis. |
 | [`report`](report.md) | Merge results and build cross-ecosystem summaries. |
+| [`model`](model.md) | Validate a site input set or run the forward model. |
