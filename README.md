@@ -169,6 +169,9 @@ Start without `--include-er`, `--include-incubation`, or
 `--include-incubation-14c`; add those only when you also have the corresponding
 observations and want them to constrain the fit.
 
+For the full input format, constraint choices, and examples of adding ER or
+adjusting inversion assumptions, see [custom data and constraints](docs/custom-data-and-constraints.md).
+
 ## Common commands
 
 | Command | When to use it |
