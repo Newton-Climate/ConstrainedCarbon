@@ -1,57 +1,131 @@
 # `ecosys analyze`
 
-Use these commands after you have fitted sites and want to answer a broader scientific question.
+`analyze` produces **new derived artifacts** from fitted sites — per-site
+diagnostics, cross-site tables, transit-time calculations, and cross-ecosystem
+summaries. It reads fitted parameters (either re-running the site inversion
+or loading exported artifacts) and writes fresh outputs. Use it after
+`ecosys optimize` has produced site fits.
 
-| Subcommand | Question it helps answer |
+For combining tables that already exist without recomputing anything, use
+[`ecosys report`](report.md) instead.
+
+## The five subcommands
+
+| Subcommand | Scale | What it does | Read first |
+|---|---|---|---|
+| `model` | one site | Recomputes/loads a fitted site, then writes diagnostics, observation fit, Shapley attribution, and a diagnostic figure. | `summary.json`, `site_diagnostics.png` |
+| `network` | site set | Runs the OE inversion for every site in the set, records the constraint ladder (¹²C → +bulk ¹⁴C → +fraction ¹⁴C → +respired ¹⁴C), and aggregates diagnostics across sites. | `aggregate_summary.json`, `site_summary.csv` |
+| `transit` | site set | Computes mean transit time from fitted τ's and transfer topology. Three modes (see below). | `transit_times.csv` and figure |
+| `transit-vulnerability` | site set | Leave-one-biome-out ridge regression to test whether transit-time features improve prediction of warming vulnerability across biomes. | LOBO summary CSV |
+| `cross-ecosystem` | multiple sets | Combines site and warming summaries into a cross-ecosystem figure and Markdown report. | `report.md` |
+
+```mermaid
+flowchart LR
+  FITS["fitted sites<br/>(from optimize)"] --> M[analyze model<br/>one site]
+  FITS --> N[analyze network<br/>site set]
+  N --> T[analyze transit]
+  N --> V[analyze transit-vulnerability]
+  N --> X[analyze cross-ecosystem]
+```
+
+All five write to `outputs/<name>/analyze/<subcommand>/` with a `manifest.json`
+and `logs/run.log`. The app owns output locations — use `--outdir` and
+`--name`, not a subcommand-specific `--out` / `--figure` / `--export-dir`.
+
+## `analyze model` — one site, in detail
+
+```bash
+ecosys analyze model configs/multisite/harvard_forest.yaml \
+  --name harvard_forest_example
+```
+
+Re-runs (or loads with `--from-artifacts`) the fit for one site and writes:
+
+| File | What it contains |
 |---|---|
-| `model` | How well does one fitted model reproduce its observations? |
-| `network` | How do results compare across a set of sites? |
-| `transit` | How long does carbon remain in the modeled soil system? |
-| `transit-vulnerability` | Does transit time help explain warming vulnerability across sites? |
-| `cross-ecosystem` | What is the overall pattern across ecosystems? |
+| `summary.json` | Reduced χ², weighted RMSE, DFS total, convergence status. Read this first. |
+| `observations.csv` | Every observation with its modeled equivalent, unit, and residual. |
+| `constraint_ladder.csv` | DFS gained as each observation family is added (¹²C → +bulk → +fraction → +respired). |
+| `shapley_by_observation.csv` | Shapley DFS attribution across observation families at the fitted point. |
+| `ablation.csv` | Fit quality if each observation family is removed. |
+| `fit_matrices.npz` | Jacobian, gain, and averaging kernel arrays. |
+| `site_diagnostics.png` | Forcing / stock / respired-Δ¹⁴C / 1:1 / DFS panel. |
+
+`model` describes the *stated* fit. It is not independent validation — the
+observations used in the fit are the same ones plotted.
+
+## `analyze network` — site set
 
 ```bash
 ecosys analyze network \
   --site-set configs/site_sets/direct_warming_network_24.yaml \
   --include-er-constraint --workers 4
-
-ecosys analyze transit --mode intrinsic
 ```
 
-These analyses use different input tables and assumptions, so check `ecosys analyze <subcommand> --help` before running one.
+Loops over every config in the site set, runs the OE inversion, and collects
+per-site diagnostics into one folder. Outputs:
 
-## Outputs
+| File | One row per | What it contains |
+|---|---|---|
+| `site_summary.csv` | site | Fitted `tau_<pool>_yr`, transfer fractions where retained, χ²/dof, DFS total, converged flag, constraint counts, biome group, forcing source. This is the canonical downstream table. |
+| `ladder_summary.csv` | site × ladder rung | Cumulative DFS after each observation family is added. Shows *where* information came from at each site. |
+| `shapley_summary.csv` | site × observation family | Shapley DFS attribution (bulk ¹⁴C vs. fraction ¹⁴C vs. respired ¹⁴C vs. ¹²C constraints…). |
+| `failures.csv` | site (only failed) | Site id, reason, and traceback pointer for any site that did not converge or was skipped. |
+| `aggregate_summary.json` | — | Counts (n sites attempted, converged, skipped), median χ², median DFS, elapsed wall time. |
 
-Every completed command writes to
-`outputs/<name>/analyze/<subcommand>/` by default, or under the root passed to
-`--outdir`; use `--name` to choose `<name>`. Each run writes `manifest.json`
-and `logs/run.log`; the manifest records the supplied arguments and declares
-every generated artifact. The app owns all output locations, so use `--outdir`
-rather than a subcommand-specific `--out`, `--figure`, or `--export-dir` flag.
-On completion it prints a JSON integration record containing `output_dir`, the
-manifest path, and absolute paths for every declared artifact.
+Read `aggregate_summary.json` first to see how many sites converged, then
+`failures.csv` to see which ones didn't and why, then `site_summary.csv` for
+the numbers.
 
-| Subcommand | Contract payloads |
-|---|---|
-| `model` | `fit_matrices.npz`, observation/constraint/Shapley/ablation CSVs, `summary.json`, and `site_diagnostics.png` |
-| `network` | `site_summary.csv`, `ladder_summary.csv`, `shapley_summary.csv`, `failures.csv`, and `aggregate_summary.json` |
-| `transit --mode intrinsic` | `transit_times.csv` and `transit_times.png` (plus a failures CSV when needed) |
-| `transit --mode realized` | `realized_transit_times.csv` and `realized_transit_times.png` (plus a failures CSV when needed) |
-| `transit --mode gradient` | `gradient_transit_times.csv`, `gradient_transit_draws.csv`, and `gradient_transit_times.png` |
-| `transit-vulnerability` | leave-one-biome-out summary, predictions, and site-metrics CSVs |
-| `cross-ecosystem` | `report.md` plus the generated figure and CSV bundle |
+## `analyze transit` — how long carbon stays
 
-`model` exports a per-site fit analysis to its contract directory; use it to
-inspect the stated fit, not to create a new independent observation. `network`
-produces site and observation-information summaries; its DFS and Shapley
-outputs have the same local-resolution interpretation described for
-`information shapley`. `transit` writes a table and figure at `--out` and
-`--figure`: intrinsic transit time reflects turnover and routing under the
-configured reference environment, while realized variants also depend on the
-forcing used. `transit-vulnerability` writes leave-one-biome-out prediction
-tables; judge model additions by held-out error and coverage, not in-sample
-association. `cross-ecosystem` writes a figure/table/report bundle whose
-cross-site patterns remain conditional on compatible source summaries.
+Three modes, each with a distinct interpretation:
+
+| Mode | Environment used | What it answers |
+|---|---|---|
+| `intrinsic` | reference (steady, no seasonality) | If forcing were held at reference, how long would a unit of C-input take to leave? Depends only on τ's and transfer topology. |
+| `realized` | site's actual daily forcing, cycled | With this site's temperature, moisture, and GPP seasonality, how long does a unit of C-input take to leave? |
+| `gradient` | site's forcing, with posterior draws | Same as `realized`, plus uncertainty from posterior draws around the MAP. |
+
+```bash
+ecosys analyze transit --mode intrinsic
+ecosys analyze transit --mode realized
+ecosys analyze transit --mode gradient
+```
+
+Each mode writes a CSV of per-site transit-time metrics and a matching PNG.
+`gradient` additionally writes `gradient_transit_draws.csv` with the sampled
+distribution. Transit time is a **model-based diagnostic**, not a direct
+measurement — it reflects the pool structure and priors used to fit the site.
+
+## `analyze transit-vulnerability` — does transit time predict warming response?
+
+```bash
+ecosys analyze transit-vulnerability \
+  --site-set configs/site_sets/direct_warming_network_24.yaml
+```
+
+Trains a ridge regression to predict a warming-vulnerability target from
+site-level features (with and without transit-time features included), then
+tests it **leave-one-biome-out**: hold out every site in one biome, train on
+the rest, predict the held-out biome, repeat. Judge the value added by a
+feature by the held-out error, not in-sample fit. Outputs are the LOBO
+prediction CSV, per-site metrics, and a summary of held-out skill by biome.
+
+## `analyze cross-ecosystem` — final cross-site synthesis
+
+```bash
+ecosys analyze cross-ecosystem \
+  --network-summary outputs/<set>/analyze/network/site_summary.csv \
+  --warming-summary outputs/<set>/warming/network_warming_summary.csv
+```
+
+Joins the network and warming summaries with the biome grouping and writes a
+Markdown report (`report.md`), the cross-ecosystem figure, and a CSV bundle
+behind it. This is **descriptive synthesis**: the cross-site pattern it shows
+is only as comparable as the input summaries. If the underlying sites were fit
+with different observation mixes, priors, or forcings, that comparability must
+be checked before making a claim from this figure.
 
 ## Harvard Forest example
 
@@ -60,9 +134,9 @@ ecosys analyze model configs/multisite/harvard_forest.yaml \
   --name harvard_forest_example
 ```
 
-Use this single-site diagnostic to examine fit quality before moving to a
-network analysis. The information panel shows about 2.82 DFS across the
-fitted state, so it would be too strong to claim that every fitted parameter is
-independently measured.
+This single-site diagnostic is the fastest way to see fit quality and DFS
+before running a network analysis. The example run reports about 2.82 DFS
+across the 12-parameter state, so it would be too strong to claim every
+fitted parameter is independently measured.
 
 ![Harvard Forest analysis diagnostic](artifacts/harvard_forest_site_diagnostics.png)

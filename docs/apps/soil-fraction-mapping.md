@@ -1,8 +1,27 @@
 # Mapping soil fractions to model pools
 
-Laboratory fractions are operational measurements. Model pools are simplified
-kinetic reservoirs. A mapping between them is therefore a scientific
-hypothesis—not a label conversion.
+**For lab and field scientists:** this page explains how your measurement ends
+up as a constraint in the fit, and where the honest limits of that translation
+sit.
+
+Laboratory fractions are **operational** — defined by how you separated the
+soil (density cutoff, sieve size, chemical treatment). Model pools are
+**kinetic** — defined by turnover time. A mapping between them is a scientific
+hypothesis, not a label conversion.
+
+```mermaid
+flowchart LR
+  SOIL[soil sample] --> LAB["fractionation<br/>protocol"]
+  LAB --> F1[free light]
+  LAB --> F2[occluded light]
+  LAB --> F3[heavy / MAOM]
+  F1 -. "policy<br/>(scheme, not site)" .-> P1[active]
+  F2 -. .-> P2[slow]
+  F3 -. .-> P3[passive]
+  P1 --> MOD[[model fit]]
+  P2 --> MOD
+  P3 --> MOD
+```
 
 The project maps by fractionation *scheme*, not by site name. That keeps the
 meaning of a protocol consistent across sites and makes unfamiliar protocols

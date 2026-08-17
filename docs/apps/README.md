@@ -5,6 +5,28 @@
 Start with [Reading `ecosys` outputs](outputs.md) when reading or reporting a
 result. For a concrete example, see the [Harvard Forest walkthrough](harvard-forest-example.md).
 
+## Typical workflow
+
+Most users move through these commands in order. Each writes into its own
+`outputs/` subfolder with a `manifest.json`.
+
+```mermaid
+flowchart LR
+  A["config locate<br/>+ config build"] --> B[fetch]
+  B --> C["model validate"]
+  C --> D[optimize]
+  D --> E[information shapley]
+  D --> F[warming]
+  D --> G[analyze / report]
+```
+
+- **Setup** (`config`, `fetch`, `model validate`) — put a site together and
+  check its inputs load.
+- **Fit** (`optimize`) — one site or a site set.
+- **Interpret** (`information`) — how much did each observation family help?
+- **Project** (`warming`) — standardized sensitivity, not a forecast.
+- **Synthesize** (`analyze`, `report`) — cross-site tables and figures.
+
 ```bash
 ecosys --help
 ecosys <command> --help
