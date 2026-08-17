@@ -40,16 +40,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-import ecosystem_complexity.tracer_14C as tracer_14C
-from ecosystem_complexity.above_ground import _gpp, compute_external_soil_inputs
-from ecosystem_complexity.climate import _pool_env_vecs
-from ecosystem_complexity.config import ModelConfig, PoolIndex
-from ecosystem_complexity.soil import (
+import ecosystem_complexity.processes.radiocarbon as tracer_14C
+from ecosystem_complexity.processes.vegetation import _gpp, compute_external_soil_inputs
+from ecosystem_complexity.processes.climate import _pool_env_vecs
+from ecosystem_complexity.model.configuration import ModelConfig, PoolIndex
+from ecosystem_complexity.processes.soil import (
     _step_12C_pure,
     het_respiration_by_pool,
 )
-from ecosystem_complexity.soil import nee as nee_flux
-from ecosystem_complexity.state import EcosystemState, ModelParams
+from ecosystem_complexity.processes.soil import nee as nee_flux
+from ecosystem_complexity.model.state import EcosystemState, ModelParams
 
 
 @dataclass

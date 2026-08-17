@@ -3,7 +3,7 @@
 notebooks (notebook_utils.py, compare_sites.py, etc.) continue to work.
 """
 
-from ecosystem_complexity.climate import (  # noqa: F401
+from ecosystem_complexity.processes.climate import (  # noqa: F401
     f_moisture,
     f_temp,
     thawed_frac,

@@ -39,7 +39,7 @@ _SRC = _REPO_ROOT / "src"
 if _SRC.is_dir() and str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from ecosystem_complexity.config import load_config  # noqa: E402
+from ecosystem_complexity.model.configuration import load_config  # noqa: E402
 from ecosystem_complexity.outputs import (  # noqa: E402
     attach_file_logger,
     open_run_dir,
@@ -401,7 +401,7 @@ def main(argv: list[str] | None = None) -> int:
     for r in results:
         # Re-attach a minimal model pool_index for _posterior_rows.
         # Cheapest way: rebuild from config; that's a lightweight parse.
-        from ecosystem_complexity.api import build_model  # noqa: WPS433
+        from ecosystem_complexity.model.api import build_model  # noqa: WPS433
         r["model"] = build_model(r["spec"].config_path)
         run_dir = _write_site_outputs(r, args.outdir, verb_extra)
         summary_rows.append(summary_row(r))

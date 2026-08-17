@@ -157,7 +157,7 @@ def _resolve_specs(selectors: list[str]) -> list[str]:
 
 def _read_sigma_rule_from_yaml(config_path: str) -> str | None:
     """Return ``information.shapley.sigma_rule`` when set, else None."""
-    from ecosystem_complexity.config import load_config
+    from ecosystem_complexity.model.configuration import load_config
     block = load_config(config_path).information_raw or {}
     return (block.get("shapley") or {}).get("sigma_rule")
 
@@ -177,8 +177,8 @@ def _shapley_one(
 ) -> dict[str, Any]:
     _install_carbon_sigma_rule(sigma_rule)
 
-    from ecosystem_complexity.config import load_config
-    from ecosystem_complexity.oe_diagnostics import (
+    from ecosystem_complexity.model.configuration import load_config
+    from ecosystem_complexity.inference.diagnostics import (
         fit_param_subset_indices,
         oe_gain_matrix_diagnostics,
         oe_ladder_context,

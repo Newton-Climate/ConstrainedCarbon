@@ -27,7 +27,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from ecosystem_complexity import mcmc as _mcmc  # noqa: E402
-from ecosystem_complexity.config import load_config  # noqa: E402
+from ecosystem_complexity.model.configuration import load_config  # noqa: E402
 from ecosystem_complexity.mcmc.chain import build_args_namespace, run_from_args  # noqa: E402
 from ecosystem_complexity.outputs import open_run_dir, resolve_run_name  # noqa: E402
 
