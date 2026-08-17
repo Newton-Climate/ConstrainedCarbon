@@ -30,7 +30,7 @@ from ecosystem_complexity.processes.soil import het_respiration
 from ecosystem_complexity.model.state import make_default_params, make_initial_state
 from ecosystem_complexity.model.transfers import get_transfer_matrix
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _HF_3POOL_PATH = str(CONFIGS_DIR / "harvard_3pool_config.yaml")
 _FIELDS = ("log_tau", "log_f_transfer")
 

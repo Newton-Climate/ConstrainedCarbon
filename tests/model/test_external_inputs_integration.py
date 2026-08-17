@@ -36,7 +36,7 @@ from ecosystem_complexity.model.configuration import PoolIndex, load_config
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _SOIL_ONLY_PATH = str(CONFIGS_DIR / "harvard_forest_soil_only.yaml")
 
 # ---------------------------------------------------------------------------

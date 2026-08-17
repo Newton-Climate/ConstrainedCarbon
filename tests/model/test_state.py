@@ -40,7 +40,7 @@ from ecosystem_complexity.model.state import (
     make_initial_state,
 )
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 
 
 # ---------------------------------------------------------------------------

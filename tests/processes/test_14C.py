@@ -66,7 +66,7 @@ from ecosystem_complexity.processes.radiocarbon import (
 )
 from ecosystem_complexity.model.transfers import get_transfer_matrix
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _HARVARD_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")
 _BARROW_PATH = str(CONFIGS_DIR / "barrow_alaska.yaml")
 

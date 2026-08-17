@@ -13,7 +13,7 @@ from ecosystem_complexity.sites.spec import load_site_spec
 
 
 def test_example_custom_lab_data_builds_observations():
-    root = Path(__file__).parent.parent
+    root = Path(__file__).resolve().parents[2]
     data = load_custom_14c_manifest(root / "examples/custom_14c/example_lab_14c.yaml")
     model = build_model(str(root / "configs/harvard_3pool_config.yaml"))
     forcing_time = np.arange(365 * 60, dtype=float)

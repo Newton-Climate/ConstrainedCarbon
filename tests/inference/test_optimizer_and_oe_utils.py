@@ -27,7 +27,7 @@ from ecosystem_complexity.inference.parameters import (
 )
 from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _HF_3POOL_PATH = str(CONFIGS_DIR / "harvard_3pool_config.yaml")
 _SOIL_ONLY_PATH = str(CONFIGS_DIR / "harvard_forest_soil_only.yaml")
 

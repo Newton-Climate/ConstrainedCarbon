@@ -43,7 +43,7 @@ from ecosystem_complexity.model.configuration import PoolIndex, load_config
 from ecosystem_complexity.model.simulator import EcosystemModel
 from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _HARVARD_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")
 
 
@@ -180,7 +180,7 @@ def test_pool_positivity():
 # ---------------------------------------------------------------------------
 
 _SOIL_ONLY_PATH = str(
-    pathlib.Path(__file__).parent.parent / "configs" / "harvard_forest_soil_only.yaml"
+    pathlib.Path(__file__).resolve().parents[2] / "configs" / "harvard_forest_soil_only.yaml"
 )
 
 

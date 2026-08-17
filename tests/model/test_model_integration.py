@@ -42,7 +42,7 @@ from ecosystem_complexity.model.configuration import PoolIndex, load_config
 from ecosystem_complexity.model.simulator import EcosystemModel
 from ecosystem_complexity.model.state import make_default_params, make_initial_state
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _HARVARD_PATH = str(CONFIGS_DIR / "harvard_forest.yaml")
 
 

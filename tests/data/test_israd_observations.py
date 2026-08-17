@@ -16,7 +16,7 @@ from ecosystem_complexity.data.israd_observations import (
     summarize_by_depth,
 )
 
-CONFIGS_DIR = pathlib.Path(__file__).parent.parent / "configs"
+CONFIGS_DIR = pathlib.Path(__file__).resolve().parents[2] / "configs"
 _HF_3POOL_PATH = str(CONFIGS_DIR / "harvard_3pool_config.yaml")
 
 

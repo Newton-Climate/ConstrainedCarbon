@@ -31,7 +31,7 @@ from ecosystem_complexity.model.configuration import (
 # Helpers
 # ---------------------------------------------------------------------------
 
-REPO_ROOT = pathlib.Path(__file__).parent.parent
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 CONFIGS_DIR = REPO_ROOT / "configs"
 
 

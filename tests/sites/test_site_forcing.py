@@ -13,7 +13,7 @@ from ecosystem_complexity.data.forcing import (
 )
 from ecosystem_complexity.sites.spec import SiteSpec, load_site_spec
 
-REPO_ROOT = pathlib.Path(__file__).parent.parent
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 def test_load_site_spec_reads_fluxcom_metadata() -> None:

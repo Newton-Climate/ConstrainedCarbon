@@ -28,10 +28,10 @@ from ecosystem_complexity.data.loaders import (
 # ---------------------------------------------------------------------------
 
 _HARVARD_CONFIG_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "configs", "harvard_forest.yaml"
+    os.path.dirname(__file__), "..", "..", "configs", "harvard_forest.yaml"
 )
 _BARROW_CONFIG_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "configs", "barrow_alaska.yaml"
+    os.path.dirname(__file__), "..", "..", "configs", "barrow_alaska.yaml"
 )
 
 
