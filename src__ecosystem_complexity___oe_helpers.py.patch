@@ -1,0 +1,27 @@
+diff --git a/src/ecosystem_complexity/_oe_helpers.py b/src/ecosystem_complexity/_oe_helpers.py
+index 739ef54..6680bdf 100644
+--- a/src/ecosystem_complexity/_oe_helpers.py
++++ b/src/ecosystem_complexity/_oe_helpers.py
+@@ -388,3 +418,22 @@ def _analytical_c12_ss(
+ 
+     # Correct for decomposition modifier (true SS has longer effective τ)
+     return inp * tau / float(mean_modifier)
++
++
++def apply_ss_c12(state, c12_ss: jnp.ndarray):
++    """Swap ``state.C12`` for the steady-state stocks, preserving initial Δ¹⁴C.
++
++    ``state`` carries an initial C12/C14 pair whose ratio C14/C12 encodes the
++    intended initial Δ¹⁴C (``= R_std·(1 + Δ¹⁴C/1000)``).  When the analytical
++    steady-state C12 replaces the observed C12 we must rescale C14 by the same
++    factor, otherwise the *implied* initial Δ¹⁴C silently shifts by
++    ``C12_old/C12_ss`` — and, because ``c12_ss`` depends on τ, that shift moves
++    with the optimizer and leaks a spurious sensitivity into the Jacobian.
++
++    Preserving the ratio keeps each pool's initial Δ¹⁴C fixed at its observed
++    value independent of τ.  Pools with zero initial C12 (hence undefined ratio)
++    fall back to zero C14, matching the untouched-state behaviour.
++    """
++    ratio = state.C14 / (state.C12 + 1e-30)  # = R_std·(1 + Δ¹⁴C/1000), constant
++    c14_ss = ratio * c12_ss
++    return state._replace(C12=c12_ss, C14=c14_ss)

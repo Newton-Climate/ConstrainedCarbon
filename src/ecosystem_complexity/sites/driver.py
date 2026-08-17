@@ -361,6 +361,13 @@ def run_site_canonical(
     tau_days = np.exp(np.array(result.params_opt.log_tau))
     logger.info("%s", "  optimised τ (yr): " + ", ".join(
         f"{n}={t/365.25:.1f}" for n, t in zip(idx.pool_names, tau_days)))
+    extra_blocks = pool_blocks + incubation_blocks + incubation_14c_blocks + fraction_12c_blocks
+    params_prior = make_default_params(model.config)
+    state_at_prior = ss_state_for_params(model, forcing, state0, params_prior)
+    state_at_map = ss_state_for_params(model, forcing, state0, result.params_opt)
+    out_prior = run_model(model, forcing, state0=state_at_prior, params=params_prior)
+    out_opt = run_model(model, forcing, state0=state_at_map, params=result.params_opt)
+    jax.block_until_ready(out_opt.delta14C)
 
     return {
         "spec": spec, "skipped": False, "model": model,
@@ -383,8 +390,11 @@ def run_site_canonical(
         "oe_result": result,
         # pieces needed for downstream information diagnostics (constraint ladder)
         "forcing": forcing, "state0": state0,
+        "params_prior": params_prior, "state_at_prior": state_at_prior,
+        "state_at_map": state_at_map, "out_prior": out_prior, "out_opt": out_opt,
         "obs_full": obs_full,
-        "pool_blocks": pool_blocks + incubation_blocks + incubation_14c_blocks + fraction_12c_blocks,
+        "pool_blocks": extra_blocks, "extra_blocks": extra_blocks,
+        "opt_fields": OPT_FIELDS,
         "params_opt": result.params_opt,
     }
 

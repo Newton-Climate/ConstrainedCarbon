@@ -1,0 +1,820 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/y5wne50z",
+    "id": "y5wne50z",
+    "slide": 18,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wrelszu9",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "RESULTS  ·  CLIMATE MODEL COMPARISON",
+      "textPreview": "RESULTS  ·  CLIMATE MODEL COMPARISON",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "RESULTS  ·  CLIMATE MODEL COMPARISON"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "RESULTS  ·  CLIMATE MODEL COMPARISON",
+          "runs": [
+            {
+              "index": 1,
+              "text": "RESULTS  ·  CLIMATE MODEL COMPARISON",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hsn2l4bu",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "CLM5 in our framework: the fast pool is too fast, while slow and deep pools are closer but still biased low",
+      "textPreview": "CLM5 in our framework: the fast pool is too fast, while slow and deep pools are closer but still biased low",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CLM5 in our framework: the fast pool is too fast, while slow"
+          },
+          {
+            "index": 2,
+            "text": "and deep pools are closer but still biased low"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CLM5 in our framework: the fast pool is too fast, while slow and deep pools are closer but still biased low",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM5 in our framework: the fast pool is too fast, while slow and deep pools are closer but still biased low",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/5cjmtof6",
+      "id": "15",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        158.4,
+        912,
+        480
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-18-1.png",
+        "contentType": "image/png",
+        "byteLength": 106502
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-18-1.png",
+        "contentType": "image/png",
+        "byteLength": 106502
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/je5knut0",
+      "id": "5",
+      "name": "Text 2",
+      "bbox": [
+        988.8,
+        177.6,
+        249.6,
+        33.6
+      ],
+      "geometry": "rect",
+      "text": "METHOD",
+      "textPreview": "METHOD",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "METHOD"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "METHOD",
+          "runs": [
+            {
+              "index": 1,
+              "text": "METHOD",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4felwzu5",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        988.8,
+        211.2,
+        249.6,
+        177.6
+      ],
+      "geometry": "rect",
+      "text": "Treat CLM5 stocks + total Rh as observations. Fit our 3-pool model with optimize_oe. Result is an emulated CLM5 τ vector directly comparable to the ¹⁴C-constrained posterior.",
+      "textPreview": "Treat CLM5 stocks + total Rh as observations. Fit our 3-pool model with optimize_oe. Result is an emulated CLM5 τ vector directly compara...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 6,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Treat CLM5 stocks + total Rh as"
+          },
+          {
+            "index": 2,
+            "text": "observations. Fit our 3-pool model"
+          },
+          {
+            "index": 3,
+            "text": "with optimize_oe. Result is an"
+          },
+          {
+            "index": 4,
+            "text": "emulated CLM5 τ vector directly"
+          },
+          {
+            "index": 5,
+            "text": "comparable to the ¹⁴C-constrained"
+          },
+          {
+            "index": 6,
+            "text": "posterior."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Treat CLM5 stocks + total Rh as observations. Fit our 3-pool model with optimize_oe. Result is an emulated CLM5 τ vector directly comparable to the ¹⁴C-constrained posterior.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Treat CLM5 stocks + total Rh as observations. Fit our 3-pool model with optimize_oe. Result is an emulated CLM5 τ vector directly comparable to the ¹⁴C-constrained posterior.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/5gnmp4bq",
+      "id": "7",
+      "name": "Shape 4",
+      "bbox": [
+        988.8,
+        393.6,
+        249.6,
+        172.8
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6hw3y9sb",
+      "id": "8",
+      "name": "Text 5",
+      "bbox": [
+        1003.2,
+        403.2,
+        230.4,
+        153.6
+      ],
+      "geometry": "rect",
+      "text": "CLM5 / ¹⁴C  τ RATIOS\n \nactive:  0.40× HF · 0.29× Barrow\nslow:    0.64× HF · 0.95× Barrow\npassive: 0.78× HF · 0.62× Barrow",
+      "textPreview": "CLM5 / ¹⁴C  τ RATIOS |   | active:  0.40× HF · 0.29× Barrow | slow:    0.64× HF · 0.95× Barrow | passive: 0.78× HF · 0.62× Barrow",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CLM5 / ¹⁴C  τ RATIOS"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "active:  0.40× HF · 0.29× Barrow"
+          },
+          {
+            "index": 4,
+            "text": "slow:    0.64× HF · 0.95× Barrow"
+          },
+          {
+            "index": 5,
+            "text": "passive: 0.78× HF · 0.62× Barrow"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CLM5 / ¹⁴C  τ RATIOS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM5 / ¹⁴C  τ RATIOS",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "active:  0.40× HF · 0.29× Barrow",
+          "runs": [
+            {
+              "index": 1,
+              "text": "active:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "0.40× HF · 0.29× Barrow",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#B85042"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "slow:    0.64× HF · 0.95× Barrow",
+          "runs": [
+            {
+              "index": 1,
+              "text": "slow:    ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "0.64× HF · 0.95× Barrow",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "passive: 0.78× HF · 0.62× Barrow",
+          "runs": [
+            {
+              "index": 1,
+              "text": "passive: ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "0.78× HF · 0.62× Barrow",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rip4retw",
+      "id": "9",
+      "name": "Shape 6",
+      "bbox": [
+        988.8,
+        571.2,
+        249.6,
+        96
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fapkr6pw",
+      "id": "10",
+      "name": "Text 7",
+      "bbox": [
+        1003.2,
+        576,
+        230.4,
+        24
+      ],
+      "geometry": "rect",
+      "text": "THE FINDING",
+      "textPreview": "THE FINDING",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "THE FINDING"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "THE FINDING",
+          "runs": [
+            {
+              "index": 1,
+              "text": "THE FINDING",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/upg3i18r",
+      "id": "11",
+      "name": "Text 8",
+      "bbox": [
+        1003.2,
+        600,
+        230.4,
+        67.2
+      ],
+      "geometry": "rect",
+      "text": "CLM5 is systematically too fast, with the strongest bias in the active pool; slow and passive τ are closer but still low at both sites.",
+      "textPreview": "CLM5 is systematically too fast, with the strongest bias in the active pool; slow and passive τ are closer but still low at both sites.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CLM5 is systematically too fast,"
+          },
+          {
+            "index": 2,
+            "text": "with the strongest bias in the active"
+          },
+          {
+            "index": 3,
+            "text": "pool; slow and passive τ are closer"
+          },
+          {
+            "index": 4,
+            "text": "but still low at both sites."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CLM5 is systematically too fast, with the strongest bias in the active pool; slow and passive τ are closer but still low at both sites.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM5 is systematically too fast, with the strongest bias in the active pool; slow and passive τ are closer but still low at both sites.",
+              "fontSize": 14,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1cr2tg72",
+      "id": "12",
+      "name": "Shape 9",
+      "bbox": [
+        57.6,
+        676.8,
+        1180.8,
+        28.8
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#6B6B6B",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gbylkbqh",
+      "id": "13",
+      "name": "Text 10",
+      "bbox": [
+        57.6,
+        676.8,
+        1180.8,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "CESM2 historical r1i1p1f1, 2005–2014 means.  HF cell (42.88°N, −72.50°E)  ·  Barrow inland tundra cell (68.32°N, −150.00°E).  3-pool model forced with FluxNet climate (CLM5-GPP-forced run planned).",
+      "textPreview": "CESM2 historical r1i1p1f1, 2005–2014 means.  HF cell (42.88°N, −72.50°E)  ·  Barrow inland tundra cell (68.32°N, −150.00°E).  3-pool mode...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CESM2 historical r1i1p1f1, 2005–2014 means.  HF cell (42.88°N, −72.50°E)  ·  Barrow inland tundra cell (68.32°N, −150.00°E).  3-pool model forced with FluxNet climate (CLM5-GPP-forced run planned)."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CESM2 historical r1i1p1f1, 2005–2014 means.  HF cell (42.88°N, −72.50°E)  ·  Barrow inland tundra cell (68.32°N, −150.00°E).  3-pool model forced with FluxNet climate (CLM5-GPP-forced run planned).",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "CESM2 historical r1i1p1f1, 2005–2014 means.  HF cell (42.88°N, −72.50°E)  ·  Barrow inland tundra cell (68.32°N, −150.00°E).  3-pool model forced with FluxNet climate (CLM5-GPP-forced run planned).",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7mpknmp0",
+      "id": "14",
+      "name": "Text 11",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "18 / 24",
+      "textPreview": "18 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "18 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "18 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "18 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

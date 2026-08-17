@@ -19,9 +19,14 @@ separate.
 
 Every completed contract-aware run has `manifest.json` (contract version,
 software version and Git revision, start/end times, inputs, and the authoritative
-relative file list). Site runs also have `config.snapshot.yaml`, the fully
-resolved model configuration. `logs/run.log` is present for commands that
-attach the shared logger. Treat a missing `manifest.json` as an incomplete or
+relative file list). Contract version 1.1 also records `status: complete` and
+the absolute `output_dir`. In Python, `RunDir.finalize()` returns an integration
+record with `output_dir`, `manifest`, and a `files` mapping from every declared
+relative artifact to its absolute path. `ecosys analyze` and `ecosys report`
+print that same record on successful completion. Many model-fitting commands also write
+`config.snapshot.yaml`, the fully resolved model configuration. `logs/run.log`
+is present for commands that attach the shared logger. Treat a missing
+`manifest.json` as an incomplete or
 failed run, and read its `outputs` list rather than assuming that every
 possible payload exists. `*.parquet` is the analysis-ready table; its small
 `*.csv` mirror is for inspection. `*.npz` preserves named NumPy arrays and is
@@ -34,12 +39,14 @@ not a stable columnar table.
 | `information shapley` | `shapley_by_parameter`, `metrics`, `matrices.npz`; site-set network and biome tables | which observation families identify parameters |
 | `model run` | `forward_output.npz`, `diagnostics` | inspect a prescribed forward simulation |
 | `mcmc` | manifest plus the Figure-10 CSV/figure bundle written by the sampler | propagated cross-site uncertainty |
+| `analyze` | subcommand-specific tables, figures, and a manifest | contract-aware post-hoc diagnostics |
+| `report` | synthesis tables/figures/report and a manifest | contract-aware result synthesis |
 
 `fetch` writes a contract manifest for `flux`, `fluxcom`, and `clm`, while the
 downloaded forcing remains under `data/`. `config` and `model validate` print
 validation results and do not make a scientific-result directory. `analyze`
-and `report` currently forward to legacy modules: their output paths and file
-names are set by their flags and are **not** yet covered by this contract.
+and `report` are contract-aware apps; their subcommand pages define their
+payload names and scientific interpretation.
 
 ## What the core outputs mean
 

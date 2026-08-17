@@ -1,0 +1,11 @@
+{
+  "n_configs": 5,
+  "families": [
+    "C_stocks",
+    "bulk_14C",
+    "fraction_14C",
+    "resp_14C",
+    "ER_annual",
+    "fraction_12C"
+  ]
+}

@@ -1,0 +1,451 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/gny5sjyp",
+    "id": "gny5sjyp",
+    "slide": 16,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8z2h8bq1",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "INFORMATION CONTENT  ·  04",
+      "textPreview": "INFORMATION CONTENT  ·  04",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "INFORMATION CONTENT  ·  04"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "INFORMATION CONTENT  ·  04",
+          "runs": [
+            {
+              "index": 1,
+              "text": "INFORMATION CONTENT  ·  04",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9kby1g7m",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Bulk + respired ¹⁴C is on par with density-fraction ¹⁴C",
+      "textPreview": "Bulk + respired ¹⁴C is on par with density-fraction ¹⁴C",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Bulk + respired ¹⁴C is on par with density-fraction ¹⁴C"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Bulk + respired ¹⁴C is on par with density-fraction ¹⁴C",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Bulk + respired ¹⁴C is on par with density-fraction ¹⁴C",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/2tcjmlgn",
+      "id": "9",
+      "name": "Image 0",
+      "bbox": [
+        48,
+        163.2,
+        1180.8,
+        336
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-16-1.png",
+        "contentType": "image/png",
+        "byteLength": 182227
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-16-1.png",
+        "contentType": "image/png",
+        "byteLength": 182227
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zutgvm94",
+      "id": "5",
+      "name": "Shape 2",
+      "bbox": [
+        57.6,
+        532.8,
+        1180.8,
+        148.8
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kv2h4rqp",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        72,
+        539.52,
+        230.4,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "WHY IT MATTERS",
+      "textPreview": "WHY IT MATTERS",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "WHY IT MATTERS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "WHY IT MATTERS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "WHY IT MATTERS",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/lwbyxwra",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        72,
+        571.2,
+        1152,
+        105.6
+      ],
+      "geometry": "rect",
+      "text": "Bulk ¹⁴C alone cannot resolve the pool structure — a 3-pool model caps it. However you weight the layers (one collapsed mixture 1.0, honest per-layer mass-weighting 1.65, or a depth→pool proxy 2.0), bulk-alone stays below fractions (2.95). But bulk is stock-weighted (slow + passive) and respiration flux-weighted (active), so bulk + respired ≈ fractions (≈3.0). That matters because density fractionation is rare — and absent for permafrost (Barrow), where bulk + respired is the only option and still nearly saturates (2.86).",
+      "textPreview": "Bulk ¹⁴C alone cannot resolve the pool structure — a 3-pool model caps it. However you weight the layers (one collapsed mixture 1.0, hone...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Bulk ¹⁴C alone cannot resolve the pool structure — a 3-pool model caps it. However you weight the layers (one collapsed mixture 1.0, honest per-layer"
+          },
+          {
+            "index": 2,
+            "text": "mass-weighting 1.65, or a depth→pool proxy 2.0), bulk-alone stays below fractions (2.95). But bulk is stock-weighted (slow + passive) and respiration"
+          },
+          {
+            "index": 3,
+            "text": "flux-weighted (active), so bulk + respired ≈ fractions (≈3.0). That matters because density fractionation is rare — and absent for permafrost"
+          },
+          {
+            "index": 4,
+            "text": "(Barrow), where bulk + respired is the only option and still nearly saturates (2.86)."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Bulk ¹⁴C alone cannot resolve the pool structure — a 3-pool model caps it. However you weight the layers (one collapsed mixture 1.0, honest per-layer mass-weighting 1.65, or a depth→pool proxy 2.0), bulk-alone stays below fractions (2.95). But bulk is stock-weighted (slow + passive) and respiration flux-weighted (active), so bulk + respired ≈ fractions (≈3.0). That matters because density fractionation is rare — and absent for permafrost (Barrow), where bulk + respired is the only option and still nearly saturates (2.86).",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Bulk ¹⁴C alone cannot resolve the pool structure — a 3-pool model caps it. However you weight the layers (one collapsed mixture 1.0, honest per-layer mass-weighting 1.65, or a depth→pool proxy 2.0), bulk-alone stays below fractions (2.95). ",
+              "fontSize": 16.67,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            },
+            {
+              "index": 2,
+              "text": "But bulk is stock-weighted (slow + passive) and respiration flux-weighted (active), so ",
+              "fontSize": 16.67,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            },
+            {
+              "index": 3,
+              "text": "bulk + respired ≈ fractions (≈3.0). ",
+              "fontSize": 16.67,
+              "typeface": "Georgia",
+              "color": "#4A7C59",
+              "bold": true,
+              "italic": true
+            },
+            {
+              "index": 4,
+              "text": "That matters because density fractionation is rare — and absent for permafrost (Barrow), where bulk + respired is the only option and still nearly saturates (2.86).",
+              "fontSize": 16.67,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ip4zel83",
+      "id": "8",
+      "name": "Text 5",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "16 / 24",
+      "textPreview": "16 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "16 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "16 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "16 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

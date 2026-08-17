@@ -1,0 +1,378 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/y90nupkv",
+    "id": "y90nupkv",
+    "slide": 1,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#1F3A2E",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/547294r6",
+      "id": "2",
+      "name": "Shape 0",
+      "bbox": [
+        0,
+        0,
+        24,
+        720
+      ],
+      "geometry": "rect",
+      "fillColor": "#D4A574",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/k3yl0zql",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        86.4,
+        172.8,
+        1104,
+        48
+      ],
+      "geometry": "rect",
+      "text": "ECOSYSTEM COMPLEXITY & SOIL CARBON",
+      "textPreview": "ECOSYSTEM COMPLEXITY & SOIL CARBON",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ECOSYSTEM COMPLEXITY & SOIL CARBON"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ECOSYSTEM COMPLEXITY & SOIL CARBON",
+          "runs": [
+            {
+              "index": 1,
+              "text": "ECOSYSTEM COMPLEXITY & SOIL CARBON",
+              "fontSize": 18.67,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7qp4be9c",
+      "id": "4",
+      "name": "Text 2",
+      "bbox": [
+        86.4,
+        230.4,
+        1104,
+        240
+      ],
+      "geometry": "rect",
+      "text": "Quantifying the information content\nof radiocarbon constraints on\nsoil-carbon vulnerability",
+      "textPreview": "Quantifying the information content | of radiocarbon constraints on | soil-carbon vulnerability",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Quantifying the information content"
+          },
+          {
+            "index": 2,
+            "text": "of radiocarbon constraints on"
+          },
+          {
+            "index": 3,
+            "text": "soil-carbon vulnerability"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Quantifying the information content",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Quantifying the information content",
+              "fontSize": 53.33,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "of radiocarbon constraints on",
+          "runs": [
+            {
+              "index": 1,
+              "text": "of radiocarbon constraints on",
+              "fontSize": 53.33,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "soil-carbon vulnerability",
+          "runs": [
+            {
+              "index": 1,
+              "text": "soil-carbon vulnerability",
+              "fontSize": 53.33,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/65g3298r",
+      "id": "5",
+      "name": "Text 3",
+      "bbox": [
+        86.4,
+        528,
+        1104,
+        86.4
+      ],
+      "geometry": "rect",
+      "text": "Newton H. Nguyen\nStanford University · nnewton@stanford.edu",
+      "textPreview": "Newton H. Nguyen | Stanford University · nnewton@stanford.edu",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Newton H. Nguyen"
+          },
+          {
+            "index": 2,
+            "text": "Stanford University · nnewton@stanford.edu"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Newton H. Nguyen",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Newton H. Nguyen",
+              "fontSize": 21.33,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Stanford University · nnewton@stanford.edu",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Stanford University · nnewton@stanford.edu",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#D4A574"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ts7md4r2",
+      "id": "6",
+      "name": "Text 4",
+      "bbox": [
+        86.4,
+        633.6,
+        1104,
+        38.4
+      ],
+      "geometry": "rect",
+      "text": "Two canonical ecosystems · Optimal estimation inversion · Information theory",
+      "textPreview": "Two canonical ecosystems · Optimal estimation inversion · Information theory",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Two canonical ecosystems · Optimal estimation inversion · Information theory"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Two canonical ecosystems · Optimal estimation inversion · Information theory",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Two canonical ecosystems · Optimal estimation inversion · Information theory",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

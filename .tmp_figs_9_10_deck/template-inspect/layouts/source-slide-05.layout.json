@@ -1,0 +1,396 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/i107q5of",
+    "id": "i107q5of",
+    "slide": 5,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dgbulwnm",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "WHY ¹⁴C  ·  02",
+      "textPreview": "WHY ¹⁴C  ·  02",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "WHY ¹⁴C  ·  02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "WHY ¹⁴C  ·  02",
+          "runs": [
+            {
+              "index": 1,
+              "text": "WHY ¹⁴C  ·  02",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cf2tcr61",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Respired ¹⁴C varies systematically across biomes — and our sites fit the pattern",
+      "textPreview": "Respired ¹⁴C varies systematically across biomes — and our sites fit the pattern",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Respired ¹⁴C varies systematically across biomes — and our"
+          },
+          {
+            "index": 2,
+            "text": "sites fit the pattern"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Respired ¹⁴C varies systematically across biomes — and our sites fit the pattern",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Respired ¹⁴C varies systematically across biomes — and our sites fit the pattern",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/apobah8v",
+      "id": "8",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        158.4,
+        1180.8,
+        441.6
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-5-1.png",
+        "contentType": "image/png",
+        "byteLength": 340772
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-5-1.png",
+        "contentType": "image/png",
+        "byteLength": 340772
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/yhkbe1o7",
+      "id": "5",
+      "name": "Shape 2",
+      "bbox": [
+        57.6,
+        604.8,
+        1180.8,
+        81.6
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/l4bupwny",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        72,
+        604.8,
+        1152,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Respired Δ¹⁴C is always more enriched than bulk soil — but the gap differs by biome.   \nTropical +49 ‰   ·   Boreal +70 ‰   ·   Tundra +95 ‰   ·   Temperate +111 ‰  — respiration draws from carbon younger than the bulk soil mean, and the gap grows where deep stable C dominates.",
+      "textPreview": "Respired Δ¹⁴C is always more enriched than bulk soil — but the gap differs by biome.    | Tropical +49 ‰   ·   Boreal +70 ‰   ·   Tundra ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Respired Δ¹⁴C is always more enriched than bulk soil — but the gap differs by biome."
+          },
+          {
+            "index": 2,
+            "text": "Tropical +49 ‰   ·   Boreal +70 ‰   ·   Tundra +95 ‰   ·   Temperate +111 ‰  — respiration draws from carbon younger than the bulk soil mean, and the gap"
+          },
+          {
+            "index": 3,
+            "text": "grows where deep stable C dominates."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Respired Δ¹⁴C is always more enriched than bulk soil — but the gap differs by biome.   ",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Respired Δ¹⁴C is always more enriched than bulk soil — but the gap differs by biome.  ",
+              "fontSize": 16.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " ",
+              "fontSize": 6.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Tropical +49 ‰   ·   Boreal +70 ‰   ·   Tundra +95 ‰   ·   Temperate +111 ‰  — respiration draws from carbon younger than the bulk soil mean, and the gap grows where deep stable C dominates.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Tropical +49 ‰   ·   Boreal +70 ‰   ·   Tundra +95 ‰   ·   Temperate +111 ‰  ",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            },
+            {
+              "index": 2,
+              "text": "— respiration draws from carbon younger than the bulk soil mean, and the gap grows where deep stable C dominates.",
+              "fontSize": 16,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/032tgr6d",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "5 / 24",
+      "textPreview": "5 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "5 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "5 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "5 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

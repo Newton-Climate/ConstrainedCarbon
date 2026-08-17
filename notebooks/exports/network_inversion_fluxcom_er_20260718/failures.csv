@@ -1,0 +1,2 @@
+config,label,status,error
+configs/multisite/blodgett.yaml,blodgett,failed,FileNotFoundError('No flux DD file under data/AMF_US-Blo_FLUXNET_FULLSET_*')

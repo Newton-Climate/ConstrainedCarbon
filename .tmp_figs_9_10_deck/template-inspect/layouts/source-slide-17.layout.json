@@ -1,0 +1,712 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/14bup87q",
+    "id": "14bup87q",
+    "slide": 17,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1c7e50ni",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "INFORMATION CONTENT  ·  05",
+      "textPreview": "INFORMATION CONTENT  ·  05",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "INFORMATION CONTENT  ·  05"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "INFORMATION CONTENT  ·  05",
+          "runs": [
+            {
+              "index": 1,
+              "text": "INFORMATION CONTENT  ·  05",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gbedwfmx",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Information saturates at ~3 DFS — matched to the 3-pool model dimensionality",
+      "textPreview": "Information saturates at ~3 DFS — matched to the 3-pool model dimensionality",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Information saturates at ~3 DFS — matched to the 3-pool"
+          },
+          {
+            "index": 2,
+            "text": "model dimensionality"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Information saturates at ~3 DFS — matched to the 3-pool model dimensionality",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Information saturates at ~3 DFS — matched to the 3-pool model dimensionality",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/oz2hcvit",
+      "id": "13",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        192,
+        816,
+        311.04
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-17-1.png",
+        "contentType": "image/png",
+        "byteLength": 84214
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-17-1.png",
+        "contentType": "image/png",
+        "byteLength": 84214
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6lwvql4v",
+      "id": "5",
+      "name": "Text 2",
+      "bbox": [
+        892.8,
+        187.2,
+        340.8,
+        33.6
+      ],
+      "geometry": "rect",
+      "text": "WHAT THIS MEANS",
+      "textPreview": "WHAT THIS MEANS",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "WHAT THIS MEANS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "WHAT THIS MEANS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "WHAT THIS MEANS",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t8ne10n6",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        892.8,
+        225.6,
+        340.8,
+        249.6
+      ],
+      "geometry": "rect",
+      "text": "C stocks alone get to 1.9 DFS\nAdding pool Δ¹⁴C pushes both sites to ≈ 3 DFS\nAdding respired Δ¹⁴C adds only ~0.1 DFS\n \nSaturation at 3 DFS = full constraint of a 3-pool τ vector.",
+      "textPreview": "C stocks alone get to 1.9 DFS | Adding pool Δ¹⁴C pushes both sites to ≈ 3 DFS | Adding respired Δ¹⁴C adds only ~0.1 DFS |   | Saturation ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "• C stocks alone get to 1.9 DFS"
+          },
+          {
+            "index": 2,
+            "text": "• Adding pool Δ¹⁴C pushes both sites to ≈ 3"
+          },
+          {
+            "index": 3,
+            "text": "DFS"
+          },
+          {
+            "index": 4,
+            "text": "• Adding respired Δ¹⁴C adds only ~0.1 DFS"
+          },
+          {
+            "index": 5,
+            "text": " "
+          },
+          {
+            "index": 6,
+            "text": "Saturation at 3 DFS = full constraint of a 3-pool"
+          },
+          {
+            "index": 7,
+            "text": "τ vector."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "C stocks alone get to 1.9 DFS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "C stocks alone get to 1.9 DFS",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Adding pool Δ¹⁴C pushes both sites to ≈ 3 DFS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Adding pool Δ¹⁴C pushes both sites to ≈ 3 DFS",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Adding respired Δ¹⁴C adds only ~0.1 DFS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Adding respired Δ¹⁴C adds only ~0.1 DFS",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Saturation at 3 DFS = full constraint of a 3-pool τ vector.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Saturation at 3 DFS = full constraint of a 3-pool τ vector.",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/snedsvml",
+      "id": "7",
+      "name": "Shape 4",
+      "bbox": [
+        892.8,
+        508.8,
+        340.8,
+        144
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jilcvq54",
+      "id": "8",
+      "name": "Text 5",
+      "bbox": [
+        907.2,
+        518.4,
+        312,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "THE OPPORTUNITY",
+      "textPreview": "THE OPPORTUNITY",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "THE OPPORTUNITY"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "THE OPPORTUNITY",
+          "runs": [
+            {
+              "index": 1,
+              "text": "THE OPPORTUNITY",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ihcvml4j",
+      "id": "9",
+      "name": "Text 6",
+      "bbox": [
+        907.2,
+        547.2,
+        312,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Adding model complexity (4-pool, depth-resolved) only helps if it adds new resolved dimensions.",
+      "textPreview": "Adding model complexity (4-pool, depth-resolved) only helps if it adds new resolved dimensions.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Adding model complexity (4-pool,"
+          },
+          {
+            "index": 2,
+            "text": "depth-resolved) only helps if it adds new"
+          },
+          {
+            "index": 3,
+            "text": "resolved dimensions."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Adding model complexity (4-pool, depth-resolved) only helps if it adds new resolved dimensions.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Adding model complexity (4-pool, depth-resolved) only helps if it adds new resolved dimensions.",
+              "fontSize": 14.67,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4by9or6l",
+      "id": "10",
+      "name": "Shape 7",
+      "bbox": [
+        57.6,
+        624,
+        1180.8,
+        67.2
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pc7qhwn6",
+      "id": "11",
+      "name": "Text 8",
+      "bbox": [
+        72,
+        624,
+        1152,
+        67.2
+      ],
+      "geometry": "rect",
+      "text": "Implication for model design   — a 3-pool model is the right complexity for these data.  Higher-resolution models will be prior-dominated unless paired with new observation types.",
+      "textPreview": "Implication for model design   — a 3-pool model is the right complexity for these data.  Higher-resolution models will be prior-dominated...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Implication for model design   — a 3-pool model is the right complexity for these data.  Higher-resolution models will be prior-dominated unless paired with new"
+          },
+          {
+            "index": 2,
+            "text": "observation types."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Implication for model design   — a 3-pool model is the right complexity for these data.  Higher-resolution models will be prior-dominated unless paired with new observation types.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Implication for model design  ",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": " — a 3-pool model is the right complexity for these data.  Higher-resolution models will be prior-dominated unless paired with new observation types.",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/29grm1of",
+      "id": "12",
+      "name": "Text 9",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "17 / 24",
+      "textPreview": "17 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "17 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "17 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "17 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

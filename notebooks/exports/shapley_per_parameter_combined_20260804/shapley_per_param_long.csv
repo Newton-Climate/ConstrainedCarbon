@@ -1,0 +1,721 @@
+site,label,biome,biome_group,family,n_obs_family,param,shapley_dfs
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,C_stocks,1,f_a_to_s,0.2187044158373907
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,C_stocks,1,f_s_to_p,0.10117974599787946
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,C_stocks,1,tau_active,0.030034800306552034
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,C_stocks,1,tau_passive,0.1360187843791582
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,C_stocks,1,tau_slow,0.0999595640270191
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,ER_annual,1,f_a_to_s,0.0005812066695128516
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,ER_annual,1,f_s_to_p,3.212727229656123e-05
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,ER_annual,1,tau_active,0.008068194603291608
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,ER_annual,1,tau_passive,4.2700052525365054e-05
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,ER_annual,1,tau_slow,0.00015205492121930043
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,bulk_14C,2,f_a_to_s,0.02021079539599071
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,bulk_14C,2,f_s_to_p,0.20900901736382474
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,bulk_14C,2,tau_active,0.07958454838037349
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,bulk_14C,2,tau_passive,0.2809711203514342
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,bulk_14C,2,tau_slow,0.2252287181575669
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_12C,0,f_a_to_s,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_12C,0,f_s_to_p,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_12C,0,tau_active,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_12C,0,tau_passive,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_12C,0,tau_slow,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_14C,0,f_a_to_s,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_14C,0,f_s_to_p,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_14C,0,tau_active,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_14C,0,tau_passive,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,fraction_14C,0,tau_slow,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,resp_14C,0,f_a_to_s,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,resp_14C,0,f_s_to_p,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,resp_14C,0,tau_active,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,resp_14C,0,tau_passive,0.0
+ARL,ARL (FluxCom fallback),temperate cultivated cropland,temperate_forest,resp_14C,0,tau_slow,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,C_stocks,1,f_a_to_s,0.12017138595768168
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,C_stocks,1,f_s_to_p,0.06100753127577214
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,C_stocks,1,tau_active,0.09626825941754721
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,C_stocks,1,tau_passive,0.07916300540115782
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,C_stocks,1,tau_slow,0.033090075792982176
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,ER_annual,1,f_a_to_s,2.911922737285072e-05
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,ER_annual,1,f_s_to_p,1.395653388111036e-06
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,ER_annual,1,tau_active,0.0001820683087775244
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,ER_annual,1,tau_passive,1.7886798104414841e-06
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,ER_annual,1,tau_slow,2.6894736396045634e-06
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,bulk_14C,0,f_a_to_s,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,bulk_14C,0,f_s_to_p,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,bulk_14C,0,tau_active,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,bulk_14C,0,tau_passive,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,bulk_14C,0,tau_slow,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_12C,3,f_a_to_s,0.20115637497560135
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_12C,3,f_s_to_p,0.2591703452467173
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_12C,3,tau_active,0.46708149318987824
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_12C,3,tau_passive,0.33629760932567687
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_12C,3,tau_slow,0.48381835486040314
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_14C,3,f_a_to_s,8.561263560383952e-09
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_14C,3,f_s_to_p,2.198947746555595e-09
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_14C,3,tau_active,1.630424505306832e-07
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_14C,3,tau_passive,2.859206288781888e-09
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,fraction_14C,3,tau_slow,1.6951658434660362e-08
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,resp_14C,0,f_a_to_s,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,resp_14C,0,f_s_to_p,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,resp_14C,0,tau_active,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,resp_14C,0,tau_passive,0.0
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),semi-arid montane grassland,grassland_mediterranean,resp_14C,0,tau_slow,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,C_stocks,1,f_a_to_s,0.002192260707185929
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,C_stocks,1,f_s_to_p,0.0018930217044621903
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,C_stocks,1,tau_active,0.00012145287654936066
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,C_stocks,1,tau_passive,0.006468345375645071
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,C_stocks,1,tau_slow,0.001581437574607058
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,ER_annual,2,f_a_to_s,6.350132617709953e-05
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,ER_annual,2,f_s_to_p,5.062841387005731e-06
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,ER_annual,2,tau_active,0.000625512033583034
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,ER_annual,2,tau_passive,1.2877922318134196e-06
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,ER_annual,2,tau_slow,1.391719224663011e-06
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,bulk_14C,1,f_a_to_s,0.016307739019476193
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,bulk_14C,1,f_s_to_p,0.086779765675273
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,bulk_14C,1,tau_active,0.007220799274032177
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,bulk_14C,1,tau_passive,0.2829298004908611
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,bulk_14C,1,tau_slow,0.19695039988337557
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_12C,0,f_a_to_s,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_12C,0,f_s_to_p,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_12C,0,tau_active,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_12C,0,tau_passive,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_12C,0,tau_slow,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_14C,0,f_a_to_s,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_14C,0,f_s_to_p,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_14C,0,tau_active,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_14C,0,tau_passive,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,fraction_14C,0,tau_slow,0.0
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,resp_14C,4,f_a_to_s,0.4393071108869046
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,resp_14C,4,f_s_to_p,0.48886568515103274
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,resp_14C,4,tau_active,0.003272422422341618
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,resp_14C,4,tau_passive,0.016593218575148574
+Adventdalen Valley,Adventdalen (SJ-Adv),high-arctic tundra/permafrost,arctic_permafrost,resp_14C,4,tau_slow,0.010812789451951448
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,C_stocks,1,f_a_to_s,0.01609316034720388
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,C_stocks,1,f_s_to_p,0.0021875933658339775
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,C_stocks,1,tau_active,0.000776302659137813
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,C_stocks,1,tau_passive,0.00273819755408132
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,C_stocks,1,tau_slow,0.01203858873425162
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,ER_annual,3,f_a_to_s,0.006339120583427623
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,ER_annual,3,f_s_to_p,0.0014551192965340301
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,ER_annual,3,tau_active,0.0862059635356253
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,ER_annual,3,tau_passive,6.297275597856762e-05
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,ER_annual,3,tau_slow,9.360398612158557e-05
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,bulk_14C,1,f_a_to_s,0.004236085324414238
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,bulk_14C,1,f_s_to_p,0.1749276900608862
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,bulk_14C,1,tau_active,0.007556299966571413
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,bulk_14C,1,tau_passive,0.23887851377298278
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,bulk_14C,1,tau_slow,0.13385690683467352
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_12C,0,f_a_to_s,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_12C,0,f_s_to_p,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_12C,0,tau_active,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_12C,0,tau_passive,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_12C,0,tau_slow,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_14C,0,f_a_to_s,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_14C,0,f_s_to_p,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_14C,0,tau_active,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_14C,0,tau_passive,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,fraction_14C,0,tau_slow,0.0
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,resp_14C,10,f_a_to_s,0.01207215223405392
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,resp_14C,10,f_s_to_p,0.03923424997511992
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,resp_14C,10,tau_active,0.3822929954253604
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,resp_14C,10,tau_passive,0.0031505165217740458
+Appi forest,Appi forest (JP-Api),temperate forest,temperate_forest,resp_14C,10,tau_slow,0.00684332165045057
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,C_stocks,1,f_a_to_s,0.08049365647342066
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,C_stocks,1,f_s_to_p,0.015350319541806549
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,C_stocks,1,tau_active,0.08228887057352686
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,C_stocks,1,tau_passive,0.017059932788509667
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,C_stocks,1,tau_slow,0.04812096433190476
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,ER_annual,3,f_a_to_s,0.016972222753036875
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,ER_annual,3,f_s_to_p,0.0012899924142386228
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,ER_annual,3,tau_active,0.139044991374157
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,ER_annual,3,tau_passive,0.0013747284326273725
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,ER_annual,3,tau_slow,0.0007395483597960853
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,bulk_14C,1,f_a_to_s,0.034649525053724296
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,bulk_14C,1,f_s_to_p,0.05904769944610479
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,bulk_14C,1,tau_active,0.19203696869558917
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,bulk_14C,1,tau_passive,0.07870307711664262
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,bulk_14C,1,tau_slow,0.0003837454977102026
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_12C,0,f_a_to_s,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_12C,0,f_s_to_p,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_12C,0,tau_active,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_12C,0,tau_passive,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_12C,0,tau_slow,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_14C,0,f_a_to_s,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_14C,0,f_s_to_p,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_14C,0,tau_active,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_14C,0,tau_passive,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,fraction_14C,0,tau_slow,0.0
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,resp_14C,2,f_a_to_s,0.009644031854635183
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,resp_14C,2,f_s_to_p,0.0034629557204880527
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,resp_14C,2,tau_active,0.34282615244979714
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,resp_14C,2,tau_passive,0.00681214528049514
+Auchencorth Moss,Auchencorth Moss (UK-AMo),temperate peatland,peatland,resp_14C,2,tau_slow,0.006314195151584441
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,C_stocks,1,f_a_to_s,0.1568237046221192
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,C_stocks,1,f_s_to_p,0.02956101477006273
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,C_stocks,1,tau_active,0.03693563050217043
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,C_stocks,1,tau_passive,0.03550000600742759
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,C_stocks,1,tau_slow,0.11222921267285166
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,ER_annual,1,f_a_to_s,5.7112389364123034e-05
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,ER_annual,1,f_s_to_p,2.314892654829306e-06
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,ER_annual,1,tau_active,0.0006284060657088607
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,ER_annual,1,tau_passive,2.738909297466702e-06
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,ER_annual,1,tau_slow,4.660045769547824e-06
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,bulk_14C,1,f_a_to_s,0.049552092907543505
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,bulk_14C,1,f_s_to_p,0.12644047023737423
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,bulk_14C,1,tau_active,0.13036340215548614
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,bulk_14C,1,tau_passive,0.15185278358649218
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,bulk_14C,1,tau_slow,0.011539286729575165
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_12C,0,f_a_to_s,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_12C,0,f_s_to_p,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_12C,0,tau_active,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_12C,0,tau_passive,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_12C,0,tau_slow,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_14C,0,f_a_to_s,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_14C,0,f_s_to_p,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_14C,0,tau_active,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_14C,0,tau_passive,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,fraction_14C,0,tau_slow,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,resp_14C,0,f_a_to_s,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,resp_14C,0,f_s_to_p,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,resp_14C,0,tau_active,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,resp_14C,0,tau_passive,0.0
+BCI,BCI (FluxCom fallback),tropical seasonal forest,tropical,resp_14C,0,tau_slow,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,C_stocks,1,f_a_to_s,0.20669207746930995
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,C_stocks,1,f_s_to_p,0.07394525239650247
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,C_stocks,1,tau_active,0.016264918191270926
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,C_stocks,1,tau_passive,0.08657267788387905
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,C_stocks,1,tau_slow,0.09610359256122873
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,ER_annual,0,f_a_to_s,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,ER_annual,0,f_s_to_p,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,ER_annual,0,tau_active,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,ER_annual,0,tau_passive,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,ER_annual,0,tau_slow,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,bulk_14C,1,f_a_to_s,0.003892350932147036
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,bulk_14C,1,f_s_to_p,0.12755105481329262
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,bulk_14C,1,tau_active,0.018627402540218455
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,bulk_14C,1,tau_passive,0.26553699412951903
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,bulk_14C,1,tau_slow,0.1791627853347363
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_12C,0,f_a_to_s,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_12C,0,f_s_to_p,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_12C,0,tau_active,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_12C,0,tau_passive,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_12C,0,tau_slow,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_14C,0,f_a_to_s,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_14C,0,f_s_to_p,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_14C,0,tau_active,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_14C,0,tau_passive,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,fraction_14C,0,tau_slow,0.0
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,resp_14C,2,f_a_to_s,0.0033457786769641733
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,resp_14C,2,f_s_to_p,0.04721243172507248
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,resp_14C,2,tau_active,0.01887466305678679
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,resp_14C,2,tau_passive,0.0034369079773798328
+Baram Basin,Lambir Hills (MY-LHP),tropical moist forest,tropical,resp_14C,2,tau_slow,0.019880289280105202
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,C_stocks,1,f_a_to_s,0.21652198412322382
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,C_stocks,1,f_s_to_p,0.13192852816258163
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,C_stocks,1,tau_active,0.054358151190094135
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,C_stocks,1,tau_passive,0.19276995728202945
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,C_stocks,1,tau_slow,0.053301481806206245
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,ER_annual,1,f_a_to_s,3.909335246674082e-05
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,ER_annual,1,f_s_to_p,1.169827810572364e-06
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,ER_annual,1,tau_active,0.00031922642330945626
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,ER_annual,1,tau_passive,1.719376165132515e-06
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,ER_annual,1,tau_slow,1.4225789534099493e-06
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,bulk_14C,0,f_a_to_s,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,bulk_14C,0,f_s_to_p,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,bulk_14C,0,tau_active,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,bulk_14C,0,tau_passive,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,bulk_14C,0,tau_slow,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_12C,3,f_a_to_s,0.09952610643230121
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_12C,3,f_s_to_p,0.16113345927968525
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_12C,3,tau_active,0.2562740872457408
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_12C,3,tau_passive,0.23544270226686972
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_12C,3,tau_slow,0.346901618032499
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_14C,3,f_a_to_s,2.3664897084335796e-09
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_14C,3,f_s_to_p,1.6374071437027002e-09
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_14C,3,tau_active,4.135009471216767e-07
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_14C,3,tau_passive,2.3957184336113286e-09
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,fraction_14C,3,tau_slow,1.9017127154164294e-09
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,resp_14C,0,f_a_to_s,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,resp_14C,0,f_s_to_p,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,resp_14C,0,tau_active,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,resp_14C,0,tau_passive,0.0
+CA_Mollisol,CA Mollisol (FluxCom fallback),Mediterranean coastal grassland,grassland_mediterranean,resp_14C,0,tau_slow,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,C_stocks,1,f_a_to_s,0.22687216102004581
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,C_stocks,1,f_s_to_p,0.05173963342471908
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,C_stocks,1,tau_active,0.05691727795116533
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,C_stocks,1,tau_passive,0.0804800923626384
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,C_stocks,1,tau_slow,0.16088584690486812
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,ER_annual,3,f_a_to_s,1.548566113406248e-06
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,ER_annual,3,f_s_to_p,9.080389489458903e-08
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,ER_annual,3,tau_active,3.80329895122564e-05
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,ER_annual,3,tau_passive,1.3247685199246738e-07
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,ER_annual,3,tau_slow,7.05065844794633e-07
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,bulk_14C,1,f_a_to_s,0.009339729425166943
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,bulk_14C,1,f_s_to_p,0.15543837506820454
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,bulk_14C,1,tau_active,0.04675892791506269
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,bulk_14C,1,tau_passive,0.20534916376883153
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,bulk_14C,1,tau_slow,0.10227666468561943
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_12C,0,f_a_to_s,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_12C,0,f_s_to_p,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_12C,0,tau_active,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_12C,0,tau_passive,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_12C,0,tau_slow,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_14C,0,f_a_to_s,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_14C,0,f_s_to_p,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_14C,0,tau_active,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_14C,0,tau_passive,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,fraction_14C,0,tau_slow,0.0
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,resp_14C,1,f_a_to_s,0.15124299701821406
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,resp_14C,1,f_s_to_p,0.03148705734307333
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,resp_14C,1,tau_active,0.015417344119005973
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,resp_14C,1,tau_passive,0.01141476134140804
+CZ_1964burn_NSA,1964 burn NSA (CA-NS4),boreal wet forest/fire chronosequence,boreal,resp_14C,1,tau_slow,0.003696323843345042
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,C_stocks,1,f_a_to_s,0.11585876786267721
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,C_stocks,1,f_s_to_p,0.03006680542580262
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,C_stocks,1,tau_active,0.08754726033575769
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,C_stocks,1,tau_passive,0.03676243663244949
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,C_stocks,1,tau_slow,0.04830534663395737
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,ER_annual,2,f_a_to_s,0.0006743515881014169
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,ER_annual,2,f_s_to_p,4.495408372041052e-05
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,ER_annual,2,tau_active,0.02238577385130554
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,ER_annual,2,tau_passive,5.211449842014636e-05
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,ER_annual,2,tau_slow,0.00011708782451796417
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,bulk_14C,1,f_a_to_s,0.033717245640220266
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,bulk_14C,1,f_s_to_p,0.07710877253840023
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,bulk_14C,1,tau_active,0.07999642558559407
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,bulk_14C,1,tau_passive,0.09695590753102044
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,bulk_14C,1,tau_slow,0.004902588834517298
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_12C,0,f_a_to_s,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_12C,0,f_s_to_p,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_12C,0,tau_active,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_12C,0,tau_passive,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_12C,0,tau_slow,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_14C,0,f_a_to_s,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_14C,0,f_s_to_p,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_14C,0,tau_active,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_14C,0,tau_passive,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,fraction_14C,0,tau_slow,0.0
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,resp_14C,1,f_a_to_s,0.05897543979168564
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,resp_14C,1,f_s_to_p,0.0019378545596480674
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,resp_14C,1,tau_active,0.05198514692523799
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,resp_14C,1,tau_passive,0.001201283611974853
+CZ_Old_Black_Spruce,Old Black Spruce (CA-NS1),boreal forest,boreal,resp_14C,1,tau_slow,0.00022715673348194793
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,C_stocks,1,f_a_to_s,0.130038041805382
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,C_stocks,1,f_s_to_p,0.05121735768550009
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,C_stocks,1,tau_active,0.05698827118306854
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,C_stocks,1,tau_passive,0.1873058717363129
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,C_stocks,1,tau_slow,0.22225594938674187
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,ER_annual,13,f_a_to_s,0.0056305495044519345
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,ER_annual,13,f_s_to_p,0.00031535394111485346
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,ER_annual,13,tau_active,0.060130547840365166
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,ER_annual,13,tau_passive,0.0005256164641445602
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,ER_annual,13,tau_slow,0.0020380496375695697
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,bulk_14C,1,f_a_to_s,0.021100942589806264
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,bulk_14C,1,f_s_to_p,0.11074928806727655
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,bulk_14C,1,tau_active,0.03285005915124177
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,bulk_14C,1,tau_passive,0.29032374597038774
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,bulk_14C,1,tau_slow,0.14909766186920226
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_12C,0,f_a_to_s,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_12C,0,f_s_to_p,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_12C,0,tau_active,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_12C,0,tau_passive,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_12C,0,tau_slow,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_14C,0,f_a_to_s,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_14C,0,f_s_to_p,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_14C,0,tau_active,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_14C,0,tau_passive,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,fraction_14C,0,tau_slow,0.0
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,resp_14C,12,f_a_to_s,0.4187859934299206
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,resp_14C,12,f_s_to_p,0.3241010715612084
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,resp_14C,12,tau_active,0.2169531355793466
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,resp_14C,12,tau_passive,0.09720723915507967
+EML,Eight Mile Lake (US-EML),tundra/permafrost,arctic_permafrost,resp_14C,12,tau_slow,0.03297655195687983
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,C_stocks,1,f_a_to_s,0.09691231915897533
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,C_stocks,1,f_s_to_p,0.024365645274244514
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,C_stocks,1,tau_active,0.09423345390856558
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,C_stocks,1,tau_passive,0.036690557069596064
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,C_stocks,1,tau_slow,0.05589712045204943
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,ER_annual,0,f_a_to_s,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,ER_annual,0,f_s_to_p,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,ER_annual,0,tau_active,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,ER_annual,0,tau_passive,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,ER_annual,0,tau_slow,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,bulk_14C,1,f_a_to_s,0.038088211070056
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,bulk_14C,1,f_s_to_p,0.23890783895101692
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,bulk_14C,1,tau_active,0.10704267770545565
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,bulk_14C,1,tau_passive,0.38882983731666915
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,bulk_14C,1,tau_slow,0.08745860202963074
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_12C,0,f_a_to_s,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_12C,0,f_s_to_p,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_12C,0,tau_active,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_12C,0,tau_passive,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_12C,0,tau_slow,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_14C,0,f_a_to_s,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_14C,0,f_s_to_p,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_14C,0,tau_active,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_14C,0,tau_passive,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,fraction_14C,0,tau_slow,0.0
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,resp_14C,3,f_a_to_s,0.21581061483065758
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,resp_14C,3,f_s_to_p,0.0606755899444255
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,resp_14C,3,tau_active,0.11351977965282922
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,resp_14C,3,tau_passive,0.05181979303437628
+FLONA,Santarém FLONA (BR-Sa3),tropical moist forest,tropical,resp_14C,3,tau_slow,0.014056711661900204
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,C_stocks,1,f_a_to_s,0.20032318397737758
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,C_stocks,1,f_s_to_p,0.12667251732305174
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,C_stocks,1,tau_active,0.08091042693102764
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,C_stocks,1,tau_passive,0.18464261073805477
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,C_stocks,1,tau_slow,0.04092316291324539
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,ER_annual,1,f_a_to_s,7.600849335480068e-06
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,ER_annual,1,f_s_to_p,5.418308845863886e-07
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,ER_annual,1,tau_active,0.00012529938392695234
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,ER_annual,1,tau_passive,8.044923653722668e-07
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,ER_annual,1,tau_slow,4.070296289091462e-07
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,bulk_14C,0,f_a_to_s,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,bulk_14C,0,f_s_to_p,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,bulk_14C,0,tau_active,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,bulk_14C,0,tau_passive,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,bulk_14C,0,tau_slow,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_12C,3,f_a_to_s,0.1145185402881997
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_12C,3,f_s_to_p,0.16293554626921303
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_12C,3,tau_active,0.3249289711093154
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_12C,3,tau_passive,0.23750107149327548
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_12C,3,tau_slow,0.3269901290975899
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_14C,3,f_a_to_s,4.9093418120675685e-09
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_14C,3,f_s_to_p,3.4357096080560938e-09
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_14C,3,tau_active,3.875633419325133e-07
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_14C,3,tau_passive,5.008280295440599e-09
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,fraction_14C,3,tau_slow,7.552918532944704e-08
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,resp_14C,0,f_a_to_s,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,resp_14C,0,f_s_to_p,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,resp_14C,0,tau_active,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,resp_14C,0,tau_passive,0.0
+HI_Andisol,HI Andisol (FluxCom fallback),tropical volcanic Andisol forest,tropical,resp_14C,0,tau_slow,0.0
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,C_stocks,1,f_a_to_s,0.0486103576367606
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,C_stocks,1,f_s_to_p,0.012182984952643819
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,C_stocks,1,tau_active,0.006806900657696067
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,C_stocks,1,tau_passive,0.006928049384275663
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,C_stocks,1,tau_slow,0.18115944546491836
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,ER_annual,17,f_a_to_s,0.13440166951002447
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,ER_annual,17,f_s_to_p,0.010054346152306132
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,ER_annual,17,tau_active,0.21384157462668985
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,ER_annual,17,tau_passive,0.008651861552153028
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,ER_annual,17,tau_slow,0.00853142237059352
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,bulk_14C,1,f_a_to_s,0.009049441554312566
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,bulk_14C,1,f_s_to_p,0.08433235750987447
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,bulk_14C,1,tau_active,0.032681083129223555
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,bulk_14C,1,tau_passive,0.13068144456502379
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,bulk_14C,1,tau_slow,0.20539930184242988
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_12C,4,f_a_to_s,0.10255654250500763
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_12C,4,f_s_to_p,0.20887019913522697
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_12C,4,tau_active,0.24734321697707962
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_12C,4,tau_passive,0.21366786417940584
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_12C,4,tau_slow,0.016737705030692388
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_14C,5,f_a_to_s,0.003002126521307594
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_14C,5,f_s_to_p,0.005359052488067988
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_14C,5,tau_active,0.038824346649396935
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_14C,5,tau_passive,0.03846521327462405
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,fraction_14C,5,tau_slow,0.04754601677650057
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,resp_14C,33,f_a_to_s,0.47166467581577975
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,resp_14C,33,f_s_to_p,0.190476589393319
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,resp_14C,33,tau_active,0.16314691720917654
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,resp_14C,33,tau_passive,0.006683436731967816
+Harvard Forest,Harvard Forest (US-Ha1),temperate deciduous forest,temperate_forest,resp_14C,33,tau_slow,0.019147581458762053
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,C_stocks,1,f_a_to_s,0.25815316532172755
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,C_stocks,1,f_s_to_p,0.01942183359134395
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,C_stocks,1,tau_active,0.014285771907333576
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,C_stocks,1,tau_passive,0.02699935078162238
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,C_stocks,1,tau_slow,0.4225182466565023
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,ER_annual,20,f_a_to_s,0.26120047887611775
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,ER_annual,20,f_s_to_p,0.030685217080828348
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,ER_annual,20,tau_active,0.39025822097795876
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,ER_annual,20,tau_passive,0.044741628918023954
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,ER_annual,20,tau_slow,0.06393630212096882
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,bulk_14C,5,f_a_to_s,0.009219244901625618
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,bulk_14C,5,f_s_to_p,0.05395366737535658
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,bulk_14C,5,tau_active,0.006153796479322565
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,bulk_14C,5,tau_passive,0.07628339364860508
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,bulk_14C,5,tau_slow,0.10782737359097355
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_12C,8,f_a_to_s,0.1332989223475253
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_12C,8,f_s_to_p,0.22724741733151646
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_12C,8,tau_active,0.09028437340552402
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_12C,8,tau_passive,0.31423045878151745
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_12C,8,tau_slow,0.047289295751521576
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_14C,9,f_a_to_s,0.10674787929453561
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_14C,9,f_s_to_p,0.025377665405945642
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_14C,9,tau_active,0.39357839206408957
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_14C,9,tau_passive,0.03768261286671111
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,fraction_14C,9,tau_slow,0.03618716974716962
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,resp_14C,17,f_a_to_s,0.004194433139973177
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,resp_14C,17,f_s_to_p,0.006698430876304097
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,resp_14C,17,tau_active,0.10509963325377561
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,resp_14C,17,tau_passive,0.002620340148250058
+Howland Forest,Howland Forest (US-Ho1),temperate coniferous forest,temperate_forest,resp_14C,17,tau_slow,0.0009077654636270209
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,C_stocks,1,f_a_to_s,0.19907062247510687
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,C_stocks,1,f_s_to_p,0.12277068426912648
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,C_stocks,1,tau_active,0.0686147089870448
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,C_stocks,1,tau_passive,0.1742571920115637
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,C_stocks,1,tau_slow,0.048086916853644274
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,ER_annual,1,f_a_to_s,0.00021078420164316524
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,ER_annual,1,f_s_to_p,6.593126347278768e-06
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,ER_annual,1,tau_active,0.0015852240797941401
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,ER_annual,1,tau_passive,9.316924477088844e-06
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,ER_annual,1,tau_slow,5.735988204482616e-06
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,bulk_14C,0,f_a_to_s,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,bulk_14C,0,f_s_to_p,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,bulk_14C,0,tau_active,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,bulk_14C,0,tau_passive,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,bulk_14C,0,tau_slow,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_12C,3,f_a_to_s,0.12042262201166865
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_12C,3,f_s_to_p,0.17594952916989942
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_12C,3,tau_active,0.32876328090125806
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_12C,3,tau_passive,0.2497353251756217
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_12C,3,tau_slow,0.39423335458188397
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_14C,1,f_a_to_s,2.307646613881545e-13
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_14C,1,f_s_to_p,5.673075138522013e-13
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_14C,1,tau_active,1.0297824514412153e-13
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_14C,1,tau_passive,6.754487068861473e-12
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,fraction_14C,1,tau_slow,2.441229366961067e-13
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,resp_14C,0,f_a_to_s,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,resp_14C,0,f_s_to_p,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,resp_14C,0,tau_active,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,resp_14C,0,tau_passive,0.0
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),tropical wet montane forest,tropical,resp_14C,0,tau_slow,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,C_stocks,1,f_a_to_s,0.07510125142675414
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,C_stocks,1,f_s_to_p,0.031335031337253454
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,C_stocks,1,tau_active,0.11547601847300337
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,C_stocks,1,tau_passive,0.039283154791446985
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,C_stocks,1,tau_slow,0.020048497097152708
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,ER_annual,0,f_a_to_s,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,ER_annual,0,f_s_to_p,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,ER_annual,0,tau_active,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,ER_annual,0,tau_passive,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,ER_annual,0,tau_slow,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,bulk_14C,1,f_a_to_s,0.003311276734715387
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,bulk_14C,1,f_s_to_p,0.005636407927595028
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,bulk_14C,1,tau_active,0.0031588160476149385
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,bulk_14C,1,tau_passive,0.007144535165815619
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,bulk_14C,1,tau_slow,0.02454817015123575
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_12C,3,f_a_to_s,0.23694883039499018
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_12C,3,f_s_to_p,0.254082985058405
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_12C,3,tau_active,0.38974778636753415
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_12C,3,tau_passive,0.31849370477044125
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_12C,3,tau_slow,0.41158692231811167
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_14C,3,f_a_to_s,2.388954405182639e-05
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_14C,3,f_s_to_p,9.64196571655525e-06
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_14C,3,tau_active,0.00025224504798620784
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_14C,3,tau_passive,1.3817160500194393e-05
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,fraction_14C,3,tau_slow,0.000316144634134133
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,resp_14C,0,f_a_to_s,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,resp_14C,0,f_s_to_p,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,resp_14C,0,tau_active,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,resp_14C,0,tau_passive,0.0
+MI-Coarse UMBS,UMBS (US-UMB),temperate mixed forest,temperate_forest,resp_14C,0,tau_slow,0.0
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,C_stocks,1,f_a_to_s,0.09939148811026849
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,C_stocks,1,f_s_to_p,0.05510212813921312
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,C_stocks,1,tau_active,0.034620269257243125
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,C_stocks,1,tau_passive,0.07288607708436112
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,C_stocks,1,tau_slow,0.021099187473759967
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,ER_annual,3,f_a_to_s,0.05312089514357547
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,ER_annual,3,f_s_to_p,0.0017635852799544709
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,ER_annual,3,tau_active,0.2917415548732274
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,ER_annual,3,tau_passive,0.0023714273331563764
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,ER_annual,3,tau_slow,0.004134785947792627
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,bulk_14C,1,f_a_to_s,0.00041496486844945886
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,bulk_14C,1,f_s_to_p,0.0008771800221861962
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,bulk_14C,1,tau_active,0.001884669799646041
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,bulk_14C,1,tau_passive,0.001318701210573169
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,bulk_14C,1,tau_slow,0.003818523003183353
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_12C,3,f_a_to_s,0.24202036326958165
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_12C,3,f_s_to_p,0.2564516956303077
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_12C,3,tau_active,0.26995208426129896
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_12C,3,tau_passive,0.3394894367413445
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_12C,3,tau_slow,0.4620988088861464
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_14C,3,f_a_to_s,0.003558634535349716
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_14C,3,f_s_to_p,0.0014470023911829979
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_14C,3,tau_active,0.09587226896147631
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_14C,3,tau_passive,0.0019219548184713417
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,fraction_14C,3,tau_slow,0.009270023203543084
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,resp_14C,0,f_a_to_s,0.0
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,resp_14C,0,f_s_to_p,0.0
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,resp_14C,0,tau_active,0.0
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,resp_14C,0,tau_passive,0.0
+MO Ozark BREA,Missouri Ozark (US-MOz),temperate deciduous forest,temperate_forest,resp_14C,0,tau_slow,0.0
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,C_stocks,1,f_a_to_s,0.15181961971091942
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,C_stocks,1,f_s_to_p,0.08825126998888384
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,C_stocks,1,tau_active,0.09318389224102944
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,C_stocks,1,tau_passive,0.12027907719073369
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,C_stocks,1,tau_slow,0.028750842664108905
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,ER_annual,14,f_a_to_s,0.003574382125983283
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,ER_annual,14,f_s_to_p,0.00016588661120068966
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,ER_annual,14,tau_active,0.030503251118122417
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,ER_annual,14,tau_passive,0.00022715292352165273
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,ER_annual,14,tau_slow,0.00017678826087287903
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,bulk_14C,1,f_a_to_s,0.017677368633253535
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,bulk_14C,1,f_s_to_p,0.01611542250404621
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,bulk_14C,1,tau_active,0.020294774641908524
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,bulk_14C,1,tau_passive,0.0219889541631653
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,bulk_14C,1,tau_slow,0.003040295736936757
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_12C,3,f_a_to_s,0.15650813101619998
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_12C,3,f_s_to_p,0.1937402998931678
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_12C,3,tau_active,0.3362491729956607
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_12C,3,tau_passive,0.26406211168331417
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_12C,3,tau_slow,0.3921418250728752
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_14C,3,f_a_to_s,0.00304322479900868
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_14C,3,f_s_to_p,0.0016725827623065136
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_14C,3,tau_active,0.07240971723747505
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_14C,3,tau_passive,0.0022797576540442175
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,fraction_14C,3,tau_slow,0.049984593301089425
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,resp_14C,0,f_a_to_s,0.0
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,resp_14C,0,f_s_to_p,0.0
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,resp_14C,0,tau_active,0.0
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,resp_14C,0,tau_passive,0.0
+NH Bartlett Forest,Bartlett Forest (US-Bar),temperate mixed forest,temperate_forest,resp_14C,0,tau_slow,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,C_stocks,1,f_a_to_s,0.197903074893373
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,C_stocks,1,f_s_to_p,0.06962145157800567
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,C_stocks,1,tau_active,0.019395338210197517
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,C_stocks,1,tau_passive,0.08985107104694695
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,C_stocks,1,tau_slow,0.11255669286990426
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,ER_annual,1,f_a_to_s,0.0003918705831286003
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,ER_annual,1,f_s_to_p,2.5216694709828198e-05
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,ER_annual,1,tau_active,0.008144992942297282
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,ER_annual,1,tau_passive,3.2638796560107285e-05
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,ER_annual,1,tau_slow,0.0001163891591838034
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,bulk_14C,1,f_a_to_s,0.011605030450468765
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,bulk_14C,1,f_s_to_p,0.25308536980953755
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,bulk_14C,1,tau_active,0.05133351733211937
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,bulk_14C,1,tau_passive,0.3266349908781461
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,bulk_14C,1,tau_slow,0.24621138956652133
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_12C,0,f_a_to_s,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_12C,0,f_s_to_p,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_12C,0,tau_active,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_12C,0,tau_passive,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_12C,0,tau_slow,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_14C,0,f_a_to_s,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_14C,0,f_s_to_p,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_14C,0,tau_active,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_14C,0,tau_passive,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,fraction_14C,0,tau_slow,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,resp_14C,0,f_a_to_s,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,resp_14C,0,f_s_to_p,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,resp_14C,0,tau_active,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,resp_14C,0,tau_passive,0.0
+Nahuelbuta,Nahuelbuta (FluxCom fallback),temperate montane forest,temperate_forest,resp_14C,0,tau_slow,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,C_stocks,1,f_a_to_s,0.20394255840222048
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,C_stocks,1,f_s_to_p,0.07562766809547117
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,C_stocks,1,tau_active,0.025001567462694208
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,C_stocks,1,tau_passive,0.09814660498347957
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,C_stocks,1,tau_slow,0.11371003431812625
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,ER_annual,1,f_a_to_s,1.7119096137294162e-07
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,ER_annual,1,f_s_to_p,1.2106301624496877e-07
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,ER_annual,1,tau_active,3.2184663421902174e-05
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,ER_annual,1,tau_passive,1.6895609671018924e-07
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,ER_annual,1,tau_slow,6.071248461970621e-07
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,bulk_14C,1,f_a_to_s,0.013371981033312719
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,bulk_14C,1,f_s_to_p,0.25162833083180164
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,bulk_14C,1,tau_active,0.060163860646235974
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,bulk_14C,1,tau_passive,0.3265685733560932
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,bulk_14C,1,tau_slow,0.24943158833574092
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_12C,0,f_a_to_s,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_12C,0,f_s_to_p,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_12C,0,tau_active,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_12C,0,tau_passive,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_12C,0,tau_slow,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_14C,0,f_a_to_s,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_14C,0,f_s_to_p,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_14C,0,tau_active,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_14C,0,tau_passive,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,fraction_14C,0,tau_slow,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,resp_14C,0,f_a_to_s,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,resp_14C,0,f_s_to_p,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,resp_14C,0,tau_active,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,resp_14C,0,tau_passive,0.0
+Santa Gracia,Santa Gracia (FluxCom fallback),semi-arid mediterranean shrubland,grassland_mediterranean,resp_14C,0,tau_slow,0.0
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,C_stocks,1,f_a_to_s,0.1308411491122686
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,C_stocks,1,f_s_to_p,0.09839734752957399
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,C_stocks,1,tau_active,0.1122465413566228
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,C_stocks,1,tau_passive,0.14988619806483033
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,C_stocks,1,tau_slow,0.059744033334193834
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,ER_annual,2,f_a_to_s,0.009717384477211592
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,ER_annual,2,f_s_to_p,0.0003157138639829166
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,ER_annual,2,tau_active,0.03829111317690353
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,ER_annual,2,tau_passive,0.00047461830855970074
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,ER_annual,2,tau_slow,0.000384203150701023
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,bulk_14C,1,f_a_to_s,0.00021083835672877012
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,bulk_14C,1,f_s_to_p,1.9367953839584688e-05
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,bulk_14C,1,tau_active,0.0006557532750350669
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,bulk_14C,1,tau_passive,2.936564078640442e-05
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,bulk_14C,1,tau_slow,0.0003334595612808311
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_12C,3,f_a_to_s,0.1294013547543449
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_12C,3,f_s_to_p,0.2058269277948789
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_12C,3,tau_active,0.4872768801267169
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_12C,3,tau_passive,0.31508858379811555
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_12C,3,tau_slow,0.5128846341089125
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_14C,3,f_a_to_s,5.195008362815416e-10
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_14C,3,f_s_to_p,2.2034729739085383e-10
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_14C,3,tau_active,1.9165468101191585e-08
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_14C,3,tau_passive,3.337330012560525e-10
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,fraction_14C,3,tau_slow,1.5185761069610902e-09
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,resp_14C,1,f_a_to_s,0.04628919530366048
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,resp_14C,1,f_s_to_p,0.00210393124979421
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,resp_14C,1,tau_active,0.0008487273715915884
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,resp_14C,1,tau_passive,0.0009112299141681849
+Solling,Solling/Reinshof (DE-Rns),temperate forest,temperate_forest,resp_14C,1,tau_slow,0.001794405783332269
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,C_stocks,1,f_a_to_s,0.20442284560180354
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,C_stocks,1,f_s_to_p,0.05140196653633329
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,C_stocks,1,tau_active,0.027481116873363735
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,C_stocks,1,tau_passive,0.06367600889773686
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,C_stocks,1,tau_slow,0.13520951072565704
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,ER_annual,1,f_a_to_s,0.00019038935391043978
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,ER_annual,1,f_s_to_p,1.2531003022081292e-05
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,ER_annual,1,tau_active,0.003214073952548699
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,ER_annual,1,tau_passive,1.5433737633736633e-05
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,ER_annual,1,tau_slow,5.350167487852236e-05
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,bulk_14C,1,f_a_to_s,0.015052999316100392
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,bulk_14C,1,f_s_to_p,0.2663898258892943
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,bulk_14C,1,tau_active,0.0626792509621387
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,bulk_14C,1,tau_passive,0.32999875573453186
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,bulk_14C,1,tau_slow,0.19483370482379284
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_12C,0,f_a_to_s,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_12C,0,f_s_to_p,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_12C,0,tau_active,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_12C,0,tau_passive,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_12C,0,tau_slow,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_14C,0,f_a_to_s,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_14C,0,f_s_to_p,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_14C,0,tau_active,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_14C,0,tau_passive,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,fraction_14C,0,tau_slow,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,resp_14C,0,f_a_to_s,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,resp_14C,0,f_s_to_p,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,resp_14C,0,tau_active,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,resp_14C,0,tau_passive,0.0
+Willow Creek,Willow Creek (FluxCom fallback),cool temperate forest,temperate_forest,resp_14C,0,tau_slow,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,C_stocks,1,f_a_to_s,0.14676915614106914
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,C_stocks,1,f_s_to_p,0.018284985870855305
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,C_stocks,1,tau_active,0.03937149023280363
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,C_stocks,1,tau_passive,0.024974444585101924
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,C_stocks,1,tau_slow,0.1277632910582353
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,ER_annual,0,f_a_to_s,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,ER_annual,0,f_s_to_p,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,ER_annual,0,tau_active,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,ER_annual,0,tau_passive,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,ER_annual,0,tau_slow,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,bulk_14C,1,f_a_to_s,0.017028399372630374
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,bulk_14C,1,f_s_to_p,0.22578977312396986
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,bulk_14C,1,tau_active,0.05160360115942832
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,bulk_14C,1,tau_passive,0.2922612034578165
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,bulk_14C,1,tau_slow,0.11052309197869173
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_12C,0,f_a_to_s,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_12C,0,f_s_to_p,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_12C,0,tau_active,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_12C,0,tau_passive,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_12C,0,tau_slow,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_14C,0,f_a_to_s,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_14C,0,f_s_to_p,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_14C,0,tau_active,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_14C,0,tau_passive,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,fraction_14C,0,tau_slow,0.0
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,resp_14C,1,f_a_to_s,0.07612912236138239
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,resp_14C,1,f_s_to_p,0.02241824863568271
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,resp_14C,1,tau_active,0.06728394944928016
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,resp_14C,1,tau_passive,0.007210063974937488
+ZF2,Manaus ZF2 (BR-Ma2),tropical moist forest,tropical,resp_14C,1,tau_slow,0.0038474063708037235

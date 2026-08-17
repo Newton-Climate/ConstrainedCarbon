@@ -1,0 +1,13 @@
+site,label,tower_id,biome,mean_GPP_gCm2yr,SOC_gCm2,n_cstock,n_pool_blocks,n_resp,n_incubation,tau_active_yr,tau_slow_yr,tau_passive_yr,J0,J_final,converged,n_iter
+MO Ozark BREA,Missouri Ozark (US-MOz),US-MOz,temperate deciduous forest,1630,10355,1,4,0,0,3.09,15.85,240.0,31.3,29.6,True,15
+MI-Coarse UMBS,UMBS (US-UMB),US-UMB,temperate mixed forest,1387,17556,1,4,0,0,1.88,25.45,170.8,2.3,1.7,True,8
+NH Bartlett Forest,Bartlett Forest (US-Bar),US-Bar,temperate mixed forest,1315,12118,1,4,0,0,2.2,21.83,207.1,3.6,3.5,True,11
+ARL,ARL (FluxCom fallback),,temperate cultivated cropland,1233,11797,1,2,0,0,1.54,12.8,303.6,30.3,2.9,True,18
+AZ_Mollisol,AZ Mollisol (FluxCom fallback),,semi-arid montane grassland,592,5062,1,3,0,0,2.01,20.33,203.4,0.0,0.0,True,3
+BCI,BCI (FluxCom fallback),,tropical seasonal forest,2244,5990,1,1,0,0,2.39,21.55,169.8,1.6,0.9,True,6
+CA_Mollisol,CA Mollisol (FluxCom fallback),,Mediterranean coastal grassland,637,4767,1,3,0,0,2.01,20.33,203.3,0.0,0.0,True,3
+HI_Andisol,HI Andisol (FluxCom fallback),,tropical volcanic Andisol forest,1652,9587,1,3,0,0,2.01,20.19,201.9,0.0,0.0,True,3
+Luquillo_Experimental_Forest,Luquillo Experimental Forest (FluxCom fallback),,tropical wet montane forest,1952,6506,1,1,0,0,2.01,20.18,201.8,0.0,0.0,True,3
+Nahuelbuta,Nahuelbuta (FluxCom fallback),,temperate montane forest,1576,10055,1,1,0,1,2.0,36.98,361.1,333.1,44.7,True,37
+Santa Gracia,Santa Gracia (FluxCom fallback),,semi-arid mediterranean shrubland,96,549,1,1,0,1,1.92,18.36,274.2,22.0,3.2,True,8
+Willow Creek,Willow Creek (FluxCom fallback),,cool temperate forest,1259,15296,1,1,0,0,1.94,18.94,203.5,0.1,0.0,True,3

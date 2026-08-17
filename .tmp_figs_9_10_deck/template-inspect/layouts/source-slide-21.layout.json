@@ -1,0 +1,1090 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/m1wvqtk3",
+    "id": "m1wvqtk3",
+    "slide": 21,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#1F3A2E",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1gbmxs7a",
+      "id": "2",
+      "name": "Shape 0",
+      "bbox": [
+        0,
+        0,
+        24,
+        720
+      ],
+      "geometry": "rect",
+      "fillColor": "#D4A574",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0f2lon6p",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        86.4,
+        57.6,
+        1152,
+        38.4
+      ],
+      "geometry": "rect",
+      "text": "CONCLUSIONS",
+      "textPreview": "CONCLUSIONS",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CONCLUSIONS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CONCLUSIONS",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CONCLUSIONS",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ra9kryp8",
+      "id": "4",
+      "name": "Text 2",
+      "bbox": [
+        86.4,
+        96,
+        1152,
+        67.2
+      ],
+      "geometry": "rect",
+      "text": "Four takeaways",
+      "textPreview": "Four takeaways",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Four takeaways"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Four takeaways",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Four takeaways",
+              "fontSize": 42.67,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qp03yt8n",
+      "id": "5",
+      "name": "Shape 3",
+      "bbox": [
+        86.4,
+        192,
+        571.2,
+        240
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dcb2t87y",
+      "id": "6",
+      "name": "Text 4",
+      "bbox": [
+        105.6,
+        211.2,
+        115.2,
+        115.2
+      ],
+      "geometry": "rect",
+      "text": "01",
+      "textPreview": "01",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "01"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "01",
+          "runs": [
+            {
+              "index": 1,
+              "text": "01",
+              "fontSize": 58.67,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sb2lk36t",
+      "id": "7",
+      "name": "Text 5",
+      "bbox": [
+        230.4,
+        216,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Information content of ¹⁴C is ecosystem-specific.",
+      "textPreview": "Information content of ¹⁴C is ecosystem-specific.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Information content of ¹⁴C is"
+          },
+          {
+            "index": 2,
+            "text": "ecosystem-specific."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Information content of ¹⁴C is ecosystem-specific.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Information content of ¹⁴C is ecosystem-specific.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/b6d432pc",
+      "id": "8",
+      "name": "Text 6",
+      "bbox": [
+        230.4,
+        316.8,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Respired Δ¹⁴C carries 2.06 DFS at HF but only 1.06 at Barrow — the frozen passive pool is invisible to surface respiration.",
+      "textPreview": "Respired Δ¹⁴C carries 2.06 DFS at HF but only 1.06 at Barrow — the frozen passive pool is invisible to surface respiration.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Respired Δ¹⁴C carries 2.06 DFS at HF but only 1.06 at Barrow"
+          },
+          {
+            "index": 2,
+            "text": "— the frozen passive pool is invisible to surface respiration."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Respired Δ¹⁴C carries 2.06 DFS at HF but only 1.06 at Barrow — the frozen passive pool is invisible to surface respiration.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Respired Δ¹⁴C carries 2.06 DFS at HF but only 1.06 at Barrow — the frozen passive pool is invisible to surface respiration.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/al43uxor",
+      "id": "9",
+      "name": "Shape 7",
+      "bbox": [
+        696,
+        192,
+        571.2,
+        240
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4jax4nqd",
+      "id": "10",
+      "name": "Text 8",
+      "bbox": [
+        715.2,
+        211.2,
+        115.2,
+        115.2
+      ],
+      "geometry": "rect",
+      "text": "02",
+      "textPreview": "02",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "02",
+          "runs": [
+            {
+              "index": 1,
+              "text": "02",
+              "fontSize": 58.67,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/5kjydsri",
+      "id": "11",
+      "name": "Text 9",
+      "bbox": [
+        840,
+        216,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Data wants older deep C and younger transitional C.",
+      "textPreview": "Data wants older deep C and younger transitional C.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Data wants older deep C and younger"
+          },
+          {
+            "index": 2,
+            "text": "transitional C."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Data wants older deep C and younger transitional C.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Data wants older deep C and younger transitional C.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ixsf2d87",
+      "id": "12",
+      "name": "Text 10",
+      "bbox": [
+        840,
+        316.8,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Posterior τ_passive increases 3.1× at HF and 1.6× at Barrow; τ_slow shortens to 0.57× at Barrow. Literature priors are site-biased.",
+      "textPreview": "Posterior τ_passive increases 3.1× at HF and 1.6× at Barrow; τ_slow shortens to 0.57× at Barrow. Literature priors are site-biased.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Posterior τ_passive increases 3.1× at HF and 1.6× at Barrow;"
+          },
+          {
+            "index": 2,
+            "text": "τ_slow shortens to 0.57× at Barrow. Literature priors are"
+          },
+          {
+            "index": 3,
+            "text": "site-biased."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Posterior τ_passive increases 3.1× at HF and 1.6× at Barrow; τ_slow shortens to 0.57× at Barrow. Literature priors are site-biased.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Posterior τ_passive increases 3.1× at HF and 1.6× at Barrow; τ_slow shortens to 0.57× at Barrow. Literature priors are site-biased.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/jy1gbi9s",
+      "id": "13",
+      "name": "Shape 11",
+      "bbox": [
+        86.4,
+        460.8,
+        571.2,
+        240
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wvax03q1",
+      "id": "14",
+      "name": "Text 12",
+      "bbox": [
+        105.6,
+        480,
+        115.2,
+        115.2
+      ],
+      "geometry": "rect",
+      "text": "03",
+      "textPreview": "03",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "03"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "03",
+          "runs": [
+            {
+              "index": 1,
+              "text": "03",
+              "fontSize": 58.67,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hwjy98rm",
+      "id": "15",
+      "name": "Text 13",
+      "bbox": [
+        230.4,
+        484.8,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Total information saturates at ≈ 3 DFS.",
+      "textPreview": "Total information saturates at ≈ 3 DFS.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Total information saturates at ≈ 3 DFS."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Total information saturates at ≈ 3 DFS.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Total information saturates at ≈ 3 DFS.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/utsfyt8v",
+      "id": "16",
+      "name": "Text 14",
+      "bbox": [
+        230.4,
+        585.6,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Adding observation types beyond C stocks + pool Δ¹⁴C yields diminishing returns. A 3-pool model is the right complexity for available data.",
+      "textPreview": "Adding observation types beyond C stocks + pool Δ¹⁴C yields diminishing returns. A 3-pool model is the right complexity for available data.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Adding observation types beyond C stocks + pool Δ¹⁴C yields"
+          },
+          {
+            "index": 2,
+            "text": "diminishing returns. A 3-pool model is the right complexity for"
+          },
+          {
+            "index": 3,
+            "text": "available data."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Adding observation types beyond C stocks + pool Δ¹⁴C yields diminishing returns. A 3-pool model is the right complexity for available data.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Adding observation types beyond C stocks + pool Δ¹⁴C yields diminishing returns. A 3-pool model is the right complexity for available data.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/vu1w7y9g",
+      "id": "17",
+      "name": "Shape 15",
+      "bbox": [
+        696,
+        460.8,
+        571.2,
+        240
+      ],
+      "geometry": "rect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#D4A574",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8rqxw3q5",
+      "id": "18",
+      "name": "Text 16",
+      "bbox": [
+        715.2,
+        480,
+        115.2,
+        115.2
+      ],
+      "geometry": "rect",
+      "text": "04",
+      "textPreview": "04",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "04"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "04",
+          "runs": [
+            {
+              "index": 1,
+              "text": "04",
+              "fontSize": 58.67,
+              "typeface": "Georgia",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9sze58rq",
+      "id": "19",
+      "name": "Text 17",
+      "bbox": [
+        840,
+        484.8,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "CLM5 is too modern at both sites, and fails badly at Barrow.",
+      "textPreview": "CLM5 is too modern at both sites, and fails badly at Barrow.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CLM5 is too modern at both sites, and"
+          },
+          {
+            "index": 2,
+            "text": "fails badly at Barrow."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CLM5 is too modern at both sites, and fails badly at Barrow.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLM5 is too modern at both sites, and fails badly at Barrow.",
+              "fontSize": 20,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/porutkje",
+      "id": "20",
+      "name": "Text 18",
+      "bbox": [
+        840,
+        585.6,
+        408,
+        96
+      ],
+      "geometry": "rect",
+      "text": "Fit our 3-pool model to CLM5 stocks + Rh (no ¹⁴C); hold out observed respired Δ¹⁴C as validation. HF RMSE 21.0 ‰, Barrow RMSE 56.9 ‰ with +53.3 ‰ bias. The Barrow mismatch is especially severe where ¹⁴C resolves otherwise ambiguous τ directions.",
+      "textPreview": "Fit our 3-pool model to CLM5 stocks + Rh (no ¹⁴C); hold out observed respired Δ¹⁴C as validation. HF RMSE 21.0 ‰, Barrow RMSE 56.9 ‰ with...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Fit our 3-pool model to CLM5 stocks + Rh (no ¹⁴C); hold out"
+          },
+          {
+            "index": 2,
+            "text": "observed respired Δ¹⁴C as validation. HF RMSE 21.0 ‰,"
+          },
+          {
+            "index": 3,
+            "text": "Barrow RMSE 56.9 ‰ with +53.3 ‰ bias. The Barrow"
+          },
+          {
+            "index": 4,
+            "text": "mismatch is especially severe where ¹⁴C resolves otherwise"
+          },
+          {
+            "index": 5,
+            "text": "ambiguous τ directions."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Fit our 3-pool model to CLM5 stocks + Rh (no ¹⁴C); hold out observed respired Δ¹⁴C as validation. HF RMSE 21.0 ‰, Barrow RMSE 56.9 ‰ with +53.3 ‰ bias. The Barrow mismatch is especially severe where ¹⁴C resolves otherwise ambiguous τ directions.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Fit our 3-pool model to CLM5 stocks + Rh (no ¹⁴C); hold out observed respired Δ¹⁴C as validation. HF RMSE 21.0 ‰, Barrow RMSE 56.9 ‰ with +53.3 ‰ bias. The Barrow mismatch is especially severe where ¹⁴C resolves otherwise ambiguous τ directions.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/onid0f2t",
+      "id": "21",
+      "name": "Text 19",
+      "bbox": [
+        86.4,
+        672,
+        1152,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "Newton H. Nguyen  ·  nnewton@stanford.edu",
+      "textPreview": "Newton H. Nguyen  ·  nnewton@stanford.edu",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Newton H. Nguyen  ·  nnewton@stanford.edu"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Newton H. Nguyen  ·  nnewton@stanford.edu",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Newton H. Nguyen  ·  nnewton@stanford.edu",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#D4A574"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

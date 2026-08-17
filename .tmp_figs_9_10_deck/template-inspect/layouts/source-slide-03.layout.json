@@ -1,0 +1,581 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/ofy9wn61",
+    "id": "ofy9wn61",
+    "slide": 3,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cza94vmx",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "MOTIVATION  ·  02",
+      "textPreview": "MOTIVATION  ·  02",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "MOTIVATION  ·  02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "MOTIVATION  ·  02",
+          "runs": [
+            {
+              "index": 1,
+              "text": "MOTIVATION  ·  02",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/d0jax03i",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Earth System Models disagree on soil-carbon vulnerability",
+      "textPreview": "Earth System Models disagree on soil-carbon vulnerability",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Earth System Models disagree on soil-carbon vulnerability"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Earth System Models disagree on soil-carbon vulnerability",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Earth System Models disagree on soil-carbon vulnerability",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/rqxozmh4",
+      "id": "8",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        168,
+        569.28,
+        470.4
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-3-1.png",
+        "contentType": "image/png",
+        "byteLength": 24657
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-3-1.png",
+        "contentType": "image/png",
+        "byteLength": 24657
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3ah8rqlg",
+      "id": "5",
+      "name": "Text 2",
+      "bbox": [
+        57.6,
+        643.2,
+        569.28,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "Observed (a, b) vs modelled (c–f) soil-C Δ¹⁴C distributions, by biome  ·  Shi et al. 2020, Fig. 3",
+      "textPreview": "Observed (a, b) vs modelled (c–f) soil-C Δ¹⁴C distributions, by biome  ·  Shi et al. 2020, Fig. 3",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Observed (a, b) vs modelled (c–f) soil-C Δ¹⁴C distributions, by biome  ·  Shi et al. 2020, Fig. 3"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Observed (a, b) vs modelled (c–f) soil-C Δ¹⁴C distributions, by biome  ·  Shi et al. 2020, Fig. 3",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Observed (a, b) vs modelled (c–f) soil-C Δ¹⁴C distributions, by biome  ·  Shi et al. 2020, Fig. 3",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/obq90bml",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        652.8,
+        177.6,
+        566.4,
+        480
+      ],
+      "geometry": "rect",
+      "text": "The disagreement\n \nObservations (a, b): heavy tails of depleted Δ¹⁴C — old C is real.\n \nModels (c–f): distributions cluster near atmospheric Δ¹⁴C — old C is missing.\n \nWhy it matters\n \nTurnover time × stock = climate-feedback potential.\n \nWithout ¹⁴C constraints we cannot tell which ESM is right.",
+      "textPreview": "The disagreement |   | Observations (a, b): heavy tails of depleted Δ¹⁴C — old C is real. |   | Models (c–f): distributions cluster near ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 12,
+        "lines": [
+          {
+            "index": 1,
+            "text": "The disagreement"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "Observations (a, b): heavy tails of depleted Δ¹⁴C — old C is real."
+          },
+          {
+            "index": 4,
+            "text": " "
+          },
+          {
+            "index": 5,
+            "text": "Models (c–f): distributions cluster near atmospheric Δ¹⁴C — old C is"
+          },
+          {
+            "index": 6,
+            "text": "missing."
+          },
+          {
+            "index": 7,
+            "text": " "
+          },
+          {
+            "index": 8,
+            "text": "Why it matters"
+          },
+          {
+            "index": 9,
+            "text": " "
+          },
+          {
+            "index": 10,
+            "text": "Turnover time × stock = climate-feedback potential."
+          },
+          {
+            "index": 11,
+            "text": " "
+          },
+          {
+            "index": 12,
+            "text": "Without ¹⁴C constraints we cannot tell which ESM is right."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "The disagreement",
+          "runs": [
+            {
+              "index": 1,
+              "text": "The disagreement",
+              "fontSize": 21.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 8,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Observations (a, b): heavy tails of depleted Δ¹⁴C — old C is real.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Observations (a, b): heavy tails of depleted Δ¹⁴C — old C is real.",
+              "fontSize": 18,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 6.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Models (c–f): distributions cluster near atmospheric Δ¹⁴C — old C is missing.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Models (c–f): distributions cluster near atmospheric Δ¹⁴C — old C is missing.",
+              "fontSize": 18,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 6,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 10.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "Why it matters",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Why it matters",
+              "fontSize": 21.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 8,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 8,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 9,
+          "text": "Turnover time × stock = climate-feedback potential.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Turnover time × stock = climate-feedback potential.",
+              "fontSize": 18,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 10,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 6.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 11,
+          "text": "Without ¹⁴C constraints we cannot tell which ESM is right.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Without ¹⁴C constraints we cannot tell which ESM is right.",
+              "fontSize": 18,
+              "typeface": "Calibri",
+              "color": "#2A2A2A",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pcjqtg36",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "3 / 24",
+      "textPreview": "3 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "3 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "3 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "3 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

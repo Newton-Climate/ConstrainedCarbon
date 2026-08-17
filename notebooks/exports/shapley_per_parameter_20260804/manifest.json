@@ -1,0 +1,25 @@
+{
+  "n_configs": 24,
+  "n_ok": 24,
+  "n_failed": 0,
+  "families": [
+    "C_stocks",
+    "bulk_14C",
+    "fraction_14C",
+    "resp_14C",
+    "ER_annual",
+    "fraction_12C"
+  ],
+  "param_labels": [
+    "$\\tau_{\\mathrm{active}}$",
+    "$\\tau_{\\mathrm{slow}}$",
+    "$\\tau_{\\mathrm{passive}}$",
+    "$f_{\\mathrm{a\\to s}}$",
+    "$f_{\\mathrm{s\\to p}}$"
+  ],
+  "options": {
+    "include_er_constraint": true,
+    "include_incubation_constraint": false,
+    "include_incubation_14c_constraint": false
+  }
+}

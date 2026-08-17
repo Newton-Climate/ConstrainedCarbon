@@ -20,14 +20,28 @@ ecosys analyze transit --mode intrinsic
 
 These analyses use different input tables and assumptions, so check `ecosys analyze <subcommand> --help` before running one.
 
-## Output status
+## Outputs
 
-`analyze` currently delegates to legacy analysis modules. Its output location
-is controlled by each subcommand's flags and is not yet covered by the shared
-`outputs/<name>/...` contract. Keep the input tables and command invocation
-with any generated figure; do not assume a manifest or config snapshot exists.
+Every completed command writes to
+`outputs/<name>/analyze/<subcommand>/` by default, or under the root passed to
+`--outdir`; use `--name` to choose `<name>`. Each run writes `manifest.json`
+and `logs/run.log`; the manifest records the supplied arguments and declares
+every generated artifact. The app owns all output locations, so use `--outdir`
+rather than a subcommand-specific `--out`, `--figure`, or `--export-dir` flag.
+On completion it prints a JSON integration record containing `output_dir`, the
+manifest path, and absolute paths for every declared artifact.
 
-`model` exports or reloads a per-site fit analysis at `--export-dir`; use it to
+| Subcommand | Contract payloads |
+|---|---|
+| `model` | `fit_matrices.npz`, observation/constraint/Shapley/ablation CSVs, `summary.json`, and `site_diagnostics.png` |
+| `network` | `site_summary.csv`, `ladder_summary.csv`, `shapley_summary.csv`, `failures.csv`, and `aggregate_summary.json` |
+| `transit --mode intrinsic` | `transit_times.csv` and `transit_times.png` (plus a failures CSV when needed) |
+| `transit --mode realized` | `realized_transit_times.csv` and `realized_transit_times.png` (plus a failures CSV when needed) |
+| `transit --mode gradient` | `gradient_transit_times.csv`, `gradient_transit_draws.csv`, and `gradient_transit_times.png` |
+| `transit-vulnerability` | leave-one-biome-out summary, predictions, and site-metrics CSVs |
+| `cross-ecosystem` | `report.md` plus the generated figure and CSV bundle |
+
+`model` exports a per-site fit analysis to its contract directory; use it to
 inspect the stated fit, not to create a new independent observation. `network`
 produces site and observation-information summaries; its DFS and Shapley
 outputs have the same local-resolution interpretation described for

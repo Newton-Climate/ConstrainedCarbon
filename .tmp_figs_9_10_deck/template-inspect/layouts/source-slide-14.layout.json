@@ -1,0 +1,715 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/6lsnupw7",
+    "id": "6lsnupw7",
+    "slide": 14,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Consolas",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xc7eds76",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "INFORMATION CONTENT  ·  02",
+      "textPreview": "INFORMATION CONTENT  ·  02",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "INFORMATION CONTENT  ·  02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "INFORMATION CONTENT  ·  02",
+          "runs": [
+            {
+              "index": 1,
+              "text": "INFORMATION CONTENT  ·  02",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wbydknq1",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Averaging kernels: which turnover times the data actually resolve",
+      "textPreview": "Averaging kernels: which turnover times the data actually resolve",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Averaging kernels: which turnover times the data actually"
+          },
+          {
+            "index": 2,
+            "text": "resolve"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Averaging kernels: which turnover times the data actually resolve",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Averaging kernels: which turnover times the data actually resolve",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/1w3u10jy",
+      "id": "12",
+      "name": "Image 0",
+      "bbox": [
+        52.8,
+        182.4,
+        902.4,
+        385.92
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-14-1.png",
+        "contentType": "image/png",
+        "byteLength": 123909
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-14-1.png",
+        "contentType": "image/png",
+        "byteLength": 123909
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/idgvmx8r",
+      "id": "5",
+      "name": "Text 2",
+      "bbox": [
+        974.4,
+        187.2,
+        264,
+        33.6
+      ],
+      "geometry": "rect",
+      "text": "READING THE KERNEL",
+      "textPreview": "READING THE KERNEL",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "READING THE KERNEL"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "READING THE KERNEL",
+          "runs": [
+            {
+              "index": 1,
+              "text": "READING THE KERNEL",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/5grehs7i",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        974.4,
+        225.6,
+        264,
+        192
+      ],
+      "geometry": "rect",
+      "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K\n \nEach row shows how a retrieved τ is a weighted average of the true τ's.\n \nDiagonal = DFS  (0 = prior-dominated, 1 = fully data-resolved).",
+      "textPreview": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K |   | Each row shows how a retrieved τ is a weighted average of the true τ's. |   | Diagonal = DFS  (0 = p...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "Each row shows how a retrieved τ is a"
+          },
+          {
+            "index": 4,
+            "text": "weighted average of the true τ's."
+          },
+          {
+            "index": 5,
+            "text": " "
+          },
+          {
+            "index": 6,
+            "text": "Diagonal = DFS  (0 = prior-dominated,"
+          },
+          {
+            "index": 7,
+            "text": "1 = fully data-resolved)."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K",
+          "runs": [
+            {
+              "index": 1,
+              "text": "A = (KᵀSe⁻¹K + Sa⁻¹)⁻¹ KᵀSe⁻¹K",
+              "fontSize": 13.33,
+              "typeface": "Consolas",
+              "color": "#4A7C59",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Each row shows how a retrieved τ is a weighted average of the true τ's.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Each row shows how a retrieved τ is a weighted average of the true τ's.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Diagonal = DFS  (0 = prior-dominated, 1 = fully data-resolved).",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Diagonal = DFS",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "  (0 = prior-dominated, 1 = fully data-resolved).",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kfidonqx",
+      "id": "7",
+      "name": "Shape 4",
+      "bbox": [
+        974.4,
+        422.4,
+        264,
+        144
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zi5c3y98",
+      "id": "8",
+      "name": "Text 5",
+      "bbox": [
+        988.8,
+        432,
+        235.2,
+        129.6
+      ],
+      "geometry": "rect",
+      "text": "HF:  τ_active 1.00, τ_slow 0.65, τ_passive 0.52.\n \nBarrow:  τ_active 0.99, τ_slow 0.50, τ_passive 0.42 — deep pools less resolved.",
+      "textPreview": "HF:  τ_active 1.00, τ_slow 0.65, τ_passive 0.52. |   | Barrow:  τ_active 0.99, τ_slow 0.50, τ_passive 0.42 — deep pools less resolved.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 6,
+        "lines": [
+          {
+            "index": 1,
+            "text": "HF:  τ_active 1.00, τ_slow 0.65,"
+          },
+          {
+            "index": 2,
+            "text": "τ_passive 0.52."
+          },
+          {
+            "index": 3,
+            "text": " "
+          },
+          {
+            "index": 4,
+            "text": "Barrow:  τ_active 0.99, τ_slow 0.50,"
+          },
+          {
+            "index": 5,
+            "text": "τ_passive 0.42 — deep pools less"
+          },
+          {
+            "index": 6,
+            "text": "resolved."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "HF:  τ_active 1.00, τ_slow 0.65, τ_passive 0.52.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "HF:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "τ_active 1.00, τ_slow 0.65, τ_passive 0.52.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 4,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Barrow:  τ_active 0.99, τ_slow 0.50, τ_passive 0.42 — deep pools less resolved.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Barrow:  ",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "τ_active 0.99, τ_slow 0.50, τ_passive 0.42 — deep pools less resolved.",
+              "fontSize": 14,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ehwvat8n",
+      "id": "9",
+      "name": "Shape 6",
+      "bbox": [
+        57.6,
+        590.4,
+        1180.8,
+        91.2
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/c3e1gjyd",
+      "id": "10",
+      "name": "Text 7",
+      "bbox": [
+        72,
+        590.4,
+        1152,
+        91.2
+      ],
+      "geometry": "rect",
+      "text": "The slow / passive trade-off:  τ_slow and τ_passive share a negative off-diagonal (−0.12 to −0.18) — the data pin their combination better than either alone. The mixing is stronger at Barrow, where the frozen passive pool is nearly invisible to surface respiration and total DFS falls from 3.14 to 2.74.",
+      "textPreview": "The slow / passive trade-off:  τ_slow and τ_passive share a negative off-diagonal (−0.12 to −0.18) — the data pin their combination bette...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "The slow / passive trade-off:  τ_slow and τ_passive share a negative off-diagonal (−0.12 to −0.18) — the data pin their combination better than either alone."
+          },
+          {
+            "index": 2,
+            "text": "The mixing is stronger at Barrow, where the frozen passive pool is nearly invisible to surface respiration and total DFS falls from 3.14 to 2.74."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "The slow / passive trade-off:  τ_slow and τ_passive share a negative off-diagonal (−0.12 to −0.18) — the data pin their combination better than either alone. The mixing is stronger at Barrow, where the frozen passive pool is nearly invisible to surface respiration and total DFS falls from 3.14 to 2.74.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "The slow / passive trade-off:  ",
+              "fontSize": 16,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": "τ_slow and τ_passive share a negative off-diagonal (−0.12 to −0.18) — the data pin their combination better than either alone. The mixing is stronger at Barrow, where the frozen passive pool is nearly invisible to surface respiration and total DFS falls from 3.14 to 2.74.",
+              "fontSize": 16,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x4ni9ofy",
+      "id": "11",
+      "name": "Text 8",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "14 / 24",
+      "textPreview": "14 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "14 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "14 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "14 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

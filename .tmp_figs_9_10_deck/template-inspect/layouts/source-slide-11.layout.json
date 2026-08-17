@@ -1,0 +1,660 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/jetc3ut0",
+    "id": "jetc3ut0",
+    "slide": 11,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xcryxg7y",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "RESULTS  ·  FIT QUALITY",
+      "textPreview": "RESULTS  ·  FIT QUALITY",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "RESULTS  ·  FIT QUALITY"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "RESULTS  ·  FIT QUALITY",
+          "runs": [
+            {
+              "index": 1,
+              "text": "RESULTS  ·  FIT QUALITY",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wbih4b6d",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "Posterior model fits respired Δ¹⁴C within analytical precision at both sites",
+      "textPreview": "Posterior model fits respired Δ¹⁴C within analytical precision at both sites",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Posterior model fits respired Δ¹⁴C within analytical"
+          },
+          {
+            "index": 2,
+            "text": "precision at both sites"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Posterior model fits respired Δ¹⁴C within analytical precision at both sites",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Posterior model fits respired Δ¹⁴C within analytical precision at both sites",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/qpwnm1kb",
+      "id": "11",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        172.8,
+        912,
+        432
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-11-1.png",
+        "contentType": "image/png",
+        "byteLength": 140313
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-11-1.png",
+        "contentType": "image/png",
+        "byteLength": 140313
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/250zy18b",
+      "id": "5",
+      "name": "Shape 2",
+      "bbox": [
+        988.8,
+        187.2,
+        249.6,
+        403.2
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#D4A574",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/98rytw72",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        1003.2,
+        196.8,
+        230.4,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "TAKEAWAY",
+      "textPreview": "TAKEAWAY",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "TAKEAWAY"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "TAKEAWAY",
+          "runs": [
+            {
+              "index": 1,
+              "text": "TAKEAWAY",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/o7ih0r6h",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        1003.2,
+        230.4,
+        230.4,
+        345.6
+      ],
+      "geometry": "rect",
+      "text": "Both fits converged.\n \nHF:  12.6 ‰ RMSE,  −5.4 ‰ bias  (41 obs)\n \nBarrow:  20.2 ‰ RMSE,  −0.2 ‰ bias  (14 obs)\n \nBoth within typical AMS Δ¹⁴C precision (~10–20 ‰).\n \nBarrow residuals are scatter — Vaughn surface flux measurements are spatially variable at decimeter scales.",
+      "textPreview": "Both fits converged. |   | HF:  12.6 ‰ RMSE,  −5.4 ‰ bias  (41 obs) |   | Barrow:  20.2 ‰ RMSE,  −0.2 ‰ bias  (14 obs) |   | Both within ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 14,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Both fits converged."
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "HF:  12.6 ‰ RMSE,  −5.4 ‰ bias"
+          },
+          {
+            "index": 4,
+            "text": "(41 obs)"
+          },
+          {
+            "index": 5,
+            "text": " "
+          },
+          {
+            "index": 6,
+            "text": "Barrow:  20.2 ‰ RMSE,  −0.2 ‰"
+          },
+          {
+            "index": 7,
+            "text": "bias  (14 obs)"
+          },
+          {
+            "index": 8,
+            "text": " "
+          },
+          {
+            "index": 9,
+            "text": "Both within typical AMS Δ¹⁴C"
+          },
+          {
+            "index": 10,
+            "text": "precision (~10–20 ‰)."
+          },
+          {
+            "index": 11,
+            "text": " "
+          },
+          {
+            "index": 12,
+            "text": "Barrow residuals are scatter — Vaughn"
+          },
+          {
+            "index": 13,
+            "text": "surface flux measurements are"
+          },
+          {
+            "index": 14,
+            "text": "spatially variable at decimeter scales."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Both fits converged.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Both fits converged.",
+              "fontSize": 17.33,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "HF:  12.6 ‰ RMSE,  −5.4 ‰ bias  (41 obs)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "HF:  12.6 ‰ RMSE,  −5.4 ‰ bias  (41 obs)",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 4,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Barrow:  20.2 ‰ RMSE,  −0.2 ‰ bias  (14 obs)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Barrow:  20.2 ‰ RMSE,  −0.2 ‰ bias  (14 obs)",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 6,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 10.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "Both within typical AMS Δ¹⁴C precision (~10–20 ‰).",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Both within typical AMS Δ¹⁴C precision (~10–20 ‰).",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 8,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 10.67,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 9,
+          "text": "Barrow residuals are scatter — Vaughn surface flux measurements are spatially variable at decimeter scales.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Barrow residuals are scatter — Vaughn surface flux measurements are spatially variable at decimeter scales.",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#6B6B6B",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/72t03qp0",
+      "id": "8",
+      "name": "Shape 5",
+      "bbox": [
+        57.6,
+        619.2,
+        1180.8,
+        67.2
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/61kzalof",
+      "id": "9",
+      "name": "Text 6",
+      "bbox": [
+        57.6,
+        619.2,
+        1180.8,
+        67.2
+      ],
+      "geometry": "rect",
+      "text": "Our 3-pool model reproduces the bomb-spike decline at Harvard Forest and the muted, near-zero-trend signal at Barrow.",
+      "textPreview": "Our 3-pool model reproduces the bomb-spike decline at Harvard Forest and the muted, near-zero-trend signal at Barrow.",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Our 3-pool model reproduces the bomb-spike decline at Harvard Forest and the muted, near-zero-trend signal at Barrow."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Our 3-pool model reproduces the bomb-spike decline at Harvard Forest and the muted, near-zero-trend signal at Barrow.",
+          "resolvedTextStyle": {
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Our 3-pool model reproduces the bomb-spike decline at Harvard Forest and the muted, near-zero-trend signal at Barrow.",
+              "fontSize": 17.33,
+              "typeface": "Georgia",
+              "color": "#FFFFFF",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ofqtgnyt",
+      "id": "10",
+      "name": "Text 7",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "11 / 24",
+      "textPreview": "11 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "11 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "11 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "11 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

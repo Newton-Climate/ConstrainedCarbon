@@ -1,0 +1,727 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/udsvah03",
+    "id": "udsvah03",
+    "slide": 9,
+    "layoutId": "/ppt/slideLayouts/slideLayout1.xml",
+    "layoutName": "DEFAULT",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4472C4",
+      "accent2": "#ED7D31",
+      "accent3": "#A5A5A5",
+      "accent4": "#FFC000",
+      "accent5": "#5B9BD5",
+      "accent6": "#70AD47",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#44546A",
+      "lt2": "#E7E6E6",
+      "hlink": "#0563C1",
+      "folHlink": "#954F72"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri Light"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Calibri",
+      "Calibri Light",
+      "Georgia"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout1.xml",
+      "name": "DEFAULT",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1cfmhgne",
+      "id": "2",
+      "name": "Text 0",
+      "bbox": [
+        57.6,
+        33.6,
+        1161.6,
+        30.72
+      ],
+      "geometry": "rect",
+      "text": "VALIDATION",
+      "textPreview": "VALIDATION",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "VALIDATION"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "VALIDATION",
+          "runs": [
+            {
+              "index": 1,
+              "text": "VALIDATION",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0b65obm9",
+      "id": "3",
+      "name": "Text 1",
+      "bbox": [
+        57.6,
+        67.2,
+        1161.6,
+        81.6
+      ],
+      "geometry": "rect",
+      "text": "We reproduce — then improve on — Sierra et al. (2012) at Harvard Forest",
+      "textPreview": "We reproduce — then improve on — Sierra et al. (2012) at Harvard Forest",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "We reproduce — then improve on — Sierra et al. (2012) at"
+          },
+          {
+            "index": 2,
+            "text": "Harvard Forest"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "We reproduce — then improve on — Sierra et al. (2012) at Harvard Forest",
+          "runs": [
+            {
+              "index": 1,
+              "text": "We reproduce — then improve on — Sierra et al. (2012) at Harvard Forest",
+              "fontSize": 37.33,
+              "typeface": "Georgia",
+              "color": "#1F3A2E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/hcz65kbq",
+      "id": "12",
+      "name": "Image 0",
+      "bbox": [
+        57.6,
+        158.4,
+        835.2,
+        528
+      ],
+      "contentType": "image/png",
+      "imageCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "asset": {
+        "assetId": "/ppt/media/image-9-1.png",
+        "contentType": "image/png",
+        "byteLength": 298245
+      },
+      "fillImage": {
+        "assetId": "/ppt/media/image-9-1.png",
+        "contentType": "image/png",
+        "byteLength": 298245
+      }
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mdonql4z",
+      "id": "5",
+      "name": "Shape 2",
+      "bbox": [
+        912,
+        168,
+        326.4,
+        216
+      ],
+      "geometry": "rect",
+      "fillColor": "#F7F4ED",
+      "lineColor": "#6B6B6B",
+      "lineWidth": 0.67
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9gzml0nq",
+      "id": "6",
+      "name": "Text 3",
+      "bbox": [
+        921.6,
+        177.6,
+        307.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "PRIOR  (Gaudinski / Sierra 2012)",
+      "textPreview": "PRIOR  (Gaudinski / Sierra 2012)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "PRIOR  (Gaudinski / Sierra 2012)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "PRIOR  (Gaudinski / Sierra 2012)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "PRIOR  (Gaudinski / Sierra 2012)",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#4A7C59",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ofq5svm5",
+      "id": "7",
+      "name": "Text 4",
+      "bbox": [
+        921.6,
+        206.4,
+        307.2,
+        177.6
+      ],
+      "geometry": "rect",
+      "text": "7-pool topology, Q10 = 1, constant climate\n \nReproduces Sierra Fig. 3 to within ~20–50 ‰\n \nResp Δ¹⁴C RMSE 13.5 ‰",
+      "textPreview": "7-pool topology, Q10 = 1, constant climate |   | Reproduces Sierra Fig. 3 to within ~20–50 ‰ |   | Resp Δ¹⁴C RMSE 13.5 ‰",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "7-pool topology, Q10 = 1, constant climate"
+          },
+          {
+            "index": 2,
+            "text": " "
+          },
+          {
+            "index": 3,
+            "text": "Reproduces Sierra Fig. 3 to within ~20–50 ‰"
+          },
+          {
+            "index": 4,
+            "text": " "
+          },
+          {
+            "index": 5,
+            "text": "Resp Δ¹⁴C RMSE 13.5 ‰"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "7-pool topology, Q10 = 1, constant climate",
+          "runs": [
+            {
+              "index": 1,
+              "text": "7-pool topology, Q10 = 1, constant climate",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Reproduces Sierra Fig. 3 to within ~20–50 ‰",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Reproduces Sierra Fig. 3 to within ~20–50 ‰",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#1F3A2E",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 5.33,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Resp Δ¹⁴C RMSE 13.5 ‰",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Resp Δ¹⁴C RMSE 13.5 ‰",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#2A2A2A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/bih4na5w",
+      "id": "8",
+      "name": "Shape 5",
+      "bbox": [
+        912,
+        398.4,
+        326.4,
+        288
+      ],
+      "geometry": "rect",
+      "fillColor": "#1F3A2E",
+      "lineColor": "#1F3A2E",
+      "lineWidth": 1.33
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ah8nu54b",
+      "id": "9",
+      "name": "Text 6",
+      "bbox": [
+        921.6,
+        408,
+        307.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "POSTERIOR  (OE inversion)",
+      "textPreview": "POSTERIOR  (OE inversion)",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "POSTERIOR  (OE inversion)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "POSTERIOR  (OE inversion)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "POSTERIOR  (OE inversion)",
+              "fontSize": 13.33,
+              "typeface": "Calibri",
+              "color": "#D4A574",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/oza1gfyh",
+      "id": "10",
+      "name": "Text 7",
+      "bbox": [
+        921.6,
+        436.8,
+        307.2,
+        240
+      ],
+      "geometry": "rect",
+      "text": "τ_dead_roots:  6 → 5.6 yr  (pinned)\nτ_ALF_lt80:  75 → 13 yr  ↓ 5.9×\nτ_MinAss:  110 → 182 yr  ↑ 1.7×\n \nBomb-spike Δ¹⁴C requires faster light fractions and older mineral-associated C than Gaudinski's prior assumed.",
+      "textPreview": "τ_dead_roots:  6 → 5.6 yr  (pinned) | τ_ALF_lt80:  75 → 13 yr  ↓ 5.9× | τ_MinAss:  110 → 182 yr  ↑ 1.7× |   | Bomb-spike Δ¹⁴C requires fa...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 7,
+        "lines": [
+          {
+            "index": 1,
+            "text": "τ_dead_roots:  6 → 5.6 yr  (pinned)"
+          },
+          {
+            "index": 2,
+            "text": "τ_ALF_lt80:  75 → 13 yr  ↓ 5.9×"
+          },
+          {
+            "index": 3,
+            "text": "τ_MinAss:  110 → 182 yr  ↑ 1.7×"
+          },
+          {
+            "index": 4,
+            "text": " "
+          },
+          {
+            "index": 5,
+            "text": "Bomb-spike Δ¹⁴C requires faster light fractions"
+          },
+          {
+            "index": 6,
+            "text": "and older mineral-associated C than"
+          },
+          {
+            "index": 7,
+            "text": "Gaudinski's prior assumed."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "τ_dead_roots:  6 → 5.6 yr  (pinned)",
+          "runs": [
+            {
+              "index": 1,
+              "text": "τ_dead_roots",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": ":  6 → 5.6 yr  (pinned)",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "τ_ALF_lt80:  75 → 13 yr  ↓ 5.9×",
+          "runs": [
+            {
+              "index": 1,
+              "text": "τ_ALF_lt80",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": ":  75 → 13 yr  ↓ 5.9×",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#D4A574"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "τ_MinAss:  110 → 182 yr  ↑ 1.7×",
+          "runs": [
+            {
+              "index": 1,
+              "text": "τ_MinAss",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "bold": true
+            },
+            {
+              "index": 2,
+              "text": ":  110 → 182 yr  ↑ 1.7×",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#D4A574"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "runs": [
+            {
+              "index": 1,
+              "text": " ",
+              "fontSize": 8,
+              "typeface": "Calibri",
+              "color": "#000000"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "Bomb-spike Δ¹⁴C requires faster light fractions and older mineral-associated C than Gaudinski's prior assumed.",
+          "runs": [
+            {
+              "index": 1,
+              "text": "Bomb-spike Δ¹⁴C requires faster light fractions and older mineral-associated C than Gaudinski's prior assumed.",
+              "fontSize": 14.67,
+              "typeface": "Calibri",
+              "color": "#FFFFFF",
+              "italic": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p0ji9kf2",
+      "id": "11",
+      "name": "Text 8",
+      "bbox": [
+        1190.4,
+        681.6,
+        67.2,
+        28.8
+      ],
+      "geometry": "rect",
+      "text": "9 / 24",
+      "textPreview": "9 / 24",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "wrap": "square",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "9 / 24"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "9 / 24",
+          "resolvedTextStyle": {
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "9 / 24",
+              "fontSize": 12,
+              "typeface": "Calibri",
+              "color": "#6B6B6B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

@@ -29,7 +29,29 @@ def _default_paths() -> tuple[Path, Path, list[Path]]:
 
 def _site_table_markdown(df: pd.DataFrame, cols: list[str]) -> str:
     table = df.loc[:, cols].copy()
-    return table.to_markdown(index=False)
+    try:
+        return table.to_markdown(index=False)
+    except ImportError:
+        # ``DataFrame.to_markdown`` delegates to optional ``tabulate``. Keep
+        # report generation usable in the declared core environment.
+        def cell(value: object) -> str:
+            if pd.isna(value):
+                return ""
+            return str(value).replace("|", "\\|").replace("\n", "<br>")
+
+        header = "| " + " | ".join(map(str, table.columns)) + " |"
+        separator = "| " + " | ".join("---" for _ in table.columns) + " |"
+        rows = ["| " + " | ".join(cell(value) for value in row) + " |" for row in table.itertuples(index=False, name=None)]
+        return "\n".join([header, separator, *rows])
+
+
+def _display_path(path: Path) -> str:
+    """Prefer a repository-relative provenance path without rejecting a valid input."""
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(_REPO_ROOT).as_posix()
+    except ValueError:
+        return str(resolved)
 
 
 def build_report_text(
@@ -43,9 +65,9 @@ def build_report_text(
     direct = tables["direct_warming_sites"]
     vuln = tables["biome_vulnerability_summary"].sort_values("frac_loss_mean", ascending=False)
     shapley = tables["biome_shapley_summary"].copy()
-    network_display = network_path.relative_to(_REPO_ROOT).as_posix()
-    warming_display = warming_path.relative_to(_REPO_ROOT).as_posix()
-    new_site_display = ", ".join(f"`{p.relative_to(_REPO_ROOT).as_posix()}`" for p in new_site_paths)
+    network_display = _display_path(network_path)
+    warming_display = _display_path(warming_path)
+    new_site_display = ", ".join(f"`{_display_path(p)}`" for p in new_site_paths)
 
     dfs = direct["dfs_total"]
     incubation_only = all_sites.loc[~all_sites["has_direct_warming"]].copy()
