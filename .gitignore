@@ -74,6 +74,8 @@ package-lock.json
 agents.md
 .claude/
 **.png
+!docs/apps/artifacts/
+!docs/apps/artifacts/*.png
 *.pptx
 *.pdf
 *.svg

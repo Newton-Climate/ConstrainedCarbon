@@ -29,3 +29,17 @@ and sign are stable in `leave_one_out.csv` and it is distinct from the
 prior-driven structural-null distribution. It remains conditional on the
 selected site set, priors, fitted-model approximation, and shared warming
 experiment; it does not establish a causal cross-ecosystem mechanism.
+
+## Harvard Forest example
+
+```bash
+ecosys mcmc configs/multisite/harvard_forest.yaml \
+  --posterior-draws 4 --prior-draws 4 --mc-iterations 50 --null-iterations 20
+```
+
+This small command is a smoke test, not a publication-quality uncertainty
+analysis. Harvard’s fitted diagnostic below is the site-level evidence that
+seeds its posterior approximation. Interpret MCMC draws as uncertainty around
+that fitted model and its stated priors—not repeated field experiments.
+
+![Harvard Forest fitted diagnostic](artifacts/harvard_forest_site_diagnostics.png)

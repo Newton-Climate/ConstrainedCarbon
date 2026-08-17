@@ -35,3 +35,19 @@ These merge tables are joined inputs for later analysis, not a new inversion
 or uncertainty analysis. Interpret the cross-ecosystem biome summaries as
 descriptive coverage-aware synthesis unless the underlying site-level
 uncertainty and comparability have been evaluated.
+
+## Harvard Forest example
+
+```bash
+ecosys report merge \
+  --network-addition outputs/harvard_network/optimize/network_summary.csv \
+  --warming-addition outputs/harvard_network/warming/network_warming_summary.csv \
+  --name harvard_example
+```
+
+Build `harvard_network` as a site set containing Harvard Forest before merging.
+The warming figure is the kind of site-level result a report can carry forward.
+Merging does not re-fit Harvard Forest or add uncertainty. It only prepares
+compatible tables for a later descriptive synthesis.
+
+![Harvard Forest warming result for reporting](artifacts/harvard_forest_warming_response.png)

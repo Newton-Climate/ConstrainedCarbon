@@ -12,16 +12,16 @@ import numpy as np
 import pandas as pd
 
 from ecosystem_complexity.inference._helpers import build_oe_prior_sigma
-from ecosystem_complexity.synthesis.analysis import compute_age_diagnostics
 from ecosystem_complexity.inference.diagnostics import (
-    cumulative_ladder_from_context,
     constraint_orthogonality_from_context,
+    cumulative_ladder_from_context,
     oe_gain_matrix_diagnostics,
     oe_ladder_context,
     oe_style_ablation,
     shapley_dfs_attribution_from_context,
 )
 from ecosystem_complexity.model.state import make_default_params
+from ecosystem_complexity.synthesis.analysis import compute_age_diagnostics
 
 
 def _json_default(value: Any) -> Any:
@@ -136,14 +136,19 @@ def compute_information_metrics(
 
 def analyze_site_run(site_run: dict[str, Any]) -> dict[str, Any]:
     """Compute standardized diagnostics for a completed canonical site fit."""
-    required = {"model", "forcing", "state_at_map", "params_opt", "obs_full", "oe_result"}
+    required = {"model", "forcing", "state0", "params_opt", "obs_full", "oe_result"}
     missing = required.difference(site_run)
     if missing:
         raise KeyError(f"site_run is missing required keys: {sorted(missing)}")
 
     model = site_run["model"]
     forcing = site_run["forcing"]
-    state_at_map = site_run["state_at_map"]
+    # Reuse the state supplied to ``optimize_oe``.  Its forward operator
+    # analytically replaces C12 at each parameter value while retaining this
+    # state's Δ14C initialization.  ``state_at_map`` has a different Δ14C
+    # initialization, so using it here reconstructs a different Jacobian and
+    # makes the exported DFS disagree with the fitted OE result.
+    state0 = site_run["state0"]
     params_opt = site_run["params_opt"]
     obs_full = site_run["obs_full"]
     opt_fields = tuple(site_run.get("opt_fields", ()))
@@ -153,16 +158,34 @@ def analyze_site_run(site_run: dict[str, Any]) -> dict[str, Any]:
     gain = oe_gain_matrix_diagnostics(
         model,
         forcing,
-        state_at_map,
+        state0,
         params_opt,
         obs_full,
         opt_fields=opt_fields,
         extra_obs_blocks=extra_blocks,
     )
+    # The exported diagnostics are a reconstruction of the OE linearisation.
+    # Do not silently publish a second, inconsistent averaging kernel if either
+    # code path changes its state construction or observation operator.
+    fitted_kernel = np.asarray(oe_result.averaging_kernel, dtype=float)
+    if not np.allclose(
+        np.asarray(gain["averaging_kernel"], dtype=float),
+        fitted_kernel,
+        rtol=1e-5,
+        # Equivalent JAX Jacobian evaluations can differ at ~1e-6 because of
+        # floating-point reduction order; this still rejects a changed
+        # linearization state or observation operator.
+        atol=2e-6,
+    ):
+        raise RuntimeError(
+            "Exported OE diagnostics do not reproduce the fitted averaging "
+            "kernel. Use the inversion's linearization state and forward "
+            "operator before exporting DFS."
+        )
     ladder_ctx = oe_ladder_context(
         model,
         forcing,
-        state_at_map,
+        state0,
         params_opt,
         obs_full,
         opt_fields=opt_fields,
@@ -171,7 +194,7 @@ def analyze_site_run(site_run: dict[str, Any]) -> dict[str, Any]:
     ablation = oe_style_ablation(
         model,
         forcing,
-        state_at_map,
+        state0,
         params_opt,
         obs_full,
         opt_fields=opt_fields,

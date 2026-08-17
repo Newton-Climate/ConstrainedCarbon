@@ -96,3 +96,16 @@ ISRaD and atmospheric-¹⁴C fetches stage shared reference data under `data/` a
 print their paths; they do not create a fit or a scientific inference. A
 successful download only establishes that the file was retrieved and validated
 structurally, not that it is appropriate for a particular site or question.
+
+## Harvard Forest example
+
+```bash
+ecosys fetch flux harvard_forest --accept-policy --accept-license
+```
+
+The Harvard configuration resolves this to the US-Ha1 daily forcing record.
+The figure below shows the GPP series later used by the model. It is a forcing
+input, not a fitted or observed carbon-stock result. Check its date range,
+gaps, and units before using it in an inversion.
+
+![Harvard Forest forcing in the fitted diagnostic](artifacts/harvard_forest_site_diagnostics.png)

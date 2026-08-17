@@ -2,9 +2,8 @@
 
 `ecosys` is the command-line entry point for the repository's repeatable workflows. Give it a site config, a site-set manifest, or a group of configs where supported.
 
-Start with [Outputs and scientific interpretation](outputs.md) when reading or
-reporting a result. It defines the run-directory contract, the meaning of the
-main fields, and the limits of scientific interpretation.
+Start with [Reading `ecosys` outputs](outputs.md) when reading or reporting a
+result. For a concrete example, see the [Harvard Forest walkthrough](harvard-forest-example.md).
 
 ```bash
 ecosys --help
@@ -25,3 +24,5 @@ The built-in help is the authoritative list of flags. A few commands still wrap 
 | [`analyze`](analyze.md) | Run network, transit-time, and summary analysis. |
 | [`report`](report.md) | Merge results and build cross-ecosystem summaries. |
 | [`model`](model.md) | Validate a site input set or run the forward model. |
+| [Schema reference](schema.md) | Understand the fields in a site configuration. |
+| [Soil-fraction mapping](soil-fraction-mapping.md) | Map laboratory fractions to model pools carefully. |

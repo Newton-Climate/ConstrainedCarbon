@@ -52,3 +52,17 @@ forcing used. `transit-vulnerability` writes leave-one-biome-out prediction
 tables; judge model additions by held-out error and coverage, not in-sample
 association. `cross-ecosystem` writes a figure/table/report bundle whose
 cross-site patterns remain conditional on compatible source summaries.
+
+## Harvard Forest example
+
+```bash
+ecosys analyze model configs/multisite/harvard_forest.yaml \
+  --name harvard_forest_example
+```
+
+Use this single-site diagnostic to examine fit quality before moving to a
+network analysis. The information panel shows about 2.82 DFS across the
+fitted state, so it would be too strong to claim that every fitted parameter is
+independently measured.
+
+![Harvard Forest analysis diagnostic](artifacts/harvard_forest_site_diagnostics.png)

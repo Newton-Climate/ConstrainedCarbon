@@ -36,3 +36,17 @@ forcing treatment, and constraints. Do not describe the output as a forecast:
 it does not by itself include changing vegetation, inputs, moisture,
 disturbance, or adaptation. Biome averages summarize the selected sites; they
 do not establish a biome effect without uncertainty and coverage assessment.
+
+## Harvard Forest example
+
+```bash
+ecosys warming configs/multisite/harvard_forest.yaml \
+  --horizon-years 100 --warming-delta-c 4 --outdir outputs/harvard_example
+```
+
+For this repeated-forcing, +4 °C experiment, the fitted model retains about
+21,930 rather than 26,650 g C m⁻² after 100 years: a 17.9% modeled loss. Read
+this as a result of this scenario and fitted model—not as an observed loss or a
+forecast that includes changing vegetation, disturbance, or moisture.
+
+![Harvard Forest warming response](artifacts/harvard_forest_warming_response.png)
