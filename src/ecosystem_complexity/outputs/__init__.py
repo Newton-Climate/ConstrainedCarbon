@@ -34,7 +34,7 @@ from typing import Any, Iterable
 
 import yaml
 
-from ecosystem_complexity.config import ModelConfig
+from ecosystem_complexity.model.configuration import ModelConfig
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUTS_ROOT = _REPO_ROOT / "outputs"

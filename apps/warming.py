@@ -37,7 +37,7 @@ _SRC = _REPO_ROOT / "src"
 if _SRC.is_dir() and str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from ecosystem_complexity.config import load_config  # noqa: E402
+from ecosystem_complexity.model.configuration import load_config  # noqa: E402
 from ecosystem_complexity.outputs import (  # noqa: E402
     open_run_dir,
     resolve_run_name,
@@ -46,7 +46,7 @@ from ecosystem_complexity.outputs import (  # noqa: E402
 )
 from ecosystem_complexity.sites.driver import run_site_canonical  # noqa: E402
 from ecosystem_complexity.sites.spec import load_site_spec  # noqa: E402
-from ecosystem_complexity.warming import project_warming_response  # noqa: E402
+from ecosystem_complexity.synthesis.warming import project_warming_response  # noqa: E402
 
 logger = logging.getLogger("ecosys.warming")
 

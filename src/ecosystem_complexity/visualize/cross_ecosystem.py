@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity.biome import (
+from ecosystem_complexity.synthesis.biomes import (
     BIOME_GROUP_COLORS,
     BIOME_GROUP_LABELS,
     BIOME_GROUP_ORDER,

@@ -5,14 +5,14 @@ import numpy as np
 import jax.numpy as jnp
 
 from ecosystem_complexity import mcmc as _mcmc
-from ecosystem_complexity._oe_helpers import build_oe_prior_sigma
-from ecosystem_complexity.api import build_model
+from ecosystem_complexity.inference._helpers import build_oe_prior_sigma
+from ecosystem_complexity.model.api import build_model
 from ecosystem_complexity.data.israd_14c import build_bulk_14C_blocks, build_resp_14C_obs
 from ecosystem_complexity.data.parsers import attach_atm14C
 from ecosystem_complexity.data.parsers_14C import load_full_14C_record
 from ecosystem_complexity.data.paths import GRAVEN_PATH, HUA_PATH, INTCAL_PATH
 from ecosystem_complexity.data.schemas import ObservationData
-from ecosystem_complexity.optimizer import params_to_vector
+from ecosystem_complexity.inference.parameters import params_to_vector
 from ecosystem_complexity.sites.driver import OPT_FIELDS, build_state0
 from ecosystem_complexity.sites.forcing import (
     load_site_forcing,
@@ -21,8 +21,8 @@ from ecosystem_complexity.sites.forcing import (
 )
 from ecosystem_complexity.sites.soc import build_soc_prior
 from ecosystem_complexity.sites.spec import load_site_spec
-from ecosystem_complexity.state import make_default_params
-from ecosystem_complexity.warming import repeat_forcing, warm_forcing
+from ecosystem_complexity.model.state import make_default_params
+from ecosystem_complexity.synthesis.warming import repeat_forcing, warm_forcing
 
 
 def _build_site_context(

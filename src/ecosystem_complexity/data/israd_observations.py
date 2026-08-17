@@ -9,8 +9,8 @@ import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity._oe_helpers import ObsBlock
-from ecosystem_complexity.config import PoolIndex
+from ecosystem_complexity.inference._helpers import ObsBlock
+from ecosystem_complexity.model.configuration import PoolIndex
 
 
 @dataclass(frozen=True)

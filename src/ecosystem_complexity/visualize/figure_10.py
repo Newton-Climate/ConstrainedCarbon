@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity.biome import BIOME_GROUP_COLORS, BIOME_GROUP_LABELS, BIOME_GROUP_ORDER
+from ecosystem_complexity.synthesis.biomes import BIOME_GROUP_COLORS, BIOME_GROUP_LABELS, BIOME_GROUP_ORDER
 
 from .cross_ecosystem import build_cross_ecosystem_tables
 from .utils import coerce_table, finalize_figure, panelize, setup_figure_config, standard_figure_parser
 
 
 def _load_observed_offsets(network: pd.DataFrame) -> pd.DataFrame:
-    from ecosystem_complexity.api import build_model
+    from ecosystem_complexity.model.api import build_model
     from ecosystem_complexity.data.israd_14c import build_bulk_14C_blocks, build_resp_14C_obs
     from ecosystem_complexity.data.parsers import attach_atm14C
     from ecosystem_complexity.data.parsers_14C import load_full_14C_record

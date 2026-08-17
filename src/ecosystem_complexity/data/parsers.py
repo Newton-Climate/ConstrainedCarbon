@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import jax.numpy as jnp
 
-from ecosystem_complexity.config import ModelConfig
+from ecosystem_complexity.model.configuration import ModelConfig
 from ecosystem_complexity.data.schemas import ForcingData, ObservationData
 
 # Back-compat re-exports — loaders were extracted to data/loaders.py but
@@ -175,4 +175,3 @@ def validate_obs_nee_gaps(obs: ObservationData, max_gap: int = 14) -> list[str]:
             f"NEE has a run of {max_run} consecutive NaN days (threshold {max_gap})"
         )
     return warnings_out
-

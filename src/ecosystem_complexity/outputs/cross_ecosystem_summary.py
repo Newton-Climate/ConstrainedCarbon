@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ecosystem_complexity.biome import BIOME_GROUP_LABELS
+from ecosystem_complexity.synthesis.biomes import BIOME_GROUP_LABELS
 from ecosystem_complexity.visualize.cross_ecosystem import build_cross_ecosystem_tables, make_figure_09
 from ecosystem_complexity.visualize.utils import close_or_show
 

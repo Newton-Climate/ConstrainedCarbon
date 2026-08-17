@@ -23,8 +23,8 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[3]
 
-from ecosystem_complexity.api import build_model
-from ecosystem_complexity.biome import BIOME_GROUP_COLORS as COLORS, biome_group
+from ecosystem_complexity.model.api import build_model
+from ecosystem_complexity.synthesis.biomes import BIOME_GROUP_COLORS as COLORS, biome_group
 from ecosystem_complexity.sites.driver import run_site_canonical
 from ecosystem_complexity.sites.spec import load_site_spec
 from ecosystem_complexity.transit_time import intrinsic_mean_transit_time
@@ -85,7 +85,7 @@ def _from_summary(row: pd.Series) -> dict:
         weights[0] = 1.0
     # Build-time transfer rules are the transfer topology retained by the
     # network export; optimize_oe's MAP logits were not persisted historically.
-    from ecosystem_complexity.state import make_default_params
+    from ecosystem_complexity.model.state import make_default_params
     params = make_default_params(model.config)
     mtt_days, by_pool = intrinsic_mean_transit_time(
         np.log(tau_years * 365.25), np.asarray(params.log_f_transfer), weights

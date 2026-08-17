@@ -14,7 +14,7 @@ import pandas as pd
 
 # ObsBlock from its defining module, not the `api` facade: `api` imports
 # data.schemas, so routing through it makes data -> api -> data a cycle.
-from ecosystem_complexity._oe_helpers import ObsBlock
+from ecosystem_complexity.inference._helpers import ObsBlock
 from ecosystem_complexity.data.fraction_mapping import (
     BULK_PROPERTIES,
     build_fraction_mapping,

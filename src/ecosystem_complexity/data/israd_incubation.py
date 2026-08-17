@@ -80,8 +80,8 @@ import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 
-from ecosystem_complexity._oe_helpers import ObsBlock
-from ecosystem_complexity.climate import f_temp
+from ecosystem_complexity.inference._helpers import ObsBlock
+from ecosystem_complexity.processes.climate import f_temp
 from ecosystem_complexity.data.paths import ISRAD_INCUBATION
 
 logger = logging.getLogger(__name__)

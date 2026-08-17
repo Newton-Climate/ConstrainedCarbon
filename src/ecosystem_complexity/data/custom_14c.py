@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from ecosystem_complexity._oe_helpers import ObsBlock
+from ecosystem_complexity.inference._helpers import ObsBlock
 from ecosystem_complexity.data.israd_observations import bulk_mixture_obs_block
 
 _KINDS = {"bulk", "fraction", "respiration"}
