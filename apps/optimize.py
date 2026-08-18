@@ -231,6 +231,33 @@ def _write_site_outputs(result: dict, out_root: str | Path | None, verb_extra: d
     return run.root
 
 
+_UNPICKLABLE_RESULT_KEYS = (
+    "model",         # compiled EcosystemModel closure
+    "oe_result",     # holds JAX arrays & the optimizer state
+    "obs_full",      # ObsBlocks contain lambda predict fns
+    "pool_blocks",
+    "extra_blocks",
+    "forcing",
+    "state0",
+    "params_prior",
+    "state_at_prior",
+    "state_at_map",
+    "out_prior",
+    "out_opt",
+)
+
+
+def _reduce_for_pickle(result: dict) -> dict:
+    # Strip fields whose contents contain lambdas or JAX closures — those
+    # can't cross a multiprocessing boundary. The parent-side writers only
+    # need scalars, spec, params_opt, and rebuild the model themselves.
+    # Must be module-level so workers can import it.
+    r = dict(result)
+    for key in _UNPICKLABLE_RESULT_KEYS:
+        r.pop(key, None)
+    return r
+
+
 def _write_site_set_summary(
     site_set_name: str,
     rows: list[dict],
@@ -368,17 +395,6 @@ def main(argv: list[str] | None = None) -> int:
     if workers > 1:
         print(f"Running {len(specs)} sites across {workers} worker processes…")
 
-    # Reduce inside the worker to a lightweight dict that survives pickling.
-    # We keep enough to write the per-site artifacts on the parent side:
-    # everything except the compiled model closure.
-    def _reduce(result: dict) -> dict:
-        # Drop the compiled EcosystemModel — closures don't pickle — but keep
-        # everything else the per-site writer needs.
-        r = dict(result)
-        r.pop("model", None)
-        r.pop("oe_result", None)  # holds JAX arrays; row/params are already extracted
-        return r
-
     # When workers>1 the writer runs on the parent after collection; when
     # workers==1 the reduce is still applied for a uniform code path but the
     # model has to be rebuilt for _write_site_outputs (which reads config only).
@@ -394,7 +410,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         include_fraction_12c_constraint=args.fraction_12c,
         workers=workers,
-        reduce=_reduce,
+        reduce=_reduce_for_pickle,
     )
 
     summary_rows: list[dict] = []
