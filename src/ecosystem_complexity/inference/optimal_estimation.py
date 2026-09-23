@@ -28,7 +28,9 @@ from ecosystem_complexity.inference._helpers import (
     _analytical_c12_ss,
     _build_obs_blocks,
     _build_sa_diag,
-    apply_ss_c12,
+    analytical_c14_ss,
+    apply_ss_c12_c14,
+    prepare_c14_spinup,
 )
 from ecosystem_complexity.inference.parameters import (
     get_oe_fields as _get_oe_fields,
@@ -85,10 +87,14 @@ def build_oe_forward_context(
 ) -> dict:
     """Build the one OE forward operator used for fitting and diagnostics.
 
-    The returned ``forward`` retains ``state0``'s radiocarbon initialization
-    while replacing C12 with the analytical steady state at each trial
-    parameter vector.  Diagnostics must use this function rather than rebuild
-    an equivalent-looking operator from a separately constructed MAP state.
+    The returned ``forward`` derives *both* the ¹²C and the ¹⁴C initial
+    condition from the trial parameter vector, so an observation dated at t₀
+    cannot seed the state it is then fitted against — see ``analytical_c14_ss``.
+    Retaining ``state0``'s radiocarbon instead makes the ¹⁴C initial condition
+    independent of tau, which zeroes ∂prediction/∂log_tau for those rows and
+    silently drops them from the inversion and from every DFS diagnostic.
+    Diagnostics must use this function rather than rebuild an
+    equivalent-looking operator from a separately constructed MAP state.
     """
     inv_cfg = getattr(model.config, "inversion_raw", {}) or {}
     params0 = make_default_params(model.config)
@@ -113,12 +119,26 @@ def build_oe_forward_context(
     target_idx = [model.pool_index[name] for name in target_names] or None
     n_pools = len(model.pool_index)
 
+    atm_years, atm_d14c, t0_year = prepare_c14_spinup(forcing)
+
     def forward(x_vec: jnp.ndarray) -> jnp.ndarray:
         p = _vector_to_params(x_vec, params0, tuple(opt_fields))
         c12_ss = _analytical_c12_ss(
             p, n_pools, mean_input, mean_modifier, target_indices=target_idx
         )
-        out = run_model(model, forcing, state0=apply_ss_c12(state0, c12_ss), params=p)
+        c14_ss = analytical_c14_ss(
+            p,
+            c12_ss,
+            n_pools,
+            mean_input,
+            mean_modifier,
+            atm_years,
+            atm_d14c,
+            t0_year,
+            target_indices=target_idx,
+        )
+        state_ss = apply_ss_c12_c14(state0, c12_ss, c14_ss)
+        out = run_model(model, forcing, state0=state_ss, params=p)
         return jnp.concatenate([block.predict(out, p) for block in obs_blocks])
 
     return {
