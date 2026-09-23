@@ -409,7 +409,15 @@ def _dispatch_shapley(argv: list[str]) -> int:
     if workers > 1:
         ctx = multiprocessing.get_context("spawn")
         with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as pool:
-            fut_to_cfg = {pool.submit(_do_one, c): c for c in configs}
+            # Submit the module-level worker directly: a local closure such as
+            # `_do_one` cannot be pickled across the spawn boundary.
+            fut_to_cfg = {
+                pool.submit(
+                    _shapley_one, c, include_er, include_incub, include_incub14,
+                    sigma_rule, args.outdir,
+                ): c
+                for c in configs
+            }
             for fut in as_completed(fut_to_cfg):
                 cfg = fut_to_cfg[fut]
                 try:
