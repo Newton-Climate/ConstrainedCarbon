@@ -13,6 +13,35 @@ from ecosystem_complexity.inference._helpers import ObsBlock
 from ecosystem_complexity.model.configuration import PoolIndex
 
 
+def nearest_time_index(
+    forcing_time: Any, obs_year: float, *, observation: str = "observation"
+) -> int:
+    """Return the closest model index, rejecting dates outside the record.
+
+    ``argmin(abs(...))`` silently clamps an out-of-range measurement to the
+    first or last model state.  That changes the scientific meaning of a dated
+    radiocarbon measurement, so callers must instead extend their forcing or
+    explicitly omit the measurement.
+    """
+    time_np = np.asarray(forcing_time, dtype=float)
+    if time_np.size == 0:
+        raise ValueError(f"Cannot place {observation}: forcing record is empty")
+    years = 1970.0 + time_np / 365.25
+    target = float(obs_year)
+    if not np.isfinite(target):
+        raise ValueError(f"Cannot place {observation}: date {obs_year!r} is not finite")
+    day_tolerance = 1.0 / 365.25
+    if (
+        target < float(years[0]) - day_tolerance
+        or target > float(years[-1]) + day_tolerance
+    ):
+        raise ValueError(
+            f"Cannot place {observation} at {target:.3f}: forcing spans "
+            f"{years[0]:.3f}–{years[-1]:.3f}; refusing to clamp the date"
+        )
+    return int(np.argmin(np.abs(years - target)))
+
+
 @dataclass(frozen=True)
 class FractionMappingRule:
     """Rule for mapping ISRaD fraction rows onto a model pool."""
@@ -78,12 +107,15 @@ def obs_dict_from_single_year_summary(
 ) -> dict[str, jnp.ndarray]:
     """Convert single-year pool summaries into sparse `(T,)` observation arrays."""
     time_np = np.array(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
     t_len = len(time_np)
     obs_dict: dict[str, jnp.ndarray] = {}
     for pool_name, (mean_val, _, _) in summary.items():
         arr = np.full(t_len, np.nan, dtype=np.float32)
-        t_idx = int(np.argmin(np.abs(years_np - (float(obs_year) + year_offset))))
+        t_idx = nearest_time_index(
+            forcing_time,
+            float(obs_year) + year_offset,
+            observation=f"{pool_name} summary",
+        )
         arr[t_idx] = mean_val
         obs_dict[pool_name] = jnp.array(arr)
     return obs_dict
@@ -105,7 +137,13 @@ def obs_blocks_from_single_year_summary(
         dtype=jnp.int32,
     )
     if t_yr.shape[0] == 0:
-        t_yr = jnp.array([int(np.argmin(np.abs(years_np - (float(obs_year) + 0.5))))], dtype=jnp.int32)
+        t_yr = jnp.array([
+            nearest_time_index(
+                forcing_time,
+                float(obs_year) + 0.5,
+                observation=f"{name_prefix} summary",
+            )
+        ], dtype=jnp.int32)
 
     blocks: list[ObsBlock] = []
     for pool_name, (mean_val, sigma_val, _) in summary.items():
@@ -184,8 +222,6 @@ def build_fraction_obs_blocks(
     and `block` keys so callers can print or convert further without re-running the aggregation.
     """
     exclude_pool_years = exclude_pool_years or set()
-    time_np = np.array(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
     frac_series = df[fraction_col].astype(str).str.strip().str.lower()
 
     records: dict[tuple[str, int], list[tuple[float, float]]] = {}
@@ -250,7 +286,11 @@ def build_fraction_obs_blocks(
             sigma_val = singleton_sigma
         sigma_val = max(sigma_val, min_sigma)
 
-        t_idx = int(np.argmin(np.abs(years_np - (float(obs_year) + 0.5))))
+        t_idx = nearest_time_index(
+            forcing_time,
+            float(obs_year) + 0.5,
+            observation=f"{name_prefix} {pool_name}",
+        )
         t_arr = jnp.array([t_idx], dtype=jnp.int32)
         pi = int(pool_index[pool_name])
         block = ObsBlock(
@@ -282,7 +322,13 @@ def _perlayer_time_window(forcing_time: Any, obs_year: float) -> jnp.ndarray:
     years_np = 1970.0 + time_np / 365.25
     idx = np.where((years_np >= obs_year) & (years_np < obs_year + 1))[0]
     if idx.size == 0:
-        idx = np.array([int(np.argmin(np.abs(years_np - (obs_year + 0.5))))])
+        idx = np.array([
+            nearest_time_index(
+                forcing_time,
+                obs_year + 0.5,
+                observation="per-layer radiocarbon",
+            )
+        ])
     return jnp.asarray(idx, dtype=jnp.int32)
 
 

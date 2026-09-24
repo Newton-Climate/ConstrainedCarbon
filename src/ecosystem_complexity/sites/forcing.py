@@ -10,6 +10,7 @@ import glob
 import os
 
 from ecosystem_complexity.data.forcing import (
+    align_daily_observations,
     build_annual_mean_forcing,
     load_daily_observations,
     load_fluxcom_observations,
@@ -91,7 +92,12 @@ def load_site_observations(
 ) -> ObservationData | None:
     """Load tower observations associated with a site's forcing product."""
     if spec.forcing_kind == "daily":
-        return load_daily_observations(path, model)
+        observations = load_daily_observations(path, model)
+        return (
+            align_daily_observations(observations, forcing.time)
+            if forcing is not None
+            else observations
+        )
     if spec.forcing_kind == "fluxcom":
         if not spec.er_observation_glob or forcing is None:
             return None
