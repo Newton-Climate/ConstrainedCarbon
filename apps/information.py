@@ -42,8 +42,14 @@ if _SRC.is_dir() and str(_SRC) not in sys.path:
 
 logger = logging.getLogger("ecosys.information")
 
+# `inc_rate` must be listed: incubation blocks reach the OE forward (and move the
+# MAP) whenever --include-incubation is passed, so omitting the family here does
+# not exclude the data - it only hides its contribution, and silently reassigns
+# its share to the families that are listed. Subset enumeration is 2^len(), but
+# it runs on the already-computed Jacobian, so the extra families are cheap.
 DEFAULT_FAMILIES = (
     "C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "ER_annual", "fraction_12C",
+    "inc_rate",
 )
 
 _STATE_SHORT = {
