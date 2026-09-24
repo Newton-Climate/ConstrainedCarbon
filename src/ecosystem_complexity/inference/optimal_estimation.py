@@ -107,6 +107,7 @@ def build_oe_forward_context(
         float(inv_cfg.get("sigma_carbon_gCm2", 1000.0)),
         f_hetero=float(inv_cfg.get("f_hetero", 0.0)),
         sigma_er_frac=float(inv_cfg.get("sigma_er_frac", 0.15)),
+        sigma_er_struct=float(inv_cfg.get("sigma_er_struct", 0.50)),
     )
     if extra_obs_blocks:
         obs_blocks = obs_blocks + list(extra_obs_blocks)

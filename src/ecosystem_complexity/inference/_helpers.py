@@ -72,6 +72,7 @@ def _build_obs_blocks(  # noqa: C901
     sigma_carbon: Optional[float] = None,
     f_hetero: float = 0.0,
     sigma_er_frac: float = 0.15,
+    sigma_er_struct: float = 0.50,
 ) -> list[ObsBlock]:
     """
     Build the list of ObsBlock objects that together define the OE observation
@@ -102,7 +103,19 @@ def _build_obs_blocks(  # noqa: C901
     f_hetero     : float   prior f_hetero > 0 enables the ER block;
                            actual value used only as on/off flag — the
                            posterior value comes from p.log_f_hetero
-    sigma_er_frac: float   fractional σ on annual ER observations
+    sigma_er_frac: float   fractional MEASUREMENT σ on annual ER observations
+    sigma_er_struct: float fractional REPRESENTATIVENESS σ, combined with
+                           sigma_er_frac in quadrature.  The ER block compares
+                           tower ER against ``Rh / f_hetero``, a proxy whose
+                           structural error dominates its measurement error:
+                           across 19 network sites the median |y-ŷ|/y is 0.21
+                           and the 75th percentile is 0.55, versus a 0.15
+                           measurement σ.  Treating the proxy as if it were
+                           measurement-limited made this one block 85-94%% of
+                           the total cost at the best-observed sites (reduced
+                           χ² 178 at Howland, 371 at Solling) while being
+                           nearly orthogonal to the radiocarbon solution.
+                           The 0.50 default puts ~3/4 of sites within 1σ.
 
     Returns
     -------
@@ -232,7 +245,10 @@ def _build_obs_blocks(  # noqa: C901
             if mask.sum() < 30:
                 continue
             er_est = float(np.mean(er_np[mask]))
-            sigma = max(abs(er_est) * sigma_er_frac, 0.01)
+            # Measurement and representativeness errors add in quadrature; the
+            # latter dominates because Rh/f_hetero is a proxy for tower ER.
+            sigma_frac_total = float(np.hypot(sigma_er_frac, sigma_er_struct))
+            sigma = max(abs(er_est) * sigma_frac_total, 0.01)
             row = np.zeros(T, dtype=np.float32)
             row[mask] = 1.0 / mask.sum()
             rows.append(row)
