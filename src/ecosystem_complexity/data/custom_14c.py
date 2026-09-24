@@ -15,7 +15,10 @@ import pandas as pd
 import yaml
 
 from ecosystem_complexity.inference._helpers import ObsBlock
-from ecosystem_complexity.data.israd_observations import bulk_mixture_obs_block
+from ecosystem_complexity.data.israd_observations import (
+    bulk_mixture_obs_block,
+    nearest_time_index,
+)
 
 _KINDS = {"bulk", "fraction", "respiration"}
 _REQUIRED = {"sample_id", "kind", "date", "delta14c", "delta14c_sigma"}
@@ -125,13 +128,18 @@ def build_custom_14c_observations(
 ) -> tuple[list[ObsBlock], jnp.ndarray]:
     """Build pool/bulk blocks and sparse respiration observations from lab data."""
     time_np = np.asarray(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
     blocks: list[ObsBlock] = []
     bulk = data.measurements.query("kind == 'bulk'")
     for date, group in bulk.groupby("date", sort=True):
         mean, sigma = _aggregate(group, sigma_floor)
         obs_year = float(group["obs_year"].iloc[0])
-        t = jnp.array([int(np.argmin(np.abs(years_np - obs_year)))], dtype=jnp.int32)
+        t = jnp.array([
+            nearest_time_index(
+                forcing_time,
+                obs_year,
+                observation=f"custom bulk {date}",
+            )
+        ], dtype=jnp.int32)
         blocks.append(
             bulk_mixture_obs_block(
                 f"custom_bulk_{_name_date(date)}", mean, sigma, t
@@ -159,7 +167,13 @@ def build_custom_14c_observations(
         mean, sigma = _aggregate(group, sigma_floor)
         pi = int(pool_index[pool])
         obs_year = float(group["obs_year"].iloc[0])
-        t = jnp.array([int(np.argmin(np.abs(years_np - obs_year)))], dtype=jnp.int32)
+        t = jnp.array([
+            nearest_time_index(
+                forcing_time,
+                obs_year,
+                observation=f"custom fraction {pool} {date}",
+            )
+        ], dtype=jnp.int32)
         blocks.append(ObsBlock(
             name=f"custom_fraction_{pool}_{_name_date(date)}",
             y=jnp.array([mean], dtype=jnp.float32),
@@ -172,7 +186,11 @@ def build_custom_14c_observations(
     for _, group in respiration.groupby("date", sort=True):
         mean, _ = _aggregate(group, sigma_floor)
         obs_year = float(group["obs_year"].iloc[0])
-        resp[int(np.argmin(np.abs(years_np - obs_year)))] = mean
+        resp[nearest_time_index(
+            forcing_time,
+            obs_year,
+            observation=f"custom respiration {group['date'].iloc[0]}",
+        )] = mean
     return blocks, jnp.array(resp)
 
 

@@ -25,6 +25,7 @@ from ecosystem_complexity.data.israd_observations import (
     add_layer_midpoint,
     build_fraction_obs_blocks,
     bulk_mixture_obs_block,
+    nearest_time_index,
 )
 from ecosystem_complexity.data.paths import (
     ISRAD_FLUX,
@@ -203,8 +204,6 @@ def build_bulk_14C_blocks(
         if not debris.empty:
             df = pd.concat([df, debris], ignore_index=True)
 
-    time_np = np.array(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
     blocks: list[ObsBlock] = []
     for year, grp in df.groupby(df["lyr_obs_date_y"].astype(int)):
         vals = np.asarray(pd.to_numeric(grp["lyr_14c"], errors="coerce"), dtype=float)
@@ -226,9 +225,13 @@ def build_bulk_14C_blocks(
             sigma_val = 50.0
             sigma_spread = 0.0
         sigma_val = max(sigma_val, 15.0)
-        t_idx = jnp.array(
-            [int(np.argmin(np.abs(years_np - (float(year) + 0.5))))], dtype=jnp.int32
-        )
+        t_idx = jnp.array([
+            nearest_time_index(
+                forcing_time,
+                float(year) + 0.5,
+                observation=f"{israd_name} bulk radiocarbon",
+            )
+        ], dtype=jnp.int32)
         blocks.append(bulk_mixture_obs_block(
             f"israd_bulk_{year}_profile", mean_val, sigma_val, t_idx
         ))
@@ -315,11 +318,14 @@ def build_resp_14C_obs(israd_name: str, forcing_time) -> jnp.ndarray:
     by_date = df.groupby("_dec")["flx_14c"].mean()
 
     time_np = np.array(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
     arr = np.full(len(time_np), np.nan, dtype=np.float32)
     for dec_yr, val in by_date.items():
         if np.isfinite(val):
-            arr[int(np.argmin(np.abs(years_np - float(dec_yr))))] = float(val)
+            arr[nearest_time_index(
+                forcing_time,
+                float(dec_yr),
+                observation=f"{israd_name} respired radiocarbon",
+            )] = float(val)
     return jnp.array(arr)
 
 
@@ -351,8 +357,6 @@ def build_incubation_14C_blocks(
     if df.empty:
         return []
 
-    time_np = np.asarray(forcing_time, dtype=float)
-    years_np = 1970.0 + time_np / 365.25
     # Month is absent for some otherwise usable records.  Midyear is less
     # arbitrary than discarding a dated radiocarbon observation.
     month = df["inc_obs_date_m"].where(df["inc_obs_date_m"].between(1, 12), 6.5)
@@ -371,7 +375,13 @@ def build_incubation_14C_blocks(
             replicate_sd,
             float(np.nanmax(analytical)) if analytical.size else 0.0,
         )
-        t_idx = jnp.array([int(np.argmin(np.abs(years_np - float(date))))], dtype=jnp.int32)
+        t_idx = jnp.array([
+            nearest_time_index(
+                forcing_time,
+                float(date),
+                observation=f"{israd_name} incubation radiocarbon",
+            )
+        ], dtype=jnp.int32)
 
         def _predict(out, p, t: jnp.ndarray = t_idx) -> jnp.ndarray:
             tau = jnp.exp(p.log_tau)

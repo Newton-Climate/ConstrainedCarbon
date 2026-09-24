@@ -42,8 +42,14 @@ if _SRC.is_dir() and str(_SRC) not in sys.path:
 
 logger = logging.getLogger("ecosys.information")
 
+# `inc_rate` must be listed: incubation blocks reach the OE forward (and move the
+# MAP) whenever --include-incubation is passed, so omitting the family here does
+# not exclude the data - it only hides its contribution, and silently reassigns
+# its share to the families that are listed. Subset enumeration is 2^len(), but
+# it runs on the already-computed Jacobian, so the extra families are cheap.
 DEFAULT_FAMILIES = (
     "C_stocks", "bulk_14C", "fraction_14C", "resp_14C", "ER_annual", "fraction_12C",
+    "inc_rate",
 )
 
 _STATE_SHORT = {
@@ -409,7 +415,15 @@ def _dispatch_shapley(argv: list[str]) -> int:
     if workers > 1:
         ctx = multiprocessing.get_context("spawn")
         with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as pool:
-            fut_to_cfg = {pool.submit(_do_one, c): c for c in configs}
+            # Submit the module-level worker directly: a local closure such as
+            # `_do_one` cannot be pickled across the spawn boundary.
+            fut_to_cfg = {
+                pool.submit(
+                    _shapley_one, c, include_er, include_incub, include_incub14,
+                    sigma_rule, args.outdir,
+                ): c
+                for c in configs
+            }
             for fut in as_completed(fut_to_cfg):
                 cfg = fut_to_cfg[fut]
                 try:

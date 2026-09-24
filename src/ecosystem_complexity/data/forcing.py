@@ -11,6 +11,7 @@ keeps ``data`` free of any dependency on ``sites``.
 from __future__ import annotations
 
 import glob
+import logging
 import os
 from typing import TYPE_CHECKING
 
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 # GPP columns in preference order (tropical FLUXNET only fills the DT variants).
 _GPP_COLS = ("GPP_NT_VUT_REF", "GPP_DT_VUT_REF", "GPP_NT_CUT_REF", "GPP_DT_CUT_REF")
 _EPOCH = pd.Timestamp("1970-01-01")
+logger = logging.getLogger(__name__)
 
 
 def resolve_dd_file(forcing_glob: str) -> str:
@@ -53,7 +55,8 @@ def load_daily_forcing(path: str, model):
     column convention, so one reader covers every configured site.
     """
     forcing, _ = load_howland_forest(path, config=model.config, include_gpp_forcing=True)
-    return _sanitize_forcing(forcing, _load_gpp_series(path))
+    forcing = _sanitize_forcing(forcing, _load_gpp_series(path))
+    return _prepend_era5_history(forcing, path, len(model.config.soil_layers))
 
 
 def load_daily_observations(path: str, model) -> ObservationData:
@@ -62,6 +65,44 @@ def load_daily_observations(path: str, model) -> ObservationData:
         path, config=model.config, include_gpp_forcing=True
     )
     return observations
+
+
+def align_daily_observations(
+    observations: ObservationData, reference_time: jnp.ndarray
+) -> ObservationData:
+    """Align tower observations to an extended forcing record.
+
+    ERA5 extends the meteorological forcing before the tower deployment, but it
+    does not create flux observations.  Those leading dates therefore remain
+    NaN rather than shifting the tower series to the start of the model run.
+    """
+    source_time = np.asarray(observations.time, dtype=np.float64)
+    target_time = np.asarray(reference_time, dtype=np.float64)
+    target_pos = {float(day): i for i, day in enumerate(target_time)}
+    source_keep: list[int] = []
+    target_keep: list[int] = []
+    for i, day in enumerate(source_time):
+        j = target_pos.get(float(day))
+        if j is not None:
+            source_keep.append(i)
+            target_keep.append(j)
+
+    def _align(values):
+        if values is None:
+            return None
+        source = np.asarray(values, dtype=np.float32)
+        aligned = np.full((len(target_time),) + source.shape[1:], np.nan, np.float32)
+        aligned[np.asarray(target_keep)] = source[np.asarray(source_keep)]
+        return jnp.asarray(aligned)
+
+    return observations._replace(
+        time=jnp.asarray(reference_time, dtype=jnp.float32),
+        NEE=_align(observations.NEE),
+        GPP=_align(observations.GPP),
+        ER=_align(observations.ER),
+        NEE_unc=_align(observations.NEE_unc),
+        delta14C_resp=_align(observations.delta14C_resp),
+    )
 
 
 def load_fluxcom_forcing(path: str, model, spec: SiteSpec) -> ForcingData:
@@ -73,11 +114,15 @@ def load_fluxcom_forcing(path: str, model, spec: SiteSpec) -> ForcingData:
     site's mean annual temperature/precipitation metadata from ISRaD.
     """
     gpp_df = _load_fluxcom_gpp(path)
+    dates, gpp = _extend_gpp_climatology_to_1981(
+        pd.DatetimeIndex(gpp_df["date"]),
+        np.asarray(gpp_df["GPP_obs"], dtype=np.float64),
+    )
     return _build_synthetic_site_forcing(
         model=model,
         spec=spec,
-        dates=pd.DatetimeIndex(gpp_df["date"]),
-        gpp=np.asarray(gpp_df["GPP_obs"], dtype=np.float64),
+        dates=dates,
+        gpp=gpp,
     )
 
 
@@ -92,12 +137,8 @@ def load_fluxcom_observations(
         output_col="ER",
     )
     dates = _reference_time_to_dates(reference_time)
-    aligned = (
-        er_df.set_index("date")
-        .reindex(dates)
-        .interpolate(method="time", limit_direction="both")
-        .ffill()
-        .bfill()
+    aligned = er_df.set_index("date").reindex(dates).interpolate(
+        method="time", limit_area="inside"
     )
     er = np.asarray(aligned["ER"], dtype=np.float32)
     time = jnp.array(np.asarray(reference_time), dtype=jnp.float32)
@@ -112,6 +153,25 @@ def load_fluxcom_observations(
         deltaD14C_obs={},
         C_pools_obs={},
     )
+
+
+def _extend_gpp_climatology_to_1981(
+    dates: pd.DatetimeIndex, gpp: np.ndarray
+) -> tuple[pd.DatetimeIndex, np.ndarray]:
+    """Extend a short FluxCom series backward without date-clamping 14C data."""
+    start = pd.Timestamp("1981-01-01")
+    if dates[0] <= start:
+        return dates, gpp
+    history_dates = pd.date_range(start, dates[0] - pd.Timedelta(days=1), freq="D")
+    series = pd.Series(gpp, index=dates)
+    climatology = series.groupby(dates.dayofyear).mean()
+    annual_mean = float(series.mean())
+    history_gpp = np.asarray(
+        [climatology.get(day, annual_mean) for day in history_dates.dayofyear],
+        dtype=np.float64,
+    )
+    history_gpp = np.where(np.isfinite(history_gpp), history_gpp, annual_mean)
+    return history_dates.append(dates), np.concatenate((history_gpp, gpp))
 
 
 def _load_gpp_series(dd_path: str) -> np.ndarray:
@@ -301,6 +361,82 @@ def _sanitize_forcing(forcing, gpp: np.ndarray):
         soil_moisture=jnp.array(sm, dtype=jnp.float32),
         GPP_obs=jnp.array(gpp, dtype=jnp.float32),
     )
+
+
+def _prepend_era5_history(
+    forcing: ForcingData, tower_path: str, n_layers: int
+) -> ForcingData:
+    """Prepend the colocated FLUXNET ERA5 product before tower deployment.
+
+    Soil radiocarbon commonly predates a tower record.  Using only the tower
+    product made every earlier observation silently land on model day zero.
+    FLUXNET distributions include a daily ERA5 product back to 1981, so use its
+    meteorology for the historical segment and a day-of-year tower-GPP
+    climatology for the carbon input that ERA5 does not provide.
+    """
+    matches = sorted(glob.glob(os.path.join(os.path.dirname(tower_path), "*_ERA5_DD_*.csv")))
+    if not matches:
+        return forcing
+
+    era = pd.read_csv(matches[0], na_values=[-9999], low_memory=False)
+    required = {"TIMESTAMP", "TA_ERA", "SW_IN_ERA", "VPD_ERA", "P_ERA"}
+    if not required.issubset(era.columns):
+        missing = sorted(required - set(era.columns))
+        raise ValueError(f"ERA5 daily file {matches[0]!r} is missing columns {missing}")
+    dates = pd.to_datetime(era["TIMESTAMP"].astype(str), format="%Y%m%d")
+    first_tower = _EPOCH + pd.to_timedelta(float(np.asarray(forcing.time)[0]), unit="D")
+    keep = np.asarray(dates < first_tower)
+    if not keep.any():
+        return forcing
+    era = era.loc[keep].reset_index(drop=True)
+    dates = pd.DatetimeIndex(dates[keep])
+
+    def _finite_column(name: str, fallback: float) -> np.ndarray:
+        values = pd.to_numeric(era[name], errors="coerce")
+        values = values.interpolate(limit_direction="both").fillna(fallback)
+        return values.to_numpy(dtype=np.float32)
+
+    air = _finite_column("TA_ERA", 10.0)
+    sw = _finite_column("SW_IN_ERA", 0.0)
+    vpd = _finite_column("VPD_ERA", 0.0)
+    precip = _finite_column("P_ERA", 0.0)
+
+    tower_dates = _reference_time_to_dates(forcing.time)
+    tower_gpp = pd.Series(np.asarray(forcing.GPP_obs), index=tower_dates)
+    climatology = tower_gpp.groupby(tower_dates.dayofyear).mean()
+    annual_mean = float(tower_gpp.mean())
+    historical_gpp = np.asarray(
+        [climatology.get(day, annual_mean) for day in dates.dayofyear],
+        dtype=np.float32,
+    )
+    historical_gpp = np.where(np.isfinite(historical_gpp), historical_gpp, annual_mean)
+
+    n = len(era)
+    historical = ForcingData(
+        time=jnp.asarray((dates - _EPOCH) / pd.Timedelta("1D"), dtype=jnp.float32),
+        air_temp=jnp.asarray(air),
+        sw_radiation=jnp.asarray(sw),
+        precip=jnp.asarray(precip),
+        vpd=jnp.asarray(vpd),
+        soil_temp=jnp.asarray(np.repeat(air[:, None], n_layers, axis=1)),
+        soil_moisture=jnp.full((n, n_layers), 0.30, dtype=jnp.float32),
+        snow_depth=jnp.zeros(n, dtype=jnp.float32),
+        active_layer=jnp.full(n, jnp.inf, dtype=jnp.float32),
+        delta14C_atm=jnp.full(n, jnp.nan, dtype=jnp.float32),
+        GPP_obs=jnp.asarray(historical_gpp),
+        NPP_obs=jnp.full(n, jnp.nan, dtype=jnp.float32),
+    )
+    logger.info(
+        "Prepended %d ERA5 daily records (%s to %s) before %s",
+        n,
+        dates[0].date(),
+        dates[-1].date(),
+        os.path.basename(tower_path),
+    )
+    return ForcingData(*(
+        jnp.concatenate((old, new), axis=0)
+        for old, new in zip(historical, forcing)
+    ))
 
 
 def _repeat_mean_field(arr: np.ndarray, n_days: int) -> np.ndarray:
