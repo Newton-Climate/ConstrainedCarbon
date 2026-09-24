@@ -11,6 +11,7 @@ from ecosystem_complexity.data.israd_observations import (
     FractionMappingRule,
     add_layer_midpoint,
     build_fraction_obs_blocks,
+    nearest_time_index,
     obs_blocks_from_single_year_summary,
     obs_dict_from_single_year_summary,
     summarize_by_depth,
@@ -53,7 +54,7 @@ def test_summarize_by_depth():
 
 
 def test_obs_dict_and_blocks_from_single_year_summary(hf_3pool_model):
-    forcing_time = np.arange(20, dtype=float)
+    forcing_time = np.arange(366, dtype=float)
     summary = {
         "soil_active": (25.0, 15.0, 3),
         "soil_slow": (-80.0, 20.0, 4),
@@ -91,7 +92,7 @@ def test_build_fraction_obs_blocks_weighted_and_depth_filtered(hf_3pool_model):
     df = add_layer_midpoint(df)
     rows = build_fraction_obs_blocks(
         df,
-        forcing_time=np.arange(365, dtype=float),
+        forcing_time=np.arange(365 * 40, dtype=float),
         pool_index=hf_3pool_model.pool_index,
         rules=[
             FractionMappingRule("soil_active", "free light", (0.0, 10.0)),
@@ -113,3 +114,9 @@ def test_build_fraction_obs_blocks_weighted_and_depth_filtered(hf_3pool_model):
     assert passive["obs_year"] == 2007
     assert passive["mean"] == pytest.approx(-150.0)
     assert active["block"].name == "israd_density_soil_active_1996"
+
+
+def test_nearest_time_index_refuses_to_clamp_out_of_range_date():
+    forcing_time = np.arange(365 * 2, dtype=float)
+    with pytest.raises(ValueError, match="refusing to clamp"):
+        nearest_time_index(forcing_time, 1965.0, observation="test radiocarbon")
